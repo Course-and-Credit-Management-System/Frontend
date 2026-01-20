@@ -1,0 +1,162 @@
+import React from 'react';
+import Sidebar from '../components/Sidebar';
+import Header from '../components/Header';
+import { User } from '../types';
+
+interface DashboardProps {
+  user: User;
+  onLogout: () => void;
+}
+
+const StudentDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
+  return (
+    <div className="flex h-screen overflow-hidden bg-background-light dark:bg-background-dark font-poppins">
+      <Sidebar user={user} onLogout={onLogout} />
+      <div className="flex flex-1 flex-col overflow-hidden">
+        <Header title={`Welcome back, Alex! 👋`} user={user} />
+        <main className="flex-1 overflow-y-auto p-6 lg:p-8 relative">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-8 gap-4">
+            <div>
+              <h2 className="text-3xl font-bold text-gray-800 dark:text-white">Welcome back, Alex! 👋</h2>
+              <p className="text-gray-500 dark:text-gray-400 mt-1">Here's your academic progress overview for today.</p>
+            </div>
+            <div className="bg-surface-light dark:bg-surface-dark px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm flex items-center gap-2">
+              <span className="material-icons-round text-primary text-sm">calendar_today</span>
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-200">Fall Semester 2024 - Week 8</span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            <div className="bg-surface-light dark:bg-surface-dark p-5 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm flex flex-col justify-between">
+              <div className="flex justify-between items-start mb-4">
+                <div>
+                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Enrollment Status</p>
+                  <h3 className="text-2xl font-bold mt-1 text-green-600 dark:text-green-400">Active</h3>
+                </div>
+                <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg text-green-600 dark:text-green-400">
+                  <span className="material-icons-round text-xl">check_circle</span>
+                </div>
+              </div>
+              <div className="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-1.5 mt-2">
+                <div className="bg-green-500 h-1.5 rounded-full" style={{ width: '100%' }}></div>
+              </div>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">Full-time • 18 Credits</p>
+            </div>
+
+            <div className="bg-surface-light dark:bg-surface-dark p-5 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm flex flex-col justify-between">
+              <div className="flex justify-between items-start mb-4">
+                <div>
+                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Current GPA</p>
+                  <h3 className="text-2xl font-bold mt-1 text-gray-800 dark:text-white">3.85</h3>
+                </div>
+                <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg text-blue-500">
+                  <span className="material-icons-round text-xl">analytics</span>
+                </div>
+              </div>
+              <div className="flex items-center gap-1 text-green-500 text-xs font-medium mt-2">
+                <span className="material-icons-round text-sm">trending_up</span>
+                <span>+0.2 from last term</span>
+              </div>
+            </div>
+
+            <div className="bg-surface-light dark:bg-surface-dark p-5 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm flex flex-col justify-between group cursor-pointer hover:border-primary transition-all">
+               <div className="flex justify-between items-start mb-4">
+                <div>
+                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Next Step</p>
+                  <h3 className="text-xl font-bold mt-1 text-gray-800 dark:text-white">Major Selection</h3>
+                </div>
+                <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg text-purple-500">
+                  <span className="material-icons-round text-xl">alt_route</span>
+                </div>
+              </div>
+              <button className="text-xs font-semibold text-primary flex items-center gap-1 group-hover:underline">
+                Start Process <span className="material-icons-round text-sm">arrow_forward</span>
+              </button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div className="lg:col-span-8 flex flex-col gap-6">
+              <div className="bg-surface-light dark:bg-surface-dark rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+                <div className="p-5 border-b border-gray-200 dark:border-gray-700 flex items-center gap-2">
+                  <span className="material-icons-round text-primary">auto_graph</span>
+                  <h2 className="text-lg font-bold text-gray-800 dark:text-white">Degree Progress</h2>
+                </div>
+                <div className="p-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                    <div className="relative flex items-center justify-center">
+                      <div className="relative w-32 h-32">
+                         <svg className="w-full h-full transform -rotate-90" viewBox="0 0 112 112">
+                           <circle className="text-gray-100 dark:text-gray-800" cx="56" cy="56" fill="transparent" r="50" stroke="currentColor" strokeWidth="8" />
+                           <circle className="text-primary" cx="56" cy="56" fill="transparent" r="50" stroke="currentColor" strokeDasharray="314" strokeDashoffset="78.5" strokeLinecap="round" strokeWidth="8" />
+                         </svg>
+                         <div className="absolute inset-0 flex flex-col items-center justify-center">
+                           <span className="text-2xl font-bold text-gray-800 dark:text-white">75%</span>
+                           <span className="text-[10px] uppercase font-semibold text-gray-400">Complete</span>
+                         </div>
+                      </div>
+                    </div>
+                    <div className="space-y-4">
+                      {[
+                        { label: 'Core Requirements', progress: '24/30', width: '80%', color: 'bg-primary' },
+                        { label: 'Major Electives', progress: '12/18', width: '66%', color: 'bg-primary' },
+                        { label: 'General Education', progress: '45/45', width: '100%', color: 'bg-green-500' }
+                      ].map((item, i) => (
+                        <div key={i}>
+                          <div className="flex justify-between text-sm mb-1">
+                            <span className="text-gray-600 dark:text-gray-400">{item.label}</span>
+                            <span className="font-semibold">{item.progress} Credits</span>
+                          </div>
+                          <div className="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-2">
+                            <div className={`${item.color} h-2 rounded-full transition-all`} style={{ width: item.width }}></div>
+                          </div>
+                        </div>
+                      ))}
+                      <button className="w-full mt-2 py-2 text-sm font-semibold text-primary border border-primary/20 hover:bg-primary/5 rounded-lg transition-colors">View Degree Audit</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="lg:col-span-4 flex flex-col gap-6">
+              <div className="bg-surface-light dark:bg-surface-dark rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm flex flex-col flex-1 min-h-[500px] overflow-hidden">
+                <div className="p-5 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+                  <h3 className="font-bold text-gray-800 dark:text-white flex items-center gap-2">
+                    <span className="material-icons-round text-primary">history</span>
+                    Recent Activity
+                  </h3>
+                  <a className="text-xs text-primary hover:text-teal-600 font-medium" href="#">View All</a>
+                </div>
+                <div className="divide-y divide-gray-100 dark:divide-gray-800 overflow-y-auto">
+                  {[
+                    { title: 'New Grade Posted', sub: 'Calculus II - Midterm Exam', time: '2 hours ago', icon: 'grade', color: 'bg-green-100 text-green-600' },
+                    { title: 'Campus Announcement', sub: 'Main Library hours extended to 24/7.', time: 'Yesterday', icon: 'campaign', color: 'bg-teal-100 text-teal-600' },
+                    { title: 'Course Registration', sub: 'Priority registration for Spring 2025.', time: '3 days ago', icon: 'event', color: 'bg-purple-100 text-purple-600' },
+                    { title: 'Assignment Submitted', sub: 'Machine Learning Lab #4', time: '4 days ago', icon: 'assignment', color: 'bg-orange-100 text-orange-600' }
+                  ].map((act, i) => (
+                    <div key={i} className="p-5 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors flex gap-4">
+                      <div className={`${act.color} dark:bg-opacity-20 rounded-full h-10 w-10 flex items-center justify-center shrink-0`}>
+                        <span className="material-icons-round">{act.icon}</span>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-800 dark:text-gray-200">{act.title}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 font-light">{act.sub}</p>
+                        <p className="text-[10px] text-gray-400 mt-1 uppercase font-semibold">{act.time}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+          <footer className="mt-12 text-center text-xs text-gray-400 dark:text-gray-600 pb-8">
+            © 2024 University Portal System. All rights reserved.
+          </footer>
+        </main>
+      </div>
+    </div>
+  );
+};
+
+export default StudentDashboard;
