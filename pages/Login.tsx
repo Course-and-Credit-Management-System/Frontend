@@ -1,12 +1,15 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Role, User } from "../types";
 import { api } from "../lib/api";
 
 interface LoginProps {
-  onLogin: (user: User) => void; // ✅ real user object
+  onLogin: (user: User) => void;
 }
 
 const Login: React.FC<LoginProps> = ({ onLogin }) => {
+  const navigate = useNavigate();
+
   const [role, setRole] = useState<Role>("student");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -33,28 +36,33 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
     setLoading(true);
 
     try {
-      // ✅ IMPORTANT: use the shared api helper (same base URL + credentials include)
       const data = await api.login({
         username: cleanUsername,
         password: cleanPassword,
         role,
       });
 
-      // Cookie auth: token is in HttpOnly cookie, not in JSON.
-      // We only need user info to route UI.
       const userFromBackend = data?.user as User | undefined;
       if (!userFromBackend) {
         throw new Error("Login succeeded but no user returned.");
       }
 
-      sessionStorage.setItem("role", userFromBackend.role);
-      sessionStorage.setItem("user", JSON.stringify(userFromBackend));
-      sessionStorage.setItem(
-        "must_reset_password",
-        String(!!data?.must_reset_password)
-      );
+      // ✅ store must_reset_password locally too
+      const mustReset = !!data?.must_reset_password;
 
-      onLogin(userFromBackend);
+      // IMPORTANT: attach it to the user so App.tsx can guard routes
+      const userWithFlag: User = { ...userFromBackend, must_reset_password: mustReset };
+
+      sessionStorage.setItem("role", userWithFlag.role);
+      sessionStorage.setItem("user", JSON.stringify(userWithFlag));
+      sessionStorage.setItem("must_reset_password", String(mustReset));
+
+      onLogin(userWithFlag);
+
+      // ✅ force reset immediately
+      if (mustReset) {
+        navigate("/reset-password", { replace: true });
+      }
     } catch (err: any) {
       setError(err?.message || "Login failed.");
     } finally {
