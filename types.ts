@@ -1,13 +1,24 @@
-
 export type Role = 'student' | 'admin';
 
 export interface User {
-  id: string;
+  // backend fields (MongoDB)
+  _id?: string;
+  user_id?: string;
+
+  // existing field used in UI (mock)
+  id?: string;
+
   name: string;
   role: Role;
   email: string;
+  must_reset_password?: boolean;
+
   department?: string;
-  avatar: string;
+  avatar?: string;
+
+  // backend may return these
+  student_profile?: any;
+  admin_profile?: any;
 }
 
 export interface Course {

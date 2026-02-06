@@ -1,42 +1,72 @@
-
-import React, { useState } from 'react';
-import { Role } from '../types';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Role, User } from "../types";
+import { api } from "../lib/api";
 
 interface LoginProps {
-  onLogin: (role: Role) => void;
+  onLogin: (user: User) => void;
 }
 
 const Login: React.FC<LoginProps> = ({ onLogin }) => {
-  const [role, setRole] = useState<Role>('student');
-  const [username, setUsername] = useState('student');
-  const [password, setPassword] = useState('password');
-  const [error, setError] = useState('');
+  const navigate = useNavigate();
+
+  const [role, setRole] = useState<Role>("student");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleRoleChange = (newRole: Role) => {
     setRole(newRole);
-    setError('');
-    if (newRole === 'admin') {
-      setUsername('admin');
-      setPassword('admin');
-    } else {
-      setUsername('student');
-      setPassword('password');
-    }
+    setError("");
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    
+    setError("");
+
     const cleanUsername = username.trim();
     const cleanPassword = password.trim();
 
-    if (role === 'student' && cleanUsername === 'student' && cleanPassword === 'password') {
-      onLogin('student');
-    } else if (role === 'admin' && cleanUsername === 'admin' && cleanPassword === 'admin') {
-      onLogin('admin');
-    } else {
-      setError('Invalid credentials for selected role.');
+    if (!cleanUsername || !cleanPassword) {
+      setError("Please enter username and password.");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const data = await api.login({
+        username: cleanUsername,
+        password: cleanPassword,
+        role,
+      });
+
+      const userFromBackend = data?.user as User | undefined;
+      if (!userFromBackend) {
+        throw new Error("Login succeeded but no user returned.");
+      }
+
+      // ✅ store must_reset_password locally too
+      const mustReset = !!data?.must_reset_password;
+
+      // IMPORTANT: attach it to the user so App.tsx can guard routes
+      const userWithFlag: User = { ...userFromBackend, must_reset_password: mustReset };
+
+      sessionStorage.setItem("role", userWithFlag.role);
+      sessionStorage.setItem("user", JSON.stringify(userWithFlag));
+      sessionStorage.setItem("must_reset_password", String(mustReset));
+
+      onLogin(userWithFlag);
+
+      // ✅ force reset immediately
+      if (mustReset) {
+        navigate("/reset-password", { replace: true });
+      }
+    } catch (err: any) {
+      setError(err?.message || "Login failed.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -77,25 +107,33 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
               <div className="flex h-11 items-center justify-center rounded-lg bg-gray-100 dark:bg-[#0d1a1c] p-1 mb-8">
                 <button
                   type="button"
-                  onClick={() => handleRoleChange('student')}
+                  onClick={() => handleRoleChange("student")}
                   className={`flex grow items-center justify-center rounded-lg px-2 text-sm font-semibold transition-all h-full ${
-                    role === 'student' ? 'bg-white dark:bg-primary text-primary dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400'
+                    role === "student"
+                      ? "bg-white dark:bg-primary text-primary dark:text-white shadow-sm"
+                      : "text-gray-500 dark:text-gray-400"
                   }`}
                 >
                   Student
                 </button>
                 <button
                   type="button"
-                  onClick={() => handleRoleChange('admin')}
+                  onClick={() => handleRoleChange("admin")}
                   className={`flex grow items-center justify-center rounded-lg px-2 text-sm font-semibold transition-all h-full ${
-                    role === 'admin' ? 'bg-white dark:bg-primary text-primary dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400'
+                    role === "admin"
+                      ? "bg-white dark:bg-primary text-primary dark:text-white shadow-sm"
+                      : "text-gray-500 dark:text-gray-400"
                   }`}
                 >
                   Staff/Admin
                 </button>
               </div>
 
-              {error && <div className="mb-4 p-2 bg-red-100 text-red-700 text-xs rounded text-center">{error}</div>}
+              {error && (
+                <div className="mb-4 p-2 bg-red-100 text-red-700 text-xs rounded text-center">
+                  {error}
+                </div>
+              )}
 
               <form className="space-y-5" onSubmit={handleSubmit}>
                 <div className="flex flex-col gap-2">
@@ -107,8 +145,9 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-[#0d1a1c] text-[#0d1a1c] dark:text-white h-12 px-4 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all placeholder:text-gray-400"
-                    placeholder={`e.g. ${role === 'admin' ? 'admin' : 'student'}@uni.edu`}
+                    placeholder={`e.g. ${role === "admin" ? "ADM-001 or admin@uni.edu" : "TNT-8801 or student@uni.edu"}`}
                     type="text"
+                    autoComplete="username"
                   />
                 </div>
 
@@ -124,6 +163,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                       className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-[#0d1a1c] text-[#0d1a1c] dark:text-white h-12 px-4 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all placeholder:text-gray-400"
                       placeholder="••••••••"
                       type="password"
+                      autoComplete="current-password"
                     />
                     <button type="button" className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-primary transition-colors">
                       <span className="material-symbols-outlined text-xl">visibility</span>
@@ -136,14 +176,17 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                     <input className="rounded border-gray-300 dark:border-gray-700 text-primary focus:ring-primary size-4 cursor-pointer" type="checkbox" />
                     Remember me
                   </label>
-                  <a className="text-primary font-semibold hover:underline decoration-2 underline-offset-4" href="#">Forgot Password?</a>
+                  <a className="text-primary font-semibold hover:underline decoration-2 underline-offset-4" href="#">
+                    Forgot Password?
+                  </a>
                 </div>
 
                 <button
                   type="submit"
-                  className="w-full bg-primary text-white font-bold py-3.5 rounded-lg shadow-lg shadow-primary/20 hover:bg-opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+                  disabled={loading}
+                  className="w-full bg-primary text-white font-bold py-3.5 rounded-lg shadow-lg shadow-primary/20 hover:bg-opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
                 >
-                  Sign In to Portal
+                  {loading ? "Signing in..." : "Sign In to Portal"}
                   <span className="material-symbols-outlined">login</span>
                 </button>
               </form>
@@ -159,6 +202,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
               </div>
             </div>
           </div>
+
           <div className="flex justify-center items-center gap-6 text-gray-500 dark:text-gray-400 text-xs font-medium">
             <a className="hover:text-primary transition-colors" href="#">Privacy Policy</a>
             <span className="size-1 bg-gray-300 dark:bg-gray-700 rounded-full"></span>
