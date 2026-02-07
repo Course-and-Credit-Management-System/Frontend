@@ -24,8 +24,11 @@ const Sidebar: React.FC<SidebarProps> = ({ user, onLogout }) => {
     { to: '/admin/dashboard', icon: 'dashboard', label: 'Dashboard' },
     { to: '/admin/enrollment', icon: 'group_add', label: 'Enrollment', section: 'Student Management' },
     { to: '/admin/students', icon: 'school', label: 'Students List' },
+    { to: "/admin/messages", icon: "mail", label: "Messages"},
     { to: '/admin/courses', icon: 'library_books', label: 'Courses', section: 'Academic' },
+    { to: '/admin/announcements', icon: 'campaign', label: 'Announcements'},
     { to: '/admin/grading', icon: 'assessment', label: 'Exam Results' },
+    
   ];
 
   const studentLinks: SidebarLink[] = [

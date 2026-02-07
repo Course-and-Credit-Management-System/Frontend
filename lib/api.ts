@@ -50,4 +50,58 @@ export const api = {
   adminStatistics: () => request("/api/v1/admin/statistics"),
   adminMajorDistribution: () => request("/api/v1/admin/major-distribution"),
   adminPendingActions: () => request("/api/v1/admin/pending-actions"),
+  adminCourses: () => request("/api/v1/admin/courses"),
+  adminCourseByCode: (course_code: string) => request(`/api/v1/admin/courses/${course_code}`),
+  adminCreateCourse: (payload: any) => request("/api/v1/admin/courses", { method: "POST", body: payload }),
+  adminUpdateCourse: (courseCode: string, payload: any) =>
+  request(`/api/v1/admin/courses/${encodeURIComponent(courseCode)}`, { method: "PUT", body: payload }),
+  // --- Admin Announcements ---
+  adminAnnouncements: () => request("/api/v1/admin/announcements"),
+
+  adminCreateAnnouncement: (payload: {
+    title: string;
+    content: string;
+    type?: "General" | "Urgent" | "Event" | "Academic";
+    target_audience?: string;
+    expiry_date?: string | null; // ISO string (e.g. 2026-03-01T01:00:00Z) or null
+  }) => request("/api/v1/admin/announcements", { method: "POST", body: payload }),
+  adminDeleteAnnouncement: (announcementId: string) =>
+    request(`/api/v1/admin/announcements/${encodeURIComponent(announcementId)}`, { method: "DELETE" }),
+  adminUpdateAnnouncement: (
+    announcementId: string,
+    payload: {
+      title?: string;
+      content?: string;
+      type?: "General" | "Urgent" | "Event" | "Academic";
+      target_audience?: string;
+      expiry_date?: string | null;
+    }
+  ) =>
+    request(`/api/v1/admin/announcements/${encodeURIComponent(announcementId)}`, {
+      method: "PUT",
+      body: payload,
+    }),
+
+      // --- Admin Messages ---
+  adminMessages: () => request("/api/v1/admin/messages"),
+
+  adminCreateMessage: (payload: {
+    receiver_id: string;
+    subject: string;
+    body: string;
+    category?: string;
+    attachments?: string[];
+  }) => request("/api/v1/admin/messages", { method: "POST", body: payload }),
+
+  adminMarkMessageRead: (messageId: string, is_read: boolean) =>
+    request(`/api/v1/admin/messages/${encodeURIComponent(messageId)}/read`, {
+      method: "PUT",
+      body: { is_read },
+    }),
+
+  adminDeleteMessage: (messageId: string) =>
+    request(`/api/v1/admin/messages/${encodeURIComponent(messageId)}`, { method: "DELETE" }),
+
+
+  
 };

@@ -10,6 +10,9 @@ import AdminCourses from "./pages/AdminCourses";
 import AdminStudents from "./pages/AdminStudents";
 import AdminGrading from "./pages/AdminGrading";
 import AdminStudentDetails from "./pages/AdminStudentDetails";
+import AdminAnnouncements from "./pages/AdminAnnouncements";
+import AdminMessages from "./pages/AdminMessages";
+
 
 import StudentDashboard from "./pages/StudentDashboard";
 import StudentEnrollment from "./pages/StudentEnrollment";
@@ -18,6 +21,7 @@ import StudentStatus from "./pages/StudentStatus";
 import StudentCourses from "./pages/StudentCourses";
 
 import CourseDetails from "./pages/CourseDetails";
+
 
 import { User } from "./types";
 import { api } from "./lib/api";
@@ -136,6 +140,14 @@ const App: React.FC = () => {
                 <Route
                   path="/admin/students/:studentId"
                   element={<AdminStudentDetails user={user} onLogout={handleLogout} />}
+                />
+                <Route
+                  path="/admin/announcements"
+                  element={<AdminAnnouncements user={user} onLogout={handleLogout} />}
+                />
+                <Route
+                  path="/admin/messages"
+                  element={<AdminMessages user={user} onLogout={handleLogout} />}
                 />
                 <Route
                   path="/admin/grading"
