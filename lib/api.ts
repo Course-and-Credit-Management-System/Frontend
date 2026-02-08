@@ -102,6 +102,5 @@ export const api = {
   adminDeleteMessage: (messageId: string) =>
     request(`/api/v1/admin/messages/${encodeURIComponent(messageId)}`, { method: "DELETE" }),
 
-
-  
+  currentStudentCourses: () => request("/api/v1/student/courses/current"),
 };
