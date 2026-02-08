@@ -50,7 +50,7 @@ function shouldAutoLogout(path: string) {
 }
 // -----------------------------------------------
 
-async function request(path: string, options: RequestOptions = {}) {
+async function request<T = any>(path: string, options: RequestOptions = {}): Promise<T> {
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
   };
@@ -170,9 +170,21 @@ export const api = {
   adminDeleteMessage: (messageId: string) =>
     request(`/api/v1/admin/messages/${encodeURIComponent(messageId)}`, { method: "DELETE" }),
 
-  currentStudentCourses: () => request("/api/v1/student/courses/current"),
- studentResults: (user_id?: string) =>
-    request(`/api/v1/student/results${user_id ? `?user_id=${encodeURIComponent(user_id)}` : ""}`),
+  currentStudentCourses: () => request<CurrentCoursesResponse>("/api/v1/student/courses/current"),
+
+  studentCourseDetails: (code: string) =>
+    request<any>(`/api/v1/student/courses/detail/${encodeURIComponent(code)}`),
+
+  dropCourse: (code: string) =>
+    request<{ success: boolean }>(`/api/v1/student/courses/${encodeURIComponent(code)}`, {
+      method: "DELETE",
+    }),
+
+  bulkDropCourses: (courseCodes: string[]) =>
+    request<{ success: boolean }>("/api/v1/student/courses/bulk-drop", {
+      method: "POST",
+      body: { course_codes: courseCodes },
+    }),
   studentResultsSummary: (user_id?: string) =>
     request(`/api/v1/student/results/summary${user_id ? `?user_id=${encodeURIComponent(user_id)}` : ""}`),
   studentResultsPdf: () =>
@@ -180,4 +192,3 @@ export const api = {
 };
 
   
-};

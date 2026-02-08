@@ -56,3 +56,22 @@ export interface CurrentCoursesResponse {
   courses_count: number;
   courses: StudentCourse[];
 }
+
+export interface CourseDetail {
+  code: string;
+  title: string;
+  instructor: string;
+  credits: number;
+  schedule: string[] | string;
+  room: string;
+  description: string;
+  syllabus: { week: number; topic: string }[];
+  prerequisites: string[];
+  type?: string;
+  department?: string;
+
+  // Potential API raw fields
+  course_code?: string;
+  instructor_email?: string;
+  email?: string;
+}

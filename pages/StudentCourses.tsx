@@ -16,26 +16,111 @@ const StudentCourses: React.FC<CoursesProps> = ({ user, onLogout }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [showTradeOff, setShowTradeOff] = useState(false);
+  const [selectedToDrop, setSelectedToDrop] = useState<string[]>([]);
+  const [selectedElective, setSelectedElective] = useState<string | null>(null);
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const res = await api.currentStudentCourses();
+      setData(res);
+      // Store current total credits in localStorage as requested
+      localStorage.setItem("current_credits", String(res.total_credits));
+    } catch (err: any) {
+      setError(err.message || "Failed to fetch courses");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        const res = await api.currentStudentCourses();
-        setData(res);
-        // Store current total credits in localStorage as requested
-        localStorage.setItem("current_credits", String(res.total_credits));
-      } catch (err: any) {
-        setError(err.message || "Failed to fetch courses");
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchData();
   }, []);
 
   const handleCourseClick = (courseCode: string) => {
     navigate(`/student/courses/${courseCode}`);
+  };
+
+  const handleToggleSelection = (code: string) => {
+    // Cannot drop retakes
+    const course = data?.courses.find(c => c.code === code);
+    if (course?.is_retake) return;
+
+    // If it's an elective and we have a selected elective, we can't manually toggle it via this method
+    // unless we change how electives are handled.
+    // Ideally, for electives, we use the radio group.
+    // If user clicks the row of an elective, it should probably select it as the 'kept' elective?
+    // Or just ignore standard toggle for electives if they are handled separately.
+    if (course?.tag?.toUpperCase() === 'ELECTIVE' && (data?.courses.filter(c => c.tag?.toUpperCase() === 'ELECTIVE').length ?? 0) > 1) {
+        return handleElectiveSelect(code);
+    }
+
+    setSelectedToDrop(prev => 
+      prev.includes(code) ? prev.filter(c => c !== code) : [...prev, code]
+    );
+  };
+
+  const handleElectiveSelect = (keptCode: string) => {
+    setSelectedElective(keptCode);
+    
+    // Auto-mark all OTHER electives for drop (EXCLUDING retakes)
+    const allElectives = data?.courses.filter(c => c.tag?.toUpperCase() === 'ELECTIVE') || [];
+    const otherElectives = allElectives
+        .filter(c => c.code !== keptCode && !c.is_retake) // Ensure we don't drop retakes even if they are electives (rare edge case)
+        .map(c => c.code);
+    
+    // Remove keptCode from drop list (if it was there) and add otherElectives
+    setSelectedToDrop(prev => {
+        // Remove ALL electives from current selection first to reset filtering
+        const withoutElectives = prev.filter(code => !allElectives.some(e => e.code === code));
+        return [...withoutElectives, ...otherElectives];
+    });
+  };
+
+  const handleBulkDrop = async () => {
+    if (selectedToDrop.length === 0) {
+      setShowTradeOff(false);
+      return;
+    }
+
+    if (!window.confirm(`Confirm dropping ${selectedToDrop.length} selected course(s)?`)) return;
+
+    try {
+      setLoading(true);
+      await api.bulkDropCourses(selectedToDrop);
+      
+      // Refresh data from server to ensure sync
+      await fetchData();
+      
+      setSelectedToDrop([]);
+      setShowTradeOff(false);
+    } catch (err) {
+      setError("An error occurred while dropping courses.");
+      setLoading(false);
+    }
+  };
+
+  const handleDropCourse = async (courseCode: string) => {
+    if (!window.confirm(`Are you sure you want to drop ${courseCode}?`)) return;
+    
+    try {
+      await api.dropCourse(courseCode);
+      if (data) {
+        const droppedCourse = data.courses.find(c => c.code === courseCode);
+        const updatedCourses = data.courses.filter(c => c.code !== courseCode);
+        const updatedCredits = data.total_credits - (droppedCourse?.credits || 0);
+        const newData = {
+          ...data,
+          courses: updatedCourses,
+          total_credits: updatedCredits,
+          courses_count: updatedCourses.length
+        };
+        setData(newData);
+        localStorage.setItem('current_credits', updatedCredits.toString());
+      }
+    } catch (err) {
+      setError("Failed to drop course.");
+    }
   };
 
   if (loading) {
@@ -67,10 +152,12 @@ const StudentCourses: React.FC<CoursesProps> = ({ user, onLogout }) => {
     );
   }
 
+  const isConflict = data && data.total_credits > data.max_credits;
+
   return (
-    <div className="flex h-screen overflow-hidden bg-background-light dark:bg-background-dark font-poppins">
+    <div className="flex h-screen overflow-hidden bg-background-light dark:bg-background-dark font-poppins relative">
       <Sidebar user={user} onLogout={onLogout} />
-      <div className="flex flex-1 flex-col overflow-hidden">
+      <div className={`flex flex-1 flex-col overflow-hidden transition-all duration-500 ${isConflict ? 'blur-[8px] pointer-events-none' : ''}`}>
         <Header title="My Courses" user={user} />
         <main className="flex-1 overflow-y-auto p-6 lg:p-8">
           <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-6">
@@ -171,65 +258,176 @@ const StudentCourses: React.FC<CoursesProps> = ({ user, onLogout }) => {
         </main>
       </div>
 
+      {isConflict && !showTradeOff && (
+        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white/5 backdrop-blur-sm pointer-events-auto">
+            <div className="bg-white dark:bg-surface-dark p-10 rounded-3xl shadow-2xl border border-gray-100 dark:border-gray-800 text-center max-w-lg mx-4 flex flex-col items-center gap-6 animate-in zoom-in-90 duration-300">
+                <div className="w-20 h-20 bg-[#077d8a]/10 rounded-full flex items-center justify-center">
+                    <span className="material-icons-outlined text-[#077d8a] text-5xl">priority_high</span>
+                </div>
+                <div>
+                    <h3 className="text-2xl font-bold text-[#333333] dark:text-white font-poppins">Action Required</h3>
+                    <p className="text-gray-500 dark:text-gray-400 mt-2">
+                        Your credit load (<span className="text-red-500 font-bold">{data.total_credits}</span>) exceeds the university limit of <span className="font-bold">{data.max_credits}</span>.
+                    </p>
+                    <p className="text-xs text-gray-400 mt-1 uppercase tracking-widest font-bold">Schedule is locked until resolved</p>
+                </div>
+                <button 
+                    onClick={() => setShowTradeOff(true)}
+                    className="w-full py-4 bg-[#077d8a] hover:bg-[#066a75] text-white font-bold rounded-xl shadow-lg transition-all transform hover:scale-[1.02] uppercase tracking-wider"
+                >
+                    Resolve Conflict Now
+                </button>
+            </div>
+        </div>
+      )}
+
       {showTradeOff && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-            <div className="bg-white dark:bg-surface-dark w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden border border-gray-100 dark:border-gray-700">
-                <div className="bg-primary px-8 py-6 text-white flex justify-between items-center">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-xl p-4 animate-in fade-in zoom-in-95 duration-300">
+            <div className="bg-white dark:bg-surface-dark w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden border border-[#077d8a]/20">
+                <div className="bg-[#077d8a] px-8 py-6 text-white flex justify-between items-center border-b border-[#077d8a]/10">
                     <div>
-                        <h3 className="text-xl font-bold">Resolve Credit Conflict</h3>
-                        <p className="text-primary-light/80 text-sm mt-1">Select courses to drop to reach the {data.max_credits}-credit limit.</p>
+                        <h3 className="text-xl font-bold font-poppins flex items-center gap-2">
+                            <span className="material-icons-outlined">warning</span>
+                            Resolve Credit Conflict
+                        </h3>
+                        <p className="text-white/80 text-sm mt-1 font-medium">Please drop courses to reach the {data.max_credits} limit.</p>
                     </div>
-                    <button onClick={() => setShowTradeOff(false)} className="hover:bg-white/10 p-2 rounded-full transition-colors">
-                        <span className="material-icons-outlined">close</span>
-                    </button>
                 </div>
                 
-                <div className="p-8 max-h-[60vh] overflow-y-auto">
-                    <div className="space-y-4">
-                        {data.courses.map((course) => (
-                            <div key={course.code} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-white/5 rounded-xl border border-gray-100 dark:border-gray-800">
-                                <div className="flex items-center gap-4">
-                                    <div className={`w-2 h-10 rounded-full ${course.is_retake ? 'bg-red-500' : 'bg-primary'}`}></div>
-                                    <div>
-                                        <p className="font-bold text-gray-800 dark:text-white">{course.title}</p>
-                                        <div className="flex items-center gap-2 mt-0.5">
-                                            <span className="text-xs font-mono text-gray-500 uppercase">{course.code}</span>
-                                            <span className="text-xs text-gray-400">•</span>
-                                            <span className="text-xs font-bold text-primary italic">{course.credits} Credits</span>
-                                            {course.is_retake && (
-                                                <span className="ml-2 px-2 py-0.5 bg-red-100 text-red-700 text-[10px] font-bold rounded uppercase tracking-tighter">Retake Priority</span>
+
+                <div className="p-8 max-h-[60vh] overflow-y-auto bg-[#f5f5f5] dark:bg-background-dark">
+                    <div className="space-y-6">
+                        {/* Electives Section */}
+                        {(() => {
+                            // Filter electives to include available choices OR forced retakes (though retakes likely won't be choices)
+                            // We typically want to show all electives so user can see what's happening
+                            const electives = data.courses.filter(c => c.tag?.toUpperCase() === 'ELECTIVE');
+                            if (electives.length > 1) {
+                                return (
+                                    <div className="bg-white dark:bg-white/5 p-4 rounded-xl border border-gray-200 dark:border-gray-700">
+                                        <h4 className="font-bold text-[#333333] dark:text-white mb-3 flex items-center gap-2">
+                                            <span className="material-icons-outlined text-sm bg-[#0d4a8f] text-white p-1 rounded-full">stars</span>
+                                            Choose One Elective to Keep
+                                        </h4>
+                                        <div className="space-y-2">
+                                            {electives.map(course => (
+                                                <label key={course.code} className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
+                                                    course.is_retake 
+                                                        ? 'bg-gray-100 border-gray-200 opacity-70 cursor-not-allowed'
+                                                    : selectedElective === course.code 
+                                                        ? 'bg-[#0d4a8f]/5 border-[#0d4a8f] ring-1 ring-[#0d4a8f]' 
+                                                        : 'border-gray-200 dark:border-gray-700 hover:border-[#0d4a8f]/50'
+                                                }`}>
+                                                    <input 
+                                                        type="radio" 
+                                                        name="elective_choice"
+                                                        className="w-4 h-4 text-[#0d4a8f] focus:ring-[#0d4a8f]"
+                                                        checked={selectedElective === course.code}
+                                                        disabled={course.is_retake} 
+                                                        onChange={() => !course.is_retake && handleElectiveSelect(course.code)}
+                                                    />
+                                                    <div className="flex-1">
+                                                        <div className="flex justify-between">
+                                                            <span className="font-bold text-sm text-[#333333] dark:text-white">{course.title}</span>
+                                                            <span className="text-xs font-bold text-[#0d4a8f]">{course.credits} Cr</span>
+                                                        </div>
+                                                        <p className="text-xs text-gray-500">{course.code}</p>
+                                                        {course.is_retake && <p className="text-[10px] text-red-500 font-bold uppercase mt-1">Retake - Cannot Drop</p>}
+                                                    </div>
+                                                </label>
+                                            ))}
+                                        </div>
+                                        <p className="text-[10px] text-gray-400 mt-2 italic">* Selecting one will automatically mark others for dropping (except Retakes).</p>
+                                    </div>
+                                );
+                            }
+                            return null;
+                        })()}
+
+                        {/* Other Courses */}
+                        <div>
+                             <h4 className="font-bold text-gray-400 text-xs uppercase tracking-widest mb-3">Core & Major Courses</h4>
+                             <div className="space-y-3">
+                                {data.courses
+                                    .filter(c => c.tag?.toUpperCase() !== 'ELECTIVE' || (data.courses.filter(e => e.tag?.toUpperCase() === 'ELECTIVE').length <= 1))
+                                    .map((course) => {
+                                    const isSelected = selectedToDrop.includes(course.code);
+                                    return (
+                                        <div 
+                                            key={course.code} 
+                                            onClick={() => !course.is_retake && handleToggleSelection(course.code)}
+                                            className={`flex items-center justify-between p-4 rounded-xl border transition-all cursor-pointer ${
+                                                course.is_retake 
+                                                ? 'bg-gray-100 border-gray-200 opacity-70 cursor-not-allowed' 
+                                                : isSelected 
+                                                ? 'bg-red-50 border-red-200 shadow-sm' 
+                                                : 'bg-white border-transparent hover:border-[#077d8a]/50 shadow-sm'
+                                            }`}
+                                        >
+                                            <div className="flex items-center gap-4">
+                                                <div className={`flex items-center justify-center w-6 h-6 rounded border-2 transition-colors ${
+                                                    course.is_retake ? 'bg-gray-300 border-gray-300' :
+                                                    isSelected ? 'bg-red-500 border-red-500' : 'border-gray-300'
+                                                }`}>
+                                                    {isSelected && <span className="material-icons-outlined text-white text-sm">check</span>}
+                                                    {course.is_retake && <span className="material-icons-outlined text-gray-500 text-sm">lock</span>}
+                                                </div>
+                                                <div>
+                                                    <p className={`font-bold font-poppins ${isSelected ? 'text-red-700' : 'text-gray-800 dark:text-white'}`}>
+                                                        {course.title}
+                                                    </p>
+                                                    <div className="flex items-center gap-2 mt-0.5">
+                                                        <span className="text-[10px] font-mono text-gray-400 uppercase tracking-widest">{course.code}</span>
+                                                        <span className="{`text-xs font-bold ${course.tag === 'ELECTIVE' ? 'text-purple-600' : 'text-[#333333] dark:text-gray-200'}`}">{course.credits} Credits</span>
+                                                        {course.is_retake && (
+                                                            <span className="px-2 py-0.5 bg-orange-100 text-orange-700 text-[10px] font-bold rounded uppercase tracking-tighter ml-2">Cannot Drop</span>
+                                                        )}
+                                                        <span className="px-1.5 py-0.5 rounded text-[10px] font-bold uppercase bg-gray-100 text-gray-500">{course.tag}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            {isSelected && (
+                                                <span className="text-[10px] font-bold text-red-600 uppercase tracking-widest bg-red-100 px-2 py-1 rounded">Marked for drop</span>
                                             )}
                                         </div>
-                                    </div>
-                                </div>
-                                <button 
-                                    onClick={() => handleDropCourse(course.code)}
-                                    disabled={course.is_retake}
-                                    className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
-                                        course.is_retake 
-                                        ? 'bg-gray-200 text-gray-400 cursor-not-allowed' 
-                                        : 'bg-white hover:bg-red-50 text-red-600 border border-red-100 shadow-sm'
-                                    }`}
-                                >
-                                    {course.is_retake ? 'Fixed' : 'Drop'}
-                                </button>
+                                    );
+                                })}
                             </div>
-                        ))}
+                        </div>
                     </div>
                 </div>
 
-                <div className="p-6 bg-gray-50 dark:bg-white/5 border-t border-gray-100 dark:border-gray-800 flex justify-between items-center">
-                    <div>
-                        <p className="text-xs text-gray-500 uppercase font-bold">Current Load</p>
-                        <p className={`text-xl font-bold ${data.total_credits > data.max_credits ? 'text-orange-600' : 'text-green-600'}`}>
-                            {data.total_credits} / {data.max_credits}
-                        </p>
+                <div className="p-6 bg-white dark:bg-surface-dark border-t border-gray-100 dark:border-gray-700 flex flex-col sm:flex-row justify-between items-center gap-4">
+                    <div className="flex items-center gap-6">
+                        <div>
+                            <p className="text-[10px] text-gray-400 uppercase font-black tracking-widest">Calculated Load</p>
+                            <p className={`text-2xl font-bold font-poppins transition-colors ${
+                                (data.total_credits - data.courses.filter(c => selectedToDrop.includes(c.code)).reduce((s,c)=>s+c.credits,0)) <= data.max_credits 
+                                ? 'text-[#27ae60]' 
+                                : 'text-[#e74c3c]'
+                            }`}>
+                                {data.total_credits - data.courses.filter(c => selectedToDrop.includes(c.code)).reduce((s,c)=>s+c.credits,0)}
+                                <span className="text-sm text-gray-400 font-medium ml-1">/ {data.max_credits} Max</span>
+                            </p>
+                        </div>
+                        <div className="h-10 w-px bg-gray-100"></div>
+                        <div>
+                            <p className="text-[10px] text-gray-400 uppercase font-black tracking-widest">Dropping</p>
+                            <p className="text-2xl font-bold font-poppins text-red-500">
+                                {data.courses.filter(c => selectedToDrop.includes(c.code)).reduce((s,c)=>s+c.credits,0)}
+                            </p>
+                        </div>
                     </div>
                     <button 
-                        onClick={() => setShowTradeOff(false)}
-                        className="px-8 py-3 bg-gray-800 dark:bg-white dark:text-gray-900 text-white rounded-xl font-bold hover:opacity-90 transition-opacity shadow-lg"
+                        onClick={handleBulkDrop}
+                        disabled={selectedToDrop.length === 0}
+                        className={`px-10 py-3 rounded-xl font-bold uppercase tracking-widest transition-all shadow-lg ${
+                            selectedToDrop.length > 0
+                            ? 'bg-[#077d8a] text-white hover:bg-[#066a75]'
+                            : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                        }`}
                     >
-                        Done
+                        Confirm Drops
                     </button>
                 </div>
             </div>

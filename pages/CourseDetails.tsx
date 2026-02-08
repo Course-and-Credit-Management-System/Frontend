@@ -2,35 +2,19 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
-import { User } from '../types';
+import { User, CourseDetail } from '../types';
+import { api } from '../lib/api';
 
 interface CourseDetailsProps {
   user: User;
   onLogout: () => void;
 }
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
-
-type CourseDetailsData = {
-  code: string;
-  title: string;
-  instructor: string;
-  email: string;
-  credits: number;
-  schedule: string[]; // ✅ array in UI (tolerates legacy string from backend)
-  room: string;
-  description: string;
-  syllabus: { week: number; topic: string }[];
-  prerequisites: string[];
-  type?: string;
-  department?: string;
-};
-
 const CourseDetails: React.FC<CourseDetailsProps> = ({ user, onLogout }) => {
   const { courseId } = useParams<{ courseId: string }>();
   const navigate = useNavigate();
 
-  const [course, setCourse] = useState<CourseDetailsData | null>(null);
+  const [course, setCourse] = useState<CourseDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -44,18 +28,7 @@ const CourseDetails: React.FC<CourseDetailsProps> = ({ user, onLogout }) => {
 
         if (!courseId) throw new Error('Missing course id');
 
-        const res = await fetch(
-          `${API_BASE}/api/v1/admin/courses/${encodeURIComponent(courseId)}`,
-          { credentials: 'include' }
-        );
-
-        const text = await res.text();
-        const data = text ? JSON.parse(text) : null;
-
-        if (!res.ok) {
-          const msg = data?.detail || data?.message || `Request failed (${res.status})`;
-          throw new Error(msg);
-        }
+        const data: any = await api.studentCourseDetails(courseId);
 
         // ✅ schedule can be array OR string (supports legacy DB + current validator differences)
         const scheduleRaw = data?.schedule;
@@ -69,9 +42,6 @@ const CourseDetails: React.FC<CourseDetailsProps> = ({ user, onLogout }) => {
           code: data?.course_code ?? courseId,
           title: data?.title ?? '—',
           instructor: data?.instructor ?? '—',
-
-          // ✅ DB schema uses instructor_email
-          email: data?.instructor_email ?? data?.email ?? '—',
 
           credits: Number(data?.credits ?? 0) || 0,
           schedule: scheduleArr,
@@ -195,7 +165,7 @@ const CourseDetails: React.FC<CourseDetailsProps> = ({ user, onLogout }) => {
                     ))
                   ) : (
                     <div className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
-                      No syllabus available yet.
+                      No syllabus currently available.
                     </div>
                   )}
                 </div>
@@ -210,16 +180,6 @@ const CourseDetails: React.FC<CourseDetailsProps> = ({ user, onLogout }) => {
                     <span className="material-icons-outlined text-gray-400 mt-0.5">person</span>
                     <div>
                       <p className="text-sm font-bold text-gray-800 dark:text-white">{course.instructor}</p>
-                      {course.email !== '—' ? (
-                        <a
-                          href={`mailto:${course.email}`}
-                          className="text-xs text-gray-500 hover:text-primary"
-                        >
-                          {course.email}
-                        </a>
-                      ) : (
-                        <p className="text-xs text-gray-500">—</p>
-                      )}
                     </div>
                   </div>
 
