@@ -169,4 +169,14 @@ export const api = {
 
   adminDeleteMessage: (messageId: string) =>
     request(`/api/v1/admin/messages/${encodeURIComponent(messageId)}`, { method: "DELETE" }),
+
+
+  
+  // --- Student ---
+  studentResults: (user_id?: string) =>
+    request(`/api/v1/student/results${user_id ? `?user_id=${encodeURIComponent(user_id)}` : ""}`),
+  studentResultsSummary: (user_id?: string) =>
+    request(`/api/v1/student/results/summary${user_id ? `?user_id=${encodeURIComponent(user_id)}` : ""}`),
+  studentResultsPdf: () =>
+    request(`/api/v1/student/results/pdf`),
 };
