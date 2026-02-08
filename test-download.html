@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test PDF Download</title>
+</head>
+<body>
+    <h1>PDF Download Test</h1>
+    <button onclick="testDownload()">Download PDF</button>
+    <div id="status"></div>
+
+    <script>
+        async function testDownload() {
+            const status = document.getElementById('status');
+            status.innerHTML = 'Testing...';
+            
+            try {
+                // First login
+                const loginResponse = await fetch('http://localhost:8000/api/v1/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        username: 'TNT-2036',
+                        password: 'admin123',
+                        role: 'student'
+                    })
+                });
+                
+                if (!loginResponse.ok) {
+                    status.innerHTML = 'Login failed: ' + loginResponse.status;
+                    return;
+                }
+                
+                status.innerHTML = 'Login successful! Testing PDF download...';
+                
+                // Test PDF download
+                const pdfResponse = await fetch('http://localhost:8000/api/v1/student/results/certificate/pdf?type=semester', {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+                
+                if (!pdfResponse.ok) {
+                    status.innerHTML = 'PDF download failed: ' + pdfResponse.status;
+                    return;
+                }
+                
+                const blob = await pdfResponse.blob();
+                status.innerHTML = 'PDF downloaded! Size: ' + blob.size + ' bytes';
+                
+                // Download the file
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'test_certificate.pdf';
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+                
+                status.innerHTML += ' - File downloaded!';
+                
+            } catch (error) {
+                status.innerHTML = 'Error: ' + error.message;
+                console.error('Error:', error);
+            }
+        }
+    </script>
+</body>
+</html>
