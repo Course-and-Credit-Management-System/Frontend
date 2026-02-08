@@ -164,3 +164,6 @@ const ResetPassword: React.FC<Props> = ({ user, onPasswordReset }) => {
 };
 
 export default ResetPassword;
+
+
+// resetForFirstTime(Must)
