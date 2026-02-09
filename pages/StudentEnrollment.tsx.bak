@@ -1,9 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
-import { User, AvailableCourse } from '../types';
-import { api } from '../lib/api';
+import { User } from '../types';
 
 interface EnrollmentProps {
   user: User;
@@ -11,82 +9,62 @@ interface EnrollmentProps {
 }
 
 const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
-  const navigate = useNavigate();
   const [credits, setCredits] = useState<string>("0");
   const [searchQuery, setSearchQuery] = useState("");
   const [sortOption, setSortOption] = useState<'enrollable' | 'prereq' | null>(null);
   const [showValidation, setShowValidation] = useState(false);
   const [isFinalized, setIsFinalized] = useState(false);
-  
-  const [courses, setCourses] = useState<AvailableCourse[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [selectedRegistry, setSelectedRegistry] = useState<Map<string, AvailableCourse>>(new Map());
 
-  useEffect(() => {
-    const fetchCourses = async () => {
-      setLoading(true);
-      try {
-        const res = await api.studentAvailableCourses("", sortOption || undefined);
-        setCourses(res.data || []);
-      } catch (error) {
-        console.error("Failed to fetch courses", error);
-      } finally {
-        setLoading(false);
+  const [courses, setCourses] = useState<any[]>([
+     { code: 'CST-3050', title: 'Artificial Intelligence', type: 'Major', credits: 3, desc: 'Intro to search, knowledge representation, planning and NLP.', color: 'blue', status: 'normal' },
+     { code: 'CST-4120', title: 'Machine Learning Ops', type: 'Elective', credits: 4, desc: 'Advanced concepts in deploying ML models. Heavy project load.', color: 'purple', status: 'selected' },
+     { code: 'CST-3010', title: 'Advanced Calculus', type: 'Required', credits: 3, desc: 'Vector calculus, integral theorems and surface integrals.', color: 'orange', status: 'locked', error: 'Missing Prerequisite: CST-2010' },
+     { code: 'CST-3200', title: 'Frontend Architecture', type: 'Elective', credits: 3, desc: 'Modern frontend frameworks, state management and patterns.', color: 'teal', status: 'normal' }
+  ]);
+
+  const toggleCourse = (code: string) => {
+    setCourses(prev => prev.map(c => {
+      if (c.code === code) {
+        if (c.status === 'locked') return c;
+        const newStatus = c.status === 'selected' ? 'normal' : 'selected';
+        
+        // Open validation sidebar when selecting a course
+        if (newStatus === 'selected') {
+          setShowValidation(true);
+        }
+        
+        return { ...c, status: newStatus };
       }
-    };
-
-    fetchCourses();
-  }, [sortOption]);
-
-  const toggleCourse = (course: AvailableCourse) => {
-    // Prevent toggling if locked or enrolled (assuming enrolled shouldn't be toggled here usually, but adherence to status 'locked' is key)
-    if (course.status === 'locked') return;
-
-    setSelectedRegistry(prev => {
-      const newMap = new Map(prev);
-      if (newMap.has(course.code)) {
-        newMap.delete(course.code);
-      } else {
-        newMap.set(course.code, course);
-        setShowValidation(true);
-      }
-      return newMap;
-    });
+      return c;
+    }));
   };
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const ITEMS_PER_PAGE = 20;
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchQuery, sortOption]);
-
-  const filteredCourses = courses.filter(c => {
-    const q = searchQuery.toLowerCase();
-    return (
-      (c.title?.toLowerCase() || '').includes(q) || 
-      (c.code?.toLowerCase() || '').includes(q) ||
-      (c.desc?.toLowerCase() || '').includes(q) ||
-      (c.type?.toLowerCase() || '').includes(q) ||
-      String(c.credits || '').includes(q)
-    );
-  });
-
-  const totalPages = Math.ceil(filteredCourses.length / ITEMS_PER_PAGE);
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const paginatedCourses = filteredCourses.slice(startIndex, startIndex + ITEMS_PER_PAGE);
-
-  const displayCourses = paginatedCourses.map(c => {
-    if (selectedRegistry.has(c.code)) {
-      return { ...c, status: 'selected' };
-    }
-    if (c.enrollable === false) {
-      return { ...c, status: 'locked' };
-    }
-    return c;
-  });
-
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const processedCourses = courses
+    .filter(c => {
+      const q = searchQuery.toLowerCase();
+      return (
+        c.title.toLowerCase().includes(q) || 
+        c.code.toLowerCase().includes(q) ||
+        c.desc.toLowerCase().includes(q) ||
+        c.type.toLowerCase().includes(q) ||
+        String(c.credits).includes(q)
+      );
+    })
+    .sort((a, b) => {
+        if (sortOption === 'enrollable') {
+          // Locked items go to bottom
+          const scoreA = a.status === 'locked' ? 0 : 1;
+          const scoreB = b.status === 'locked' ? 0 : 1;
+          return scoreB - scoreA;
+        }
+        if (sortOption === 'prereq') {
+          // Items with error go to bottom
+          const scoreA = a.error ? 0 : 1;
+          const scoreB = b.error ? 0 : 1;
+          return scoreB - scoreA;
+        }
+        return 0;
+    });
 
   useEffect(() => {
     const stored = localStorage.getItem("current_credits");
@@ -94,27 +72,17 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
   }, []);
 
   const baseCredits = parseInt(credits) || 0;
-  const selectedCredits = Array.from(selectedRegistry.values())
+  const selectedCredits = courses
+    .filter(c => c.status === 'selected')
     .reduce((acc, curr) => acc + curr.credits, 0);
   const totalCredits = baseCredits + selectedCredits;
   const isOverLimit = totalCredits > 18;
-  const hasPrereqError = Array.from(selectedRegistry.values()).some(c => !!c.error);
+  const hasPrereqError = courses.some(c => c.status === 'selected' && c.error);
 
-  const handleFinalize = async () => {
-    try {
-      // 1. Prepare Payload
-      const selectedCodes = Array.from(selectedRegistry.keys()).join(',');
-      
-      // 2. Call API
-      const res = await api.enrollStudent({ selected_code: selectedCodes });
-      
-      if (res.success) {
-        setIsFinalized(true);
-        setSuccessMessage(res.message);
-      }
-    } catch (error) {
-      console.error("Enrollment failed", error);
-    }
+  const handleFinalize = () => {
+    setIsFinalized(true);
+    // Optionally close validation sidebar or show success message
+    // setShowValidation(false);
   };
 
   return (
@@ -165,29 +133,15 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
             </div>
 
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-               {displayCourses.map((course) => (
-                 <div 
-                   key={course.code} 
-                   onClick={() => navigate(`/student/enrollment/view/${course.code}`)} 
-                   className={`group relative bg-surface-light dark:bg-surface-dark rounded-xl p-5 border transition-all shadow-sm cursor-pointer ${
+               {processedCourses.map((course, idx) => (
+                 <div key={idx} className={`relative bg-surface-light dark:bg-surface-dark rounded-xl p-5 border transition-all shadow-sm ${
                    course.status === 'selected' ? 'border-2 border-primary ring-1 ring-primary/20 shadow-md' : 
                    course.status === 'locked' ? 'border-gray-200 dark:border-gray-700 opacity-60' : 'border-gray-200 dark:border-gray-700 hover:border-primary'
                  }`}>
                    {course.status === 'selected' && (showValidation || isFinalized) && <div className="absolute -top-3 right-4 bg-primary text-white text-xs font-bold px-2 py-1 rounded shadow-sm">Selected</div>}
-                   
-                   {/* Hover Tooltip for Locked/Error Courses */}
-                   {course.status === 'locked' && (course.message || course.error) && (
-                     <div className="absolute z-20 top-2 right-2 w-64 p-3 bg-gray-900/90 text-white text-xs rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none backdrop-blur-sm">
-                       <div className="flex items-start gap-2">
-                         <span className="material-icons-outlined text-sm text-yellow-400">info</span>
-                         <span>{course.message || course.error}</span>
-                       </div>
-                     </div>
-                   )}
-
                    <div className="flex justify-between items-start mb-3">
                      <div className="flex gap-3">
-                       <div className={`h-10 w-10 rounded flex items-center justify-center font-bold text-xs uppercase bg-${course.color || 'blue'}-100 text-${course.color || 'blue'}-600`}>{course.code.split('-')[0]}</div>
+                       <div className={`h-10 w-10 rounded flex items-center justify-center font-bold text-xs uppercase bg-${course.color}-100 text-${course.color}-600`}>{course.code.split('-')[0]}</div>
                        <div>
                          <div className="flex items-center gap-2">
                             <h4 className={`font-bold text-lg ${course.status === 'selected' ? 'text-primary' : ''}`}>{course.title}</h4>
@@ -197,10 +151,7 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
                        </div>
                      </div>
                      <button 
-                       onClick={(e) => {
-                         e.stopPropagation();
-                         toggleCourse(course);
-                       }}
+                       onClick={() => toggleCourse(course.code)}
                        className={`h-8 w-8 rounded-full border flex items-center justify-center transition-all ${
                        course.status === 'selected' ? 'bg-red-50 text-red-500 border-red-200' :
                        course.status === 'locked' ? 'border-gray-200 text-gray-300 cursor-not-allowed' : 'border-gray-200 text-gray-400 hover:bg-primary hover:text-white'
@@ -215,47 +166,13 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
                      </div>
                    ) : (
                      <div className="flex flex-wrap items-center gap-4 text-xs text-gray-500 dark:text-gray-400 border-t border-gray-100 dark:border-gray-700 pt-3">
-                        <div className="flex items-center gap-1"><span className="material-icons-outlined text-xs">schedule</span> {course.schedule || 'N/A'}</div>
+                        <div className="flex items-center gap-1"><span className="material-icons-outlined text-xs">schedule</span> Mon/Wed 10:00 AM</div>
                         <div className="flex items-center gap-1 text-green-600 font-medium"><span className="material-icons-outlined text-xs">check_circle</span> Prerequisites Met</div>
                      </div>
                    )}
                  </div>
                ))}
             </div>
-
-            {totalPages > 1 && (
-              <div className="flex justify-center items-center gap-4 mt-8 pb-4">
-                <button
-                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                  disabled={currentPage === 1}
-                  className={`flex items-center gap-1 px-4 py-2 rounded-md font-medium transition-colors ${
-                    currentPage === 1 
-                      ? 'text-gray-300 dark:text-gray-600 cursor-not-allowed' 
-                      : 'text-primary hover:bg-blue-50 dark:hover:bg-blue-900/20'
-                  }`}
-                >
-                  <span className="material-icons-outlined text-sm">chevron_left</span>
-                  Previous
-                </button>
-                
-                <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                  Page <span className="text-primary font-bold">{currentPage}</span> of {totalPages}
-                </span>
-
-                <button
-                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                  disabled={currentPage === totalPages}
-                  className={`flex items-center gap-1 px-4 py-2 rounded-md font-medium transition-colors ${
-                    currentPage === totalPages 
-                      ? 'text-gray-300 dark:text-gray-600 cursor-not-allowed' 
-                      : 'text-primary hover:bg-blue-50 dark:hover:bg-blue-900/20'
-                  }`}
-                >
-                  Next
-                  <span className="material-icons-outlined text-sm">chevron_right</span>
-                </button>
-              </div>
-            )}
           </div>
 
           {/* Validation Sidebar Overlay */}
@@ -339,31 +256,19 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
               )}
             </div>
             <div className="p-5 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
-              {successMessage ? (
-                <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg text-center animate-in fade-in slide-in-from-bottom-4 duration-500">
-                  <div className="flex justify-center mb-2">
-                    <span className="material-icons-outlined text-green-600 text-3xl">check_circle</span>
-                  </div>
-                  <h4 className="font-bold text-green-800 dark:text-green-300 mb-1">Enrollment Successful!</h4>
-                  <p className="text-sm text-green-700 dark:text-green-400">{successMessage}</p>
-                </div>
-              ) : (
-                <>
-                  <button 
-                  onClick={handleFinalize}
-                  disabled={isOverLimit || isFinalized || selectedRegistry.size === 0}
-                  className={`w-full py-3 px-4 rounded-lg font-bold flex items-center justify-center gap-2 transition-all ${
-                      (isOverLimit || isFinalized || selectedRegistry.size === 0) 
-                      ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed' 
-                      : 'bg-primary text-white hover:bg-primary-hover shadow-lg'
-                  }`}
-                  >
-                   <span>{isFinalized ? 'Enrollment Finalized' : 'Finalize Enrollment'}</span>
-                   <span className="material-icons-outlined text-sm">{isFinalized ? 'check' : 'lock_open'}</span>
-                  </button>
-                  {isOverLimit && <p className="text-center text-xs text-red-500 mt-2 font-medium">Resolve credit limit to proceed</p>}
-                </>
-              )}
+              <button 
+                onClick={handleFinalize}
+                disabled={isOverLimit || isFinalized}
+                className={`w-full py-3 px-4 rounded-lg font-bold flex items-center justify-center gap-2 transition-all ${
+                    (isOverLimit || isFinalized) 
+                    ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed' 
+                    : 'bg-primary text-white hover:bg-primary-hover shadow-lg'
+                }`}
+              >
+                <span>{isFinalized ? 'Enrollment Finalized' : 'Finalize Enrollment'}</span>
+                <span className="material-icons-outlined text-sm">{isFinalized ? 'check' : 'lock_open'}</span>
+              </button>
+              {isOverLimit && <p className="text-center text-xs text-red-500 mt-2 font-medium">Resolve credit limit to proceed</p>}
             </div>
           </aside>
         </main>
