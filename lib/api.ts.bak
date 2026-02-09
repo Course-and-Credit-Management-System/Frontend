@@ -170,19 +170,6 @@ export const api = {
   adminDeleteMessage: (messageId: string) =>
     request(`/api/v1/admin/messages/${encodeURIComponent(messageId)}`, { method: "DELETE" }),
 
-  studentAvailableCourses: (query?: string, sort?: string) => {
-    const params = new URLSearchParams();
-    if (query) params.append("search", query);
-    if (sort) params.append("sort", sort);
-    return request<{ data: any[]; meta: any }>(`/api/v1/student/courses?${params.toString()}`);
-  },
-
-  enrollStudent: (payload: { selected_code: string }) => 
-    request<{ success: boolean; message: string; credit_usage: any }>("/api/v1/student/courses/enrollment", {
-      method: "POST",
-      body: payload
-    }),
-
   currentStudentCourses: () => request<CurrentCoursesResponse>("/api/v1/student/courses/current"),
 
   studentCourseDetails: (code: string) =>
@@ -198,12 +185,10 @@ export const api = {
       method: "POST",
       body: { course_codes: courseCodes },
     }),
-
-  studentResults: () => request("/api/v1/student/results"),
-
   studentResultsSummary: (user_id?: string) =>
     request(`/api/v1/student/results/summary${user_id ? `?user_id=${encodeURIComponent(user_id)}` : ""}`),
   studentResultsPdf: () =>
     request(`/api/v1/student/results/pdf`),
 };
+
   

@@ -140,6 +140,7 @@ const App: React.FC = () => {
               <>
                 <Route path="/student/dashboard" element={<StudentDashboard user={user} onLogout={handleLogout} />} />
                 <Route path="/student/enrollment" element={<StudentEnrollment user={user} onLogout={handleLogout} />} />
+                <Route path="/student/enrollment/view/:courseId" element={<CourseDetails user={user} onLogout={handleLogout} />} />
                 <Route path="/student/results" element={<StudentResults user={user} onLogout={handleLogout} />} />
                 <Route path="/student/status" element={<StudentStatus user={user} onLogout={handleLogout} />} />
                 <Route path="/student/courses" element={<StudentCourses user={user} onLogout={handleLogout} />} />
