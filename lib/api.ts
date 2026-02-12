@@ -195,8 +195,23 @@ export const api = {
   adminBulkAnnouncements: (payload: AdminAnnouncementBulkPayload) =>
     request("/api/v1/admin/announcements/bulk", { method: "POST", body: payload }),
 
+  // --- Admin Enrollments ---
+  adminEnrollments: () => request("/api/v1/admin/enrollments/"),
+  adminUpdateEnrollmentStatus: (enrollmentId: string, payload: { status: string; reason: string }) =>
+    request<{ message: string; success: boolean }>(`/api/v1/admin/enrollments/${encodeURIComponent(enrollmentId)}/status`, {
+        method: "PUT",
+        body: payload
+  }),
+  
+  adminCreateEnrollment: (payload: { student_id: string; course_id: string }) => 
+    request("/api/v1/admin/enrollments/", {
+        method: "POST",
+        body: payload
+  }),
+
   // --- Admin Messages ---
   adminMessages: () => request("/api/v1/admin/messages"),
+  adminStudents: () => request("/api/v1/admin/students"),
   adminStudentIds: () => request("/api/v1/admin/students/ids"),
   adminStudentOptions: () => request("/api/v1/admin/students/options"),
 
@@ -234,6 +249,14 @@ export const api = {
 
   studentCourseDetails: (code: string) =>
     request<any>(`/api/v1/student/courses/detail/${encodeURIComponent(code)}`),
+
+  // --- Student Alerts ---
+  studentAlerts: () => request<StudentAlert[]>("/api/v1/student/alerts/"),
+  studentDeleteAlert: (alertId: string) => request(`/api/v1/student/alerts/${encodeURIComponent(alertId)}`, { method: "DELETE" }),
+
+  // --- Student Alerts ---
+  studentAlerts: () => request<StudentAlert[]>("/api/v1/student/alerts/"),
+  studentDeleteAlert: (alertId: string) => request(`/api/v1/student/alerts/${encodeURIComponent(alertId)}`, { method: "DELETE" }),
 
   dropCourse: (code: string) =>
     request<{ success: boolean }>(`/api/v1/student/courses/${encodeURIComponent(code)}`, {
