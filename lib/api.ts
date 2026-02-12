@@ -1,6 +1,12 @@
 /// <reference types="vite/client" />
 
 const API_BASE = (import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000").replace(/\/$/, "");
+// const API_BASE = (import.meta.env.VITE_API_BASE_URL || "http://localhost:8000").replace(/\/$/, "");
+
+export type CurrentCoursesResponse = {
+  data: any[];     // safest without breaking backend variations
+  meta?: any;
+};
 
 type RequestOptions = {
   method?: string;
@@ -15,12 +21,9 @@ function clearAuthSession() {
 }
 
 function redirectToLogin() {
-  // HashRouter redirect without full reload
   if (typeof window === "undefined") return;
 
   const hash = window.location.hash || "";
-
-  // Don't spam redirect loops on public pages
   const onPublicPage =
     hash === "#/login" ||
     hash.startsWith("#/login?") ||
@@ -34,18 +37,12 @@ function redirectToLogin() {
   }
 }
 
-// Exclude endpoints that should NOT trigger auto-logout redirect logic
 function shouldAutoLogout(path: string) {
-  // login should not redirect on invalid credentials
   if (path === "/api/v1/auth/login") return false;
-
-  // me() is called on boot; if it fails, we just treat user as logged out (no redirect spam)
   if (path === "/api/v1/auth/me") return false;
-
-  // public flows
   if (path === "/api/v1/auth/forgot-password") return false;
   if (path === "/api/v1/auth/reset-password-with-token") return false;
-
+  if (path.includes("/api/v1/admin/messages/") && path.endsWith("/read")) return false;
   return true;
 }
 // -----------------------------------------------
@@ -71,23 +68,63 @@ async function request<T = any>(path: string, options: RequestOptions = {}): Pro
     data = text;
   }
 
-  // Global 401/403: clear session + redirect to /#/login (no infinite loops)
   if ((res.status === 401 || res.status === 403) && shouldAutoLogout(path)) {
     clearAuthSession();
     redirectToLogin();
-
-    const msg = data?.detail || data?.message || `Not authorized (${res.status})`;
+    const msg = (data as any)?.detail || (data as any)?.message || `Not authorized (${res.status})`;
     throw new Error(msg);
   }
 
   if (!res.ok) {
-    const msg = data?.detail || data?.message || `Request failed (${res.status})`;
+    const msg = (data as any)?.detail || (data as any)?.message || `Request failed (${res.status})`;
     throw new Error(msg);
   }
 
   return data;
 }
 
+// ---------------------------
+// Types (Announcements)
+// ---------------------------
+export type AnnouncementType = "General" | "Urgent" | "Event" | "Academic";
+export type AnnouncementStatus = "draft" | "published" | "archived";
+
+export type AdminAnnouncementCreate = {
+  title: string;
+  content: string;
+  type?: AnnouncementType;
+
+  // legacy label-only
+  target_audience?: string;
+
+  // legacy expiry
+  expiry_date?: string | null;
+
+  // optional new fields your backend supports
+  status?: AnnouncementStatus;
+  pinned?: boolean;
+};
+
+export type AdminAnnouncementUpdate = {
+  title?: string;
+  content?: string;
+  type?: AnnouncementType;
+
+  target_audience?: string;
+  expiry_date?: string | null;
+
+  status?: AnnouncementStatus;
+  pinned?: boolean;
+};
+
+export type AdminAnnouncementBulkPayload = {
+  action: "publish" | "archive" | "delete";
+  ids: string[];
+};
+
+// ---------------------------
+// API
+// ---------------------------
 export const api = {
   login: (payload: { username: string; password: string; role: "admin" | "student" }) =>
     request("/api/v1/auth/login", { method: "POST", body: payload }),
@@ -115,8 +152,10 @@ export const api = {
   adminMajorDistribution: () => request("/api/v1/admin/major-distribution"),
   adminPendingActions: () => request("/api/v1/admin/pending-actions"),
 
+  // --- Admin Courses ---
   adminCourses: () => request("/api/v1/admin/courses"),
-  adminCourseByCode: (course_code: string) => request(`/api/v1/admin/courses/${course_code}`),
+  adminCourseByCode: (course_code: string) =>
+  request(`/api/v1/admin/courses/${encodeURIComponent(course_code)}`),
   adminCreateCourse: (payload: any) => request("/api/v1/admin/courses", { method: "POST", body: payload }),
   adminUpdateCourse: (courseCode: string, payload: any) =>
     request(`/api/v1/admin/courses/${encodeURIComponent(courseCode)}`, { method: "PUT", body: payload }),
@@ -124,34 +163,40 @@ export const api = {
   // --- Admin Announcements ---
   adminAnnouncements: () => request("/api/v1/admin/announcements"),
 
-  adminCreateAnnouncement: (payload: {
-    title: string;
-    content: string;
-    type?: "General" | "Urgent" | "Event" | "Academic";
-    target_audience?: string;
-    expiry_date?: string | null;
-  }) => request("/api/v1/admin/announcements", { method: "POST", body: payload }),
+  adminCreateAnnouncement: (payload: AdminAnnouncementCreate) =>
+    request("/api/v1/admin/announcements", { method: "POST", body: payload }),
 
   adminDeleteAnnouncement: (announcementId: string) =>
     request(`/api/v1/admin/announcements/${encodeURIComponent(announcementId)}`, { method: "DELETE" }),
 
-  adminUpdateAnnouncement: (
-    announcementId: string,
-    payload: {
-      title?: string;
-      content?: string;
-      type?: "General" | "Urgent" | "Event" | "Academic";
-      target_audience?: string;
-      expiry_date?: string | null;
-    }
-  ) =>
+  adminUpdateAnnouncement: (announcementId: string, payload: AdminAnnouncementUpdate) =>
     request(`/api/v1/admin/announcements/${encodeURIComponent(announcementId)}`, {
       method: "PUT",
       body: payload,
     }),
 
+  adminPublishAnnouncement: (announcementId: string) =>
+    request(`/api/v1/admin/announcements/${encodeURIComponent(announcementId)}/publish`, { method: "POST" }),
+
+  adminArchiveAnnouncement: (announcementId: string) =>
+    request(`/api/v1/admin/announcements/${encodeURIComponent(announcementId)}/archive`, { method: "POST" }),
+
+  adminPinAnnouncement: (announcementId: string) =>
+    request(`/api/v1/admin/announcements/${encodeURIComponent(announcementId)}/pin`, { method: "POST" }),
+
+  adminUnpinAnnouncement: (announcementId: string) =>
+    request(`/api/v1/admin/announcements/${encodeURIComponent(announcementId)}/unpin`, { method: "POST" }),
+
+  adminDuplicateAnnouncement: (announcementId: string) =>
+    request(`/api/v1/admin/announcements/${encodeURIComponent(announcementId)}/duplicate`, { method: "POST" }),
+
+  adminBulkAnnouncements: (payload: AdminAnnouncementBulkPayload) =>
+    request("/api/v1/admin/announcements/bulk", { method: "POST", body: payload }),
+
   // --- Admin Messages ---
   adminMessages: () => request("/api/v1/admin/messages"),
+  adminStudentIds: () => request("/api/v1/admin/students/ids"),
+  adminStudentOptions: () => request("/api/v1/admin/students/options"),
 
   adminCreateMessage: (payload: {
     receiver_id: string;

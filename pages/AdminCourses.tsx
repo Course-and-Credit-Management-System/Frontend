@@ -1,9 +1,9 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import Sidebar from '../components/Sidebar';
-import Header from '../components/Header';
-import { User } from '../types';
-import { api } from '../lib/api';
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import Sidebar from "../components/Sidebar";
+import Header from "../components/Header";
+import { User } from "../types";
+import { api } from "../lib/api";
 
 interface CoursesProps {
   user: User;
@@ -16,171 +16,933 @@ type CourseRow = {
   title: string;
   department: string;
   credits: number;
-  type: 'Core' | 'Elective' | 'Prerequisite' | 'Major' | string;
+  type: string;
   instructor?: string;
-  schedule?: any; // backend stores schedule as array; we’ll display as string
+  schedule: string[];
   room?: string;
   description?: string;
-  prerequisites?: string[];
+  prerequisites: string[];
+  semester: string[];
 };
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
+const API_BASE = (import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000").replace(/\/$/, "");
 
+/**
+ * ✅ Semester dropdown options (edit as you like)
+ */
+const SEMESTER_OPTIONS: { label: string; value: string }[] = [
+  // NEW system (up to 4 years)
+  { label: "New • 1st Year • First Sem", value: "New • 1st Year • First Sem" },
+  { label: "New • 1st Year • Second Sem", value: "New • 1st Year • Second Sem" },
+  { label: "New • 2nd Year • First Sem", value: "New • 2nd Year • First Sem" },
+  { label: "New • 2nd Year • Second Sem", value: "New • 2nd Year • Second Sem" },
+  { label: "New • 3rd Year • First Sem", value: "New • 3rd Year • First Sem" },
+  { label: "New • 3rd Year • Second Sem", value: "New • 3rd Year • Second Sem" },
+  { label: "New • 4th Year • First Sem", value: "New • 4th Year • First Sem" },
+  { label: "New • 4th Year • Second Sem", value: "New • 4th Year • Second Sem" },
+
+  // OLD system (up to 5 years)
+  { label: "Old • 1st Year • First Sem", value: "Old • 1st Year • First Sem" },
+  { label: "Old • 1st Year • Second Sem", value: "Old • 1st Year • Second Sem" },
+  { label: "Old • 2nd Year • First Sem", value: "Old • 2nd Year • First Sem" },
+  { label: "Old • 2nd Year • Second Sem", value: "Old • 2nd Year • Second Sem" },
+  { label: "Old • 3rd Year • First Sem", value: "Old • 3rd Year • First Sem" },
+  { label: "Old • 3rd Year • Second Sem", value: "Old • 3rd Year • Second Sem" },
+  { label: "Old • 4th Year • First Sem", value: "Old • 4th Year • First Sem" },
+  { label: "Old • 4th Year • Second Sem", value: "Old • 4th Year • Second Sem" },
+  { label: "Old • 5th Year • First Sem", value: "Old • 5th Year • First Sem" },
+  { label: "Old • 5th Year • Second Sem", value: "Old • 5th Year • Second Sem" },
+];
+
+// -----------------------------
+// Toast system
+// -----------------------------
+type ToastType = "success" | "error" | "info";
+type Toast = { id: string; type: ToastType; title: string; message?: string };
+
+function ToastHost({ toasts, onDismiss }: { toasts: Toast[]; onDismiss: (id: string) => void }) {
+  return (
+    <div className="fixed z-[9999] right-4 bottom-4 space-y-3 w-[360px] max-w-[92vw]">
+      {toasts.map((t) => (
+        <div
+          key={t.id}
+          className="rounded-xl border shadow-lg p-4 bg-white dark:bg-surface-dark dark:border-gray-700 animate-[toastIn_.18s_ease-out]"
+        >
+          <div className="flex items-start gap-3">
+            <div
+              className={[
+                "h-9 w-9 rounded-lg flex items-center justify-center shrink-0",
+                t.type === "success"
+                  ? "bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-300"
+                  : t.type === "error"
+                  ? "bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-300"
+                  : "bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300",
+              ].join(" ")}
+            >
+              <span className="material-icons-outlined">
+                {t.type === "success" ? "check_circle" : t.type === "error" ? "error" : "info"}
+              </span>
+            </div>
+
+            <div className="min-w-0 flex-1">
+              <div className="text-sm font-bold text-gray-900 dark:text-white">{t.title}</div>
+              {t.message ? <div className="mt-1 text-xs text-gray-600 dark:text-gray-300 break-words">{t.message}</div> : null}
+            </div>
+
+            <button onClick={() => onDismiss(t.id)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200" title="Dismiss">
+              <span className="material-icons-outlined text-base">close</span>
+            </button>
+          </div>
+        </div>
+      ))}
+
+      <style>{`
+        @keyframes toastIn {
+          from { transform: translateY(8px); opacity: 0; }
+          to { transform: translateY(0px); opacity: 1; }
+        }
+      `}</style>
+    </div>
+  );
+}
+
+// -----------------------------
+// Confirm modal
+// -----------------------------
+function ConfirmModal({
+  open,
+  title,
+  message,
+  confirmText = "Confirm",
+  danger = false,
+  onCancel,
+  onConfirm,
+  loading,
+}: {
+  open: boolean;
+  title: string;
+  message: string;
+  confirmText?: string;
+  danger?: boolean;
+  loading?: boolean;
+  onCancel: () => void;
+  onConfirm: () => void;
+}) {
+  if (!open) return null;
+
+  return (
+    <div className="fixed inset-0 z-[9998] flex items-center justify-center bg-black/50 p-4">
+      <div className="w-full max-w-md rounded-2xl bg-white dark:bg-surface-dark border border-gray-200 dark:border-gray-700 shadow-xl overflow-hidden">
+        <div className="p-5 border-b border-gray-100 dark:border-gray-700">
+          <div className="flex items-center gap-3">
+            <div
+              className={[
+                "h-10 w-10 rounded-xl flex items-center justify-center",
+                danger ? "bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-300" : "bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300",
+              ].join(" ")}
+            >
+              <span className="material-icons-outlined">{danger ? "delete_forever" : "help"}</span>
+            </div>
+            <div className="min-w-0">
+              <div className="font-bold text-gray-900 dark:text-white">{title}</div>
+              <div className="text-xs text-gray-500 dark:text-gray-400">{message}</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="p-5 flex items-center justify-end gap-3">
+          <button
+            onClick={onCancel}
+            disabled={!!loading}
+            className="rounded-xl border border-gray-200 dark:border-gray-700 px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-800"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            disabled={!!loading}
+            className={["rounded-xl px-4 py-2 text-sm font-medium text-white", danger ? "bg-red-600 hover:bg-red-700" : "bg-primary hover:bg-primary-hover"].join(" ")}
+          >
+            {loading ? "Working..." : confirmText}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// -----------------------------
+// Multi-select dropdown + selected chips
+// -----------------------------
+function MultiSelectChips({
+  label,
+  options,
+  selected,
+  onChange,
+  placeholder = "Select...",
+  helper,
+}: {
+  label: string;
+  options: { label: string; value: string }[];
+  selected: string[];
+  onChange: (values: string[]) => void;
+  placeholder?: string;
+  helper?: string;
+}) {
+  const add = (val: string) => {
+    if (!val) return;
+    if (selected.includes(val)) return;
+    onChange([...selected, val]);
+  };
+
+  const remove = (val: string) => {
+    onChange(selected.filter((x) => x !== val));
+  };
+
+  return (
+    <div>
+      <label className="text-xs font-bold text-gray-500 dark:text-gray-400">{label}</label>
+
+      <div className="mt-2 flex flex-col sm:flex-row gap-3">
+        <select
+          className="flex-1 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 text-gray-700 dark:text-gray-200"
+          value=""
+          onChange={(e) => add(e.target.value)}
+        >
+          <option value="" disabled>
+            {placeholder}
+          </option>
+          {options.map((o) => (
+            <option key={o.value} value={o.value}>
+              {o.label}
+            </option>
+          ))}
+        </select>
+
+        {helper ? <div className="sm:self-center text-[11px] text-gray-400">{helper}</div> : null}
+      </div>
+
+      <div className="mt-3 flex flex-wrap gap-2">
+        {selected.length ? (
+          selected.map((s) => (
+            <span
+              key={s}
+              className="inline-flex items-center gap-1 rounded-full bg-white dark:bg-slate-900 border border-gray-200 dark:border-gray-700 px-3 py-1 text-xs text-gray-700 dark:text-gray-200"
+            >
+              <span className="material-icons-outlined text-[16px] text-gray-400">check</span>
+              {s}
+              <button onClick={() => remove(s)} className="ml-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200" type="button">
+                <span className="material-icons-outlined text-[16px]">close</span>
+              </button>
+            </span>
+          ))
+        ) : (
+          <div className="text-xs text-gray-500 dark:text-gray-400">None selected.</div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// -----------------------------
+// NEW: Free-type tag input for schedule
+// -----------------------------
+function TagInput({
+  label,
+  values,
+  onChange,
+  placeholder,
+  helper,
+}: {
+  label: string;
+  values: string[];
+  onChange: (vals: string[]) => void;
+  placeholder?: string;
+  helper?: string;
+}) {
+  const [text, setText] = useState("");
+
+  const add = (raw: string) => {
+    const v = (raw ?? "").trim();
+    if (!v) return;
+    if (values.includes(v)) return;
+    onChange([...values, v]);
+    setText("");
+  };
+
+  const remove = (v: string) => onChange(values.filter((x) => x !== v));
+
+  const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      add(text);
+    }
+    if (e.key === "Backspace" && !text && values.length) {
+      // quick remove last
+      onChange(values.slice(0, -1));
+    }
+  };
+
+  return (
+    <div>
+      <label className="text-xs font-bold text-gray-500 dark:text-gray-400">{label}</label>
+
+      <div className="mt-2 flex gap-2">
+        <input
+          className="flex-1 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 text-gray-700 dark:text-gray-200"
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          onKeyDown={onKeyDown}
+          placeholder={placeholder}
+        />
+        <button
+          type="button"
+          onClick={() => add(text)}
+          className="rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-white hover:bg-primary-hover"
+        >
+          Add
+        </button>
+      </div>
+
+      {helper ? <div className="mt-2 text-[11px] text-gray-400">{helper}</div> : null}
+
+      <div className="mt-3 flex flex-wrap gap-2">
+        {values.length ? (
+          values.map((s) => (
+            <span
+              key={s}
+              className="inline-flex items-center gap-1 rounded-full bg-white dark:bg-slate-900 border border-gray-200 dark:border-gray-700 px-3 py-1 text-xs text-gray-700 dark:text-gray-200"
+            >
+              <span className="material-icons-outlined text-[16px] text-gray-400">schedule</span>
+              {s}
+              <button onClick={() => remove(s)} className="ml-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200" type="button">
+                <span className="material-icons-outlined text-[16px]">close</span>
+              </button>
+            </span>
+          ))
+        ) : (
+          <div className="text-xs text-gray-500 dark:text-gray-400">No schedule added.</div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// -----------------------------
+// Helpers
+// -----------------------------
+function normalizeSemester(raw: any): string[] {
+  if (!raw) return [];
+  if (typeof raw === "string") return raw.trim() ? [raw.trim()] : [];
+  if (Array.isArray(raw)) {
+    const out: string[] = [];
+    for (const item of raw) {
+      if (!item) continue;
+      if (typeof item === "string") {
+        const s = item.trim();
+        if (s) out.push(s);
+      } else if (typeof item === "object") {
+        const s = String(item.semester ?? "").trim();
+        if (s) out.push(s);
+      } else {
+        const s = String(item).trim();
+        if (s) out.push(s);
+      }
+    }
+    return out;
+  }
+  return [];
+}
+
+function normalizeSchedule(raw: any): string[] {
+  if (!raw) return [];
+  if (typeof raw === "string") return raw.trim() ? [raw.trim()] : [];
+  if (Array.isArray(raw)) return raw.map((x) => String(x).trim()).filter(Boolean);
+  return [];
+}
+
+function uniqSorted(xs: string[]) {
+  return Array.from(new Set(xs)).sort((a, b) => a.localeCompare(b));
+}
+
+function safeStr(v: any, fallback = "—") {
+  const s = String(v ?? "").trim();
+  return s ? s : fallback;
+}
+
+function currencyId() {
+  return Math.random().toString(16).slice(2) + Date.now().toString(16);
+}
+
+// -----------------------------
+// Wizard Modal (Add/Edit)
+// -----------------------------
+type WizardMode = "create" | "edit";
+
+type CourseDraft = {
+  course_code: string;
+  title: string;
+  department: string;
+  credits: string;
+  type: string;
+  instructor: string;
+  room: string;
+  description: string;
+  prerequisites: string[];
+  schedule: string[]; // ✅ now free-type tags
+  semester: string[]; // ✅ dropdown multi-select
+};
+
+const CourseWizardModal = React.memo(function CourseWizardModal({
+  open,
+  mode,
+  initial,
+  busy,
+  onClose,
+  onSubmit,
+  prerequisiteOptions,
+}: {
+  open: boolean;
+  mode: WizardMode;
+  initial: CourseDraft;
+  busy: boolean;
+  onClose: () => void;
+  onSubmit: (payload: any) => Promise<void>;
+  prerequisiteOptions: { label: string; value: string }[];
+}) {
+  const [step, setStep] = useState(0);
+  const [draft, setDraft] = useState<CourseDraft>(initial);
+
+  const titleRef = useRef<HTMLInputElement | null>(null);
+  const codeRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    setStep(0);
+    setDraft(initial);
+
+    setTimeout(() => {
+      if (mode === "create") codeRef.current?.focus();
+      else titleRef.current?.focus();
+    }, 60);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
+
+  if (!open) return null;
+
+  const isCreate = mode === "create";
+  const steps = ["Basics", "Schedule & Semester", "Prerequisites", "Review"];
+
+  const setField = (k: keyof CourseDraft, v: any) => setDraft((p) => ({ ...p, [k]: v }));
+
+  const canNextStep0 =
+    (!isCreate || draft.course_code.trim()) &&
+    draft.title.trim() &&
+    draft.department.trim() &&
+    draft.credits.trim() &&
+    Number.isFinite(Number(draft.credits)) &&
+    Number(draft.credits) > 0;
+
+  const headerTitle = isCreate ? "Add New Course" : `Edit Course (${draft.course_code})`;
+
+  const submit = async () => {
+    const creditsNum = Number(draft.credits);
+
+    const payload: any = {
+      title: draft.title.trim(),
+      department: draft.department.trim(),
+      credits: creditsNum,
+      type: draft.type,
+      instructor: draft.instructor.trim() ? draft.instructor.trim() : null,
+      room: draft.room.trim() ? draft.room.trim() : null,
+      description: draft.description.trim() ? draft.description.trim() : null,
+      prerequisites: draft.prerequisites ?? [],
+      schedule: draft.schedule ?? [], // ✅ free type array
+      semester: (draft.semester ?? []).map((s) => ({ semester: s })),
+    };
+
+    if (isCreate) payload.course_code = draft.course_code.trim();
+
+    await onSubmit(payload);
+  };
+
+  const pill = (active: boolean) =>
+    active ? "bg-primary text-white" : "bg-gray-100 text-gray-600 dark:bg-slate-800 dark:text-gray-300";
+
+  return (
+    <div className="fixed inset-0 z-[9997] flex items-center justify-center bg-black/55 p-4">
+      <div className="w-full max-w-3xl rounded-2xl bg-white dark:bg-surface-dark border border-gray-200 dark:border-gray-700 shadow-2xl overflow-hidden">
+        <div className="px-6 py-5 border-b border-gray-100 dark:border-gray-700 flex items-start justify-between gap-4">
+          <div className="min-w-0">
+            <div className="text-lg font-extrabold text-gray-900 dark:text-white">{headerTitle}</div>
+            <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">Semester + Prereqs are selected. Schedule is free-type tags.</div>
+
+            <div className="mt-4 flex flex-wrap gap-2">
+              {steps.map((s, idx) => (
+                <span key={s} className={["px-3 py-1 rounded-full text-xs font-semibold", pill(idx === step)].join(" ")}>
+                  {idx + 1}. {s}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          <button onClick={onClose} disabled={busy} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200" title="Close">
+            <span className="material-icons-outlined">close</span>
+          </button>
+        </div>
+
+        <div className="p-6">
+          {/* Step 0 */}
+          {step === 0 && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {isCreate && (
+                <div>
+                  <label className="text-xs font-bold text-gray-500 dark:text-gray-400">Course Code</label>
+                  <input
+                    ref={codeRef}
+                    className="mt-1 w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                    value={draft.course_code}
+                    onChange={(e) => setField("course_code", e.target.value)}
+                    placeholder="e.g. CST-1010"
+                  />
+                  <p className="mt-1 text-[11px] text-gray-400">Used as unique ID. Cannot change later.</p>
+                </div>
+              )}
+
+              <div className={isCreate ? "" : "md:col-span-2"}>
+                <label className="text-xs font-bold text-gray-500 dark:text-gray-400">Title</label>
+                <input
+                  ref={titleRef}
+                  className="mt-1 w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                  value={draft.title}
+                  onChange={(e) => setField("title", e.target.value)}
+                  placeholder="Course name"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-gray-500 dark:text-gray-400">Department</label>
+                <input
+                  className="mt-1 w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                  value={draft.department}
+                  onChange={(e) => setField("department", e.target.value)}
+                  placeholder="e.g. Computer Science"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-gray-500 dark:text-gray-400">Credits</label>
+                <input
+                  className="mt-1 w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                  value={draft.credits}
+                  onChange={(e) => setField("credits", e.target.value)}
+                  placeholder="e.g. 3"
+                  inputMode="decimal"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-gray-500 dark:text-gray-400">Type</label>
+                <select
+                  className="mt-1 w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                  value={draft.type}
+                  onChange={(e) => setField("type", e.target.value)}
+                >
+                  <option value="Core">Core</option>
+                  <option value="Elective">Elective</option>
+                  <option value="Prerequisite">Prerequisite</option>
+                  <option value="Major">Major</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-gray-500 dark:text-gray-400">Instructor</label>
+                <input
+                  className="mt-1 w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                  value={draft.instructor}
+                  onChange={(e) => setField("instructor", e.target.value)}
+                  placeholder="Optional"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-gray-500 dark:text-gray-400">Room</label>
+                <input
+                  className="mt-1 w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                  value={draft.room}
+                  onChange={(e) => setField("room", e.target.value)}
+                  placeholder="Optional"
+                />
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="text-xs font-bold text-gray-500 dark:text-gray-400">Description</label>
+                <textarea
+                  className="mt-1 w-full rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                  rows={4}
+                  value={draft.description}
+                  onChange={(e) => setField("description", e.target.value)}
+                  placeholder="Optional"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Step 1 */}
+          {step === 1 && (
+            <div className="space-y-6">
+              <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50/60 dark:bg-slate-800/40 p-4">
+                <MultiSelectChips
+                  label="Semester (multi-select)"
+                  options={SEMESTER_OPTIONS}
+                  selected={draft.semester}
+                  onChange={(vals) => setField("semester", vals)}
+                  placeholder="Choose a semester…"
+                  helper="You can add multiple semesters."
+                />
+              </div>
+
+              <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50/60 dark:bg-slate-800/40 p-4">
+                <TagInput
+                  label="Schedule (free type, press Enter to add)"
+                  values={draft.schedule}
+                  onChange={(vals) => setField("schedule", vals)}
+                  placeholder='e.g. "Mon/Wed 10:00-11:30"'
+                  helper="Tip: Enter adds a chip. Backspace deletes last chip when input is empty."
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Step 2 */}
+          {step === 2 && (
+            <div className="space-y-6">
+              <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50/60 dark:bg-slate-800/40 p-4">
+                <MultiSelectChips
+                  label="Prerequisites (choose from existing courses)"
+                  options={prerequisiteOptions}
+                  selected={draft.prerequisites}
+                  onChange={(vals) => setField("prerequisites", vals)}
+                  placeholder="Select prerequisite course…"
+                  helper="Shows Course Code + Title (stores only course code)."
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Step 3 */}
+          {step === 3 && (
+            <div className="space-y-4">
+              <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50/60 dark:bg-slate-800/40 p-5">
+                <div className="text-xl font-extrabold text-gray-900 dark:text-white">{draft.title || "—"}</div>
+                <div className="mt-1 text-sm text-gray-600 dark:text-gray-300">
+                  <span className="font-mono">{draft.course_code || "—"}</span> • {draft.department || "—"} • {draft.type || "—"} •{" "}
+                  {Number(draft.credits || 0).toFixed(1)} credits
+                </div>
+
+                <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className="rounded-xl bg-white dark:bg-slate-900 border border-gray-200 dark:border-gray-700 p-4">
+                    <div className="text-xs text-gray-500 dark:text-gray-400 font-bold">Semester</div>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {draft.semester.length ? (
+                        draft.semester.map((s) => (
+                          <span key={s} className="rounded-full bg-gray-100 dark:bg-slate-800 px-3 py-1 text-xs text-gray-700 dark:text-gray-200">
+                            {s}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="text-xs text-gray-500 dark:text-gray-400">—</span>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="rounded-xl bg-white dark:bg-slate-900 border border-gray-200 dark:border-gray-700 p-4">
+                    <div className="text-xs text-gray-500 dark:text-gray-400 font-bold">Schedule</div>
+                    <div className="mt-2 space-y-1">
+                      {draft.schedule.length ? (
+                        draft.schedule.map((s, i) => (
+                          <div key={i} className="text-sm text-gray-800 dark:text-gray-200">
+                            • {s}
+                          </div>
+                        ))
+                      ) : (
+                        <span className="text-xs text-gray-500 dark:text-gray-400">—</span>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="rounded-xl bg-white dark:bg-slate-900 border border-gray-200 dark:border-gray-700 p-4 md:col-span-2">
+                    <div className="text-xs text-gray-500 dark:text-gray-400 font-bold">Prerequisites</div>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {draft.prerequisites.length ? (
+                        draft.prerequisites.map((p) => (
+                          <span key={p} className="rounded-full bg-gray-100 dark:bg-slate-800 px-3 py-1 text-xs text-gray-700 dark:text-gray-200">
+                            {p}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="text-xs text-gray-500 dark:text-gray-400">None</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {draft.description.trim() ? (
+                  <div className="mt-4 text-sm text-gray-700 dark:text-gray-200 whitespace-pre-wrap">{draft.description.trim()}</div>
+                ) : (
+                  <div className="mt-4 text-xs text-gray-500 dark:text-gray-400">No description.</div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="px-6 py-4 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between gap-3">
+          <button
+            onClick={onClose}
+            disabled={busy}
+            className="rounded-xl border border-gray-200 dark:border-gray-700 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-800"
+          >
+            Close
+          </button>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setStep((s) => Math.max(0, s - 1))}
+              disabled={busy || step === 0}
+              className="rounded-xl border border-gray-200 dark:border-gray-700 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-800 disabled:opacity-50"
+            >
+              Back
+            </button>
+
+            {step < 3 ? (
+              <button
+                onClick={() => setStep((s) => Math.min(3, s + 1))}
+                disabled={busy || (step === 0 && !canNextStep0)}
+                className="rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary-hover disabled:opacity-50"
+              >
+                Next
+              </button>
+            ) : (
+              <button
+                onClick={submit}
+                disabled={busy}
+                className="rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary-hover disabled:opacity-60"
+              >
+                {busy ? "Saving..." : "Save"}
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+});
+
+// -----------------------------
+// Skeleton cards
+// -----------------------------
+function CourseCardSkeleton() {
+  return (
+    <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-surface-dark p-5 shadow-sm">
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0 flex-1">
+          <div className="h-4 w-28 bg-gray-200 dark:bg-slate-700 rounded mb-3" />
+          <div className="h-6 w-2/3 bg-gray-200 dark:bg-slate-700 rounded mb-2" />
+          <div className="h-4 w-1/2 bg-gray-200 dark:bg-slate-700 rounded" />
+          <div className="mt-4 flex flex-wrap gap-2">
+            <div className="h-6 w-20 bg-gray-200 dark:bg-slate-700 rounded-full" />
+            <div className="h-6 w-28 bg-gray-200 dark:bg-slate-700 rounded-full" />
+            <div className="h-6 w-24 bg-gray-200 dark:bg-slate-700 rounded-full" />
+          </div>
+        </div>
+        <div className="flex gap-2">
+          <div className="h-9 w-9 bg-gray-200 dark:bg-slate-700 rounded-xl" />
+          <div className="h-9 w-9 bg-gray-200 dark:bg-slate-700 rounded-xl" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// -----------------------------
+// Main component
+// -----------------------------
 const AdminCourses: React.FC<CoursesProps> = ({ user, onLogout }) => {
   const navigate = useNavigate();
 
   const [rawCourses, setRawCourses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [mutating, setMutating] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  const [search, setSearch] = useState('');
-  const [deptFilter, setDeptFilter] = useState('');
-  const [typeFilter, setTypeFilter] = useState('');
+  const [search, setSearch] = useState("");
+  const [deptFilter, setDeptFilter] = useState("");
+  const [typeFilter, setTypeFilter] = useState("");
+  const [semesterFilter, setSemesterFilter] = useState<string>("");
 
-  // ✅ Add modal
-  const [showAdd, setShowAdd] = useState(false);
-  const [addForm, setAddForm] = useState({
-    course_code: '',
-    title: '',
-    department: '',
-    credits: '',
-    type: 'Elective',
-    instructor: '',
-    schedule: '', // user types string -> backend stores array
-    room: '',
-    description: '',
-    prerequisites: '', // comma separated
-  });
-
-  // ✅ Edit modal
-  const [showEdit, setShowEdit] = useState(false);
-  const [editingCode, setEditingCode] = useState<string | null>(null);
-  const [editForm, setEditForm] = useState({
-    title: '',
-    department: '',
-    credits: '',
-    type: 'Elective',
-    instructor: '',
-    schedule: '',
-    room: '',
-    description: '',
-    prerequisites: '',
-  });
-
-  const handleCourseClick = (courseCode: string) => {
-    navigate(`/admin/courses/${courseCode}`);
+  const [toasts, setToasts] = useState<Toast[]>([]);
+  const toast = (type: ToastType, title: string, message?: string) => {
+    const id = currencyId();
+    setToasts((p) => [...p, { id, type, title, message }]);
+    setTimeout(() => setToasts((p) => p.filter((t) => t.id !== id)), 3200);
   };
+
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmCourseCode, setConfirmCourseCode] = useState<string | null>(null);
+
+  const [wizardOpen, setWizardOpen] = useState(false);
+  const [wizardMode, setWizardMode] = useState<"create" | "edit">("create");
+  const [wizardInitial, setWizardInitial] = useState<CourseDraft>({
+    course_code: "",
+    title: "",
+    department: "",
+    credits: "",
+    type: "Elective",
+    instructor: "",
+    room: "",
+    description: "",
+    prerequisites: [],
+    schedule: [],
+    semester: [],
+  });
 
   const fetchCourses = async () => {
     setLoading(true);
-    setError(null);
     try {
       const data = await api.adminCourses();
       setRawCourses(Array.isArray(data) ? data : []);
     } catch (e: any) {
-      setError(e?.message || 'Failed to load courses');
+      toast("error", "Failed to load courses", e?.message || "Unknown error");
+      setRawCourses([]);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    let alive = true;
-    (async () => {
-      try {
-        await fetchCourses();
-      } finally {
-        if (!alive) return;
-      }
-    })();
-    return () => {
-      alive = false;
-    };
+    fetchCourses();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // ✅ Map EXACTLY to your DB schema fields
   const courses: CourseRow[] = useMemo(() => {
     return (rawCourses || []).map((c) => {
-      const courseCode = String(c.course_code ?? '');
+      const courseCode = String(c.course_code ?? "");
       return {
         id: String(c._id ?? courseCode),
         course_code: courseCode,
-        title: String(c.title ?? '—'),
-        department: String(c.department ?? '—'),
+        title: safeStr(c.title),
+        department: safeStr(c.department),
         credits: Number(c.credits ?? 0) || 0,
-        type: String(c.type ?? 'Elective'),
-        instructor: c.instructor ? String(c.instructor) : undefined,
-        schedule: c.schedule,
-        room: c.room ? String(c.room) : undefined,
-        description: c.description ? String(c.description) : undefined,
-        prerequisites: Array.isArray(c.prerequisites) ? c.prerequisites : undefined,
+        type: safeStr(c.type, "Elective"),
+        instructor: c.instructor ? String(c.instructor) : "",
+        schedule: normalizeSchedule(c.schedule),
+        room: c.room ? String(c.room) : "",
+        description: c.description ? String(c.description) : "",
+        prerequisites: Array.isArray(c.prerequisites) ? c.prerequisites.map((x: any) => String(x)) : [],
+        semester: normalizeSemester(c.semester),
       };
     });
   }, [rawCourses]);
 
-  const departments = useMemo(() => {
-    const set = new Set<string>();
-    courses.forEach((c) => {
-      if (c.department && c.department !== '—') set.add(c.department);
+  const prerequisiteOptions = useMemo(() => {
+    return uniqSorted(courses.map((c) => `${c.course_code} — ${c.title}`)).map((label) => {
+      const code = label.split(" — ")[0];
+      return { label, value: code };
     });
-    return Array.from(set).sort((a, b) => a.localeCompare(b));
   }, [courses]);
 
-  const types = useMemo(() => {
-    const set = new Set<string>();
-    courses.forEach((c) => {
-      if (c.type) set.add(String(c.type));
-    });
-    return Array.from(set).sort((a, b) => a.localeCompare(b));
+  const departments = useMemo(() => uniqSorted(courses.map((c) => c.department).filter((d) => d && d !== "—")), [courses]);
+  const types = useMemo(() => uniqSorted(courses.map((c) => String(c.type)).filter(Boolean)), [courses]);
+
+  const semesterOptions = useMemo(() => {
+    const all = courses.flatMap((c) => c.semester || []);
+    return uniqSorted(all);
   }, [courses]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-
     return courses.filter((c) => {
       const matchesSearch =
-        !q ||
-        c.course_code.toLowerCase().includes(q) ||
-        c.title.toLowerCase().includes(q) ||
-        (c.instructor ?? '').toLowerCase().includes(q);
-
+        !q || c.course_code.toLowerCase().includes(q) || c.title.toLowerCase().includes(q) || (c.instructor ?? "").toLowerCase().includes(q);
       const matchesDept = !deptFilter || c.department === deptFilter;
       const matchesType = !typeFilter || String(c.type) === typeFilter;
-
-      return matchesSearch && matchesDept && matchesType;
+      const matchesSemester = !semesterFilter || (c.semester || []).includes(semesterFilter);
+      return matchesSearch && matchesDept && matchesType && matchesSemester;
     });
-  }, [courses, search, deptFilter, typeFilter]);
+  }, [courses, search, deptFilter, typeFilter, semesterFilter]);
 
-  const typeBadgeClass = (t: string) => {
-    if (t === 'Core')
-      return 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/20 dark:text-indigo-300';
-    if (t === 'Prerequisite')
-      return 'bg-yellow-50 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-300';
-    if (t === 'Major')
-      return 'bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300';
-    return 'bg-purple-50 text-purple-700 dark:bg-purple-900/20 dark:text-purple-300';
+  const openCreate = () => {
+    setWizardMode("create");
+    setWizardInitial({
+      course_code: "",
+      title: "",
+      department: "",
+      credits: "",
+      type: "Elective",
+      instructor: "",
+      room: "",
+      description: "",
+      prerequisites: [],
+      schedule: [],
+      semester: [],
+    });
+    setWizardOpen(true);
   };
 
-  const scheduleToString = (s: any) => {
-    if (!s) return '';
-    if (Array.isArray(s)) return s.join(' | ');
-    return String(s);
+  const openEdit = (course: CourseRow) => {
+    setWizardMode("edit");
+    setWizardInitial({
+      course_code: course.course_code,
+      title: course.title ?? "",
+      department: course.department ?? "",
+      credits: String(course.credits ?? ""),
+      type: course.type ?? "Elective",
+      instructor: course.instructor ?? "",
+      room: course.room ?? "",
+      description: course.description ?? "",
+      prerequisites: Array.isArray(course.prerequisites) ? course.prerequisites : [],
+      schedule: Array.isArray(course.schedule) ? course.schedule : [],
+      semester: Array.isArray(course.semester) ? course.semester : [],
+    });
+    setWizardOpen(true);
   };
 
-  // ✅ DELETE
-  const handleDelete = async (courseCode: string) => {
-    const ok = window.confirm(`Delete course "${courseCode}"? This cannot be undone.`);
-    if (!ok) return;
-
+  const handleWizardSubmit = async (payload: any) => {
     try {
       setMutating(true);
-      setError(null);
 
-      const res = await fetch(
-        `${API_BASE}/api/v1/admin/courses/${encodeURIComponent(courseCode)}`,
-        { method: 'DELETE', credentials: 'include' }
-      );
+      if (wizardMode === "create") {
+        await api.adminCreateCourse(payload);
+        toast("success", "Course created", payload.course_code);
+      } else {
+        const code = wizardInitial.course_code;
+        await api.adminUpdateCourse(code, payload);
+        toast("success", "Course updated", code);
+      }
+
+      setWizardOpen(false);
+      await fetchCourses();
+    } catch (e: any) {
+      toast("error", "Save failed", e?.message || "Unknown error");
+    } finally {
+      setMutating(false);
+    }
+  };
+
+  const askDelete = (courseCode: string) => {
+    setConfirmCourseCode(courseCode);
+    setConfirmOpen(true);
+  };
+
+  const doDelete = async () => {
+    if (!confirmCourseCode) return;
+    try {
+      setMutating(true);
+
+      const res = await fetch(`${API_BASE}/api/v1/admin/courses/${encodeURIComponent(confirmCourseCode)}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
 
       const text = await res.text();
       const data = text ? JSON.parse(text) : null;
@@ -190,612 +952,276 @@ const AdminCourses: React.FC<CoursesProps> = ({ user, onLogout }) => {
         throw new Error(msg);
       }
 
+      toast("success", "Course deleted", confirmCourseCode);
+      setConfirmOpen(false);
+      setConfirmCourseCode(null);
       await fetchCourses();
     } catch (e: any) {
-      setError(e?.message || 'Failed to delete course');
+      toast("error", "Delete failed", e?.message || "Unknown error");
     } finally {
       setMutating(false);
     }
   };
 
-  // ✅ CREATE
-  const handleCreate = async () => {
-    try {
-      setMutating(true);
-      setError(null);
+  const badge = (label: string) =>
+    "inline-flex items-center gap-1 rounded-full bg-gray-100 dark:bg-slate-800 px-3 py-1 text-xs font-semibold text-gray-700 dark:text-gray-200";
 
-      const creditsNum = Number(addForm.credits);
-      if (!addForm.course_code.trim()) throw new Error('Course code is required');
-      if (!addForm.title.trim()) throw new Error('Title is required');
-      if (!addForm.department.trim()) throw new Error('Department is required');
-      if (!Number.isFinite(creditsNum)) throw new Error('Credits must be a number');
-
-      const payload: any = {
-        course_code: addForm.course_code.trim(),
-        title: addForm.title.trim(),
-        department: addForm.department.trim(),
-        credits: creditsNum,
-        type: addForm.type,
-      };
-
-      if (addForm.instructor.trim()) payload.instructor = addForm.instructor.trim();
-      if (addForm.room.trim()) payload.room = addForm.room.trim();
-      if (addForm.description.trim()) payload.description = addForm.description.trim();
-      if (addForm.schedule.trim()) payload.schedule = addForm.schedule.trim();
-
-      const prereq = addForm.prerequisites
-        .split(',')
-        .map((s) => s.trim())
-        .filter(Boolean);
-      if (prereq.length) payload.prerequisites = prereq;
-
-      await api.adminCreateCourse(payload);
-
-      setShowAdd(false);
-      setAddForm({
-        course_code: '',
-        title: '',
-        department: '',
-        credits: '',
-        type: 'Elective',
-        instructor: '',
-        schedule: '',
-        room: '',
-        description: '',
-        prerequisites: '',
-      });
-
-      await fetchCourses();
-    } catch (e: any) {
-      setError(e?.message || 'Failed to create course');
-    } finally {
-      setMutating(false);
-    }
+  const typeBadgeClass = (t: string) => {
+    if (t === "Core") return "bg-indigo-50 text-indigo-700 dark:bg-indigo-900/20 dark:text-indigo-300";
+    if (t === "Prerequisite") return "bg-yellow-50 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-300";
+    if (t === "Major") return "bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300";
+    return "bg-purple-50 text-purple-700 dark:bg-purple-900/20 dark:text-purple-300";
   };
 
-  // ✅ OPEN EDIT MODAL (prefill)
-  const openEdit = (course: CourseRow) => {
-    setEditingCode(course.course_code);
-
-    setEditForm({
-      title: course.title ?? '',
-      department: course.department ?? '',
-      credits: String(course.credits ?? ''),
-      type: (course.type as any) ?? 'Elective',
-      instructor: course.instructor ?? '',
-      schedule: scheduleToString(course.schedule),
-      room: course.room ?? '',
-      description: course.description ?? '',
-      prerequisites: Array.isArray(course.prerequisites) ? course.prerequisites.join(', ') : '',
-    });
-
-    setShowEdit(true);
-  };
-
-  // ✅ UPDATE (PUT)
-  const handleUpdate = async () => {
-    try {
-      if (!editingCode) throw new Error('Missing course code');
-      setMutating(true);
-      setError(null);
-
-      const creditsNum = Number(editForm.credits);
-      if (!editForm.title.trim()) throw new Error('Title is required');
-      if (!editForm.department.trim()) throw new Error('Department is required');
-      if (!Number.isFinite(creditsNum)) throw new Error('Credits must be a number');
-
-      const payload: any = {
-        title: editForm.title.trim(),
-        department: editForm.department.trim(),
-        credits: creditsNum,
-        type: editForm.type,
-      };
-
-      if (editForm.instructor.trim()) payload.instructor = editForm.instructor.trim();
-      else payload.instructor = null;
-
-      if (editForm.room.trim()) payload.room = editForm.room.trim();
-      else payload.room = null;
-
-      if (editForm.description.trim()) payload.description = editForm.description.trim();
-      else payload.description = null;
-
-      // backend accepts string or list; if blank -> empty array
-      if (editForm.schedule.trim()) payload.schedule = editForm.schedule.trim();
-      else payload.schedule = [];
-
-      const prereq = editForm.prerequisites
-        .split(',')
-        .map((s) => s.trim())
-        .filter(Boolean);
-      payload.prerequisites = prereq; // empty list allowed
-
-      await api.adminUpdateCourse(editingCode, payload);
-
-      setShowEdit(false);
-      setEditingCode(null);
-
-      await fetchCourses();
-    } catch (e: any) {
-      setError(e?.message || 'Failed to update course');
-    } finally {
-      setMutating(false);
-    }
-  };
+  const goDetails = (code: string) => navigate(`/admin/courses/${encodeURIComponent(code)}`);
 
   return (
     <div className="flex h-screen overflow-hidden bg-background-light dark:bg-background-dark">
       <Sidebar user={user} onLogout={onLogout} />
+
       <div className="flex flex-1 flex-col overflow-hidden">
         <Header title="Courses Management" user={user} />
+
         <main className="flex-1 overflow-y-auto p-6">
-          {error && (
-            <div className="mb-6 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900/40 dark:bg-red-900/20 dark:text-red-200">
-              {error}
-            </div>
-          )}
+          <div className="mb-6 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-surface-dark shadow-sm overflow-hidden">
+            <div className="p-5 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+              <div className="min-w-0">
+                <div className="text-lg font-extrabold text-gray-900 dark:text-white">Manage Courses</div>
+                <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">Semester + prereqs are selected. Schedule is free typed.</div>
 
-          {/* Toolbar */}
-          <div className="flex flex-col xl:flex-row items-center justify-between gap-4 mb-6 bg-white dark:bg-surface-dark p-2 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
-            <div className="flex flex-1 flex-col sm:flex-row items-center gap-3 w-full">
-              <div className="relative w-full sm:w-72">
-                <span className="absolute inset-y-0 left-0 flex items-center pl-3">
-                  <span className="material-icons-outlined text-gray-400">search</span>
-                </span>
-                <input
-                  className="w-full rounded-lg border border-gray-200 bg-white py-2.5 pl-10 pr-4 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-gray-700 dark:bg-slate-800 dark:text-gray-200"
-                  placeholder="Search by code, title, instructor..."
-                  type="text"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                />
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <span className={badge(`Total: ${courses.length}`)}>
+                    <span className="material-icons-outlined text-[16px] text-gray-400">database</span>
+                    Total: {courses.length}
+                  </span>
+                  <span className={badge(`Shown: ${filtered.length}`)}>
+                    <span className="material-icons-outlined text-[16px] text-gray-400">filter_alt</span>
+                    Shown: {filtered.length}
+                  </span>
+                </div>
               </div>
 
-              <select
-                className="w-full sm:w-56 rounded-lg border border-gray-200 bg-white py-2.5 px-3 text-sm text-gray-700 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-gray-700 dark:bg-slate-800 dark:text-gray-300"
-                value={deptFilter}
-                onChange={(e) => setDeptFilter(e.target.value)}
-              >
-                <option value="">All Departments</option>
-                {departments.map((d) => (
-                  <option key={d} value={d}>
-                    {d}
-                  </option>
-                ))}
-              </select>
+              <div className="flex items-center gap-3">
+                <button
+                  className="flex items-center justify-center gap-2 rounded-xl border border-primary bg-white px-4 py-2.5 text-sm font-semibold text-primary hover:bg-gray-50 dark:bg-transparent dark:hover:bg-slate-800 transition-colors"
+                  onClick={() => toast("info", "Excel import", "We can implement this next.")}
+                  disabled={mutating}
+                >
+                  <span className="material-icons-outlined text-lg">description</span>
+                  Import (Excel)
+                </button>
 
-              <select
-                className="w-full sm:w-44 rounded-lg border border-gray-200 bg-white py-2.5 px-3 text-sm text-gray-700 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-gray-700 dark:bg-slate-800 dark:text-gray-300"
-                value={typeFilter}
-                onChange={(e) => setTypeFilter(e.target.value)}
-              >
-                <option value="">All Types</option>
-                {types.map((t) => (
-                  <option key={t} value={t}>
-                    {t}
-                  </option>
-                ))}
-              </select>
+                <button
+                  className="flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary-hover shadow-sm transition-colors"
+                  onClick={openCreate}
+                  disabled={mutating}
+                >
+                  <span className="material-icons-outlined text-lg">add</span>
+                  Add Course
+                </button>
+              </div>
             </div>
 
-            <div className="flex items-center gap-3 w-full sm:w-auto">
-              <button
-                className="flex-1 sm:flex-none flex items-center justify-center gap-2 rounded-lg border border-primary bg-white px-4 py-2.5 text-sm font-medium text-primary hover:bg-gray-50 dark:bg-transparent dark:hover:bg-slate-800 transition-colors"
-                onClick={() => alert('Excel import will be added later')}
-                disabled={mutating}
-              >
-                <span className="material-icons-outlined text-lg">description</span>
-                Import from Excel
-              </button>
-              <button
-                className="flex-1 sm:flex-none flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-white hover:bg-primary-hover shadow-sm transition-colors"
-                onClick={() => setShowAdd(true)}
-                disabled={mutating}
-              >
-                <span className="material-icons-outlined text-lg">add</span>
-                Add New Course
-              </button>
+            <div className="border-t border-gray-100 dark:border-gray-700 p-4">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-3">
+                <div className="lg:col-span-4">
+                  <div className="relative">
+                    <span className="absolute inset-y-0 left-0 flex items-center pl-3">
+                      <span className="material-icons-outlined text-gray-400">search</span>
+                    </span>
+                    <input
+                      className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 dark:text-gray-200"
+                      placeholder="Search by code, title, instructor..."
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <div className="lg:col-span-3">
+                  <select
+                    className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 py-2.5 px-3 text-sm text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/40"
+                    value={deptFilter}
+                    onChange={(e) => setDeptFilter(e.target.value)}
+                  >
+                    <option value="">All Departments</option>
+                    {departments.map((d) => (
+                      <option key={d} value={d}>
+                        {d}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="lg:col-span-2">
+                  <select
+                    className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 py-2.5 px-3 text-sm text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/40"
+                    value={typeFilter}
+                    onChange={(e) => setTypeFilter(e.target.value)}
+                  >
+                    <option value="">All Types</option>
+                    {types.map((t) => (
+                      <option key={t} value={t}>
+                        {t}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="lg:col-span-3">
+                  <select
+                    className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 py-2.5 px-3 text-sm text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/40"
+                    value={semesterFilter}
+                    onChange={(e) => setSemesterFilter(e.target.value)}
+                  >
+                    <option value="">All Semesters</option>
+                    {semesterOptions.map((s) => (
+                      <option key={s} value={s}>
+                        {s}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* Table */}
-          <div className="rounded-xl bg-surface-light shadow-sm dark:bg-surface-dark overflow-hidden border border-gray-100 dark:border-gray-700">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left">
-                <thead className="bg-gray-50 dark:bg-slate-800/50">
-                  <tr>
-                    <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider dark:text-gray-400">
-                      Course Code
-                    </th>
-                    <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider dark:text-gray-400">
-                      Title
-                    </th>
-                    <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider dark:text-gray-400">
-                      Department
-                    </th>
-                    <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider dark:text-gray-400">
-                      Credits
-                    </th>
-                    <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider dark:text-gray-400">
-                      Type
-                    </th>
-                    <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider dark:text-gray-400 text-right">
-                      Action
-                    </th>
-                  </tr>
-                </thead>
+          {loading ? (
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <CourseCardSkeleton key={i} />
+              ))}
+            </div>
+          ) : filtered.length === 0 ? (
+            <div className="rounded-2xl border border-dashed border-gray-300 dark:border-gray-700 bg-white dark:bg-surface-dark p-10 text-center">
+              <div className="mx-auto h-14 w-14 rounded-2xl bg-gray-100 dark:bg-slate-800 flex items-center justify-center text-gray-600 dark:text-gray-200">
+                <span className="material-icons-outlined text-3xl">menu_book</span>
+              </div>
+              <div className="mt-4 text-lg font-extrabold text-gray-900 dark:text-white">No courses found</div>
+              <div className="mt-1 text-sm text-gray-500 dark:text-gray-400">Try adjusting filters or create a new course.</div>
+              <div className="mt-6 flex justify-center gap-3">
+                <button
+                  onClick={() => {
+                    setSearch("");
+                    setDeptFilter("");
+                    setTypeFilter("");
+                    setSemesterFilter("");
+                  }}
+                  className="rounded-xl border border-gray-200 dark:border-gray-700 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-800"
+                >
+                  Reset Filters
+                </button>
+                <button onClick={openCreate} className="rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary-hover">
+                  Add Course
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+              {filtered.map((course) => (
+                <div
+                  key={course.id}
+                  className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-surface-dark p-5 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+                  onClick={() => goDetails(course.course_code)}
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-mono text-gray-500 dark:text-gray-400">{course.course_code}</span>
+                        <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${typeBadgeClass(course.type)}`}>{course.type}</span>
+                      </div>
 
-                <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
-                  {loading ? (
-                    <tr>
-                      <td colSpan={6} className="px-6 py-6 text-sm text-gray-500 dark:text-gray-400">
-                        Loading courses...
-                      </td>
-                    </tr>
-                  ) : filtered.length === 0 ? (
-                    <tr>
-                      <td colSpan={6} className="px-6 py-6 text-sm text-gray-500 dark:text-gray-400">
-                        No courses found.
-                      </td>
-                    </tr>
-                  ) : (
-                    filtered.map((course) => (
-                      <tr
-                        key={course.id}
-                        onClick={() => handleCourseClick(course.course_code)}
-                        className="hover:bg-gray-50 dark:hover:bg-slate-800/50 cursor-pointer transition-colors"
-                      >
-                        <td className="px-6 py-4 text-sm font-semibold text-gray-900 dark:text-white">
-                          {course.course_code}
-                        </td>
+                      <div className="mt-2 text-lg font-extrabold text-gray-900 dark:text-white truncate">{course.title}</div>
 
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-3">
-                            <div className="h-8 w-10 rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400 flex items-center justify-center text-xs font-bold">
-                              {course.credits}
-                            </div>
-                            <div className="min-w-0">
-                              <div className="text-sm text-gray-800 dark:text-gray-200 font-medium truncate">
-                                {course.title}
-                              </div>
-                              <div className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                                {course.instructor ? `Instructor: ${course.instructor}` : '—'}
-                                {course.room ? ` • Room: ${course.room}` : ''}
-                              </div>
-                            </div>
-                          </div>
-                        </td>
+                      <div className="mt-1 text-sm text-gray-600 dark:text-gray-300 truncate">
+                        {course.department}
+                        {course.instructor ? ` • Instructor: ${course.instructor}` : ""}
+                        {course.room ? ` • Room: ${course.room}` : ""}
+                      </div>
 
-                        <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">{course.department}</td>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        <span className={badge(`${Number(course.credits).toFixed(1)} credits`)}>
+                          <span className="material-icons-outlined text-[16px] text-gray-400">stars</span>
+                          {Number(course.credits).toFixed(1)} credits
+                        </span>
 
-                        <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
-                          {Number(course.credits).toFixed(1)}
-                        </td>
-
-                        <td className="px-6 py-4">
-                          <span className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${typeBadgeClass(course.type)}`}>
-                            {course.type}
+                        {course.semester?.slice(0, 2).map((s) => (
+                          <span key={s} className={badge(s)}>
+                            <span className="material-icons-outlined text-[16px] text-gray-400">school</span>
+                            {s}
                           </span>
-                        </td>
+                        ))}
+                      </div>
+                    </div>
 
-                        <td className="px-6 py-4 text-right">
-                          <div className="flex items-center justify-end gap-2">
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                openEdit(course);
-                              }}
-                              className="p-1 text-gray-400 hover:text-primary transition-colors"
-                              title="Edit"
-                              disabled={mutating}
-                            >
-                              <span className="material-icons-outlined text-lg">edit</span>
-                            </button>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openEdit(course);
+                        }}
+                        className="h-9 w-9 rounded-xl border border-gray-200 dark:border-gray-700 flex items-center justify-center text-gray-500 dark:text-gray-200 hover:text-primary hover:border-primary transition-colors"
+                        title="Edit"
+                        disabled={mutating}
+                      >
+                        <span className="material-icons-outlined text-lg">edit</span>
+                      </button>
 
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDelete(course.course_code);
-                              }}
-                              className="p-1 text-gray-400 hover:text-red-500 transition-colors"
-                              title="Delete"
-                              disabled={mutating}
-                            >
-                              <span className="material-icons-outlined text-lg">delete</span>
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-
-            <div className="flex items-center justify-between border-t border-gray-100 bg-white px-6 py-3 dark:border-gray-700 dark:bg-surface-dark">
-              <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
-                <div>
-                  <p className="text-sm text-gray-700 dark:text-gray-400">
-                    Showing <span className="font-medium">{filtered.length === 0 ? 0 : 1}</span> to{' '}
-                    <span className="font-medium">{filtered.length}</span> of <span className="font-medium">{courses.length}</span> results
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* ✅ Add Course Modal */}
-          {showAdd && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-              <div className="w-full max-w-xl rounded-xl bg-white dark:bg-surface-dark border border-gray-200 dark:border-gray-700 shadow-lg">
-                <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-700">
-                  <h3 className="font-bold text-gray-800 dark:text-white">Add New Course</h3>
-                  <button
-                    onClick={() => setShowAdd(false)}
-                    className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
-                    disabled={mutating}
-                  >
-                    <span className="material-icons-outlined">close</span>
-                  </button>
-                </div>
-
-                <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-xs font-bold text-gray-500 dark:text-gray-400">Course Code</label>
-                    <input
-                      className="mt-1 w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 px-3 py-2 text-sm"
-                      value={addForm.course_code}
-                      onChange={(e) => setAddForm((p) => ({ ...p, course_code: e.target.value }))}
-                      placeholder="e.g. CST-1010"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-xs font-bold text-gray-500 dark:text-gray-400">Credits</label>
-                    <input
-                      className="mt-1 w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 px-3 py-2 text-sm"
-                      value={addForm.credits}
-                      onChange={(e) => setAddForm((p) => ({ ...p, credits: e.target.value }))}
-                      placeholder="e.g. 3"
-                    />
-                  </div>
-
-                  <div className="md:col-span-2">
-                    <label className="text-xs font-bold text-gray-500 dark:text-gray-400">Title</label>
-                    <input
-                      className="mt-1 w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 px-3 py-2 text-sm"
-                      value={addForm.title}
-                      onChange={(e) => setAddForm((p) => ({ ...p, title: e.target.value }))}
-                      placeholder="Course name"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-xs font-bold text-gray-500 dark:text-gray-400">Department</label>
-                    <input
-                      className="mt-1 w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 px-3 py-2 text-sm"
-                      value={addForm.department}
-                      onChange={(e) => setAddForm((p) => ({ ...p, department: e.target.value }))}
-                      placeholder="e.g. Computer Science"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-xs font-bold text-gray-500 dark:text-gray-400">Type</label>
-                    <select
-                      className="mt-1 w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 px-3 py-2 text-sm"
-                      value={addForm.type}
-                      onChange={(e) => setAddForm((p) => ({ ...p, type: e.target.value }))}
-                    >
-                      <option value="Core">Core</option>
-                      <option value="Elective">Elective</option>
-                      <option value="Prerequisite">Prerequisite</option>
-                      <option value="Major">Major</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="text-xs font-bold text-gray-500 dark:text-gray-400">Instructor</label>
-                    <input
-                      className="mt-1 w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 px-3 py-2 text-sm"
-                      value={addForm.instructor}
-                      onChange={(e) => setAddForm((p) => ({ ...p, instructor: e.target.value }))}
-                      placeholder="Optional"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-xs font-bold text-gray-500 dark:text-gray-400">Room</label>
-                    <input
-                      className="mt-1 w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 px-3 py-2 text-sm"
-                      value={addForm.room}
-                      onChange={(e) => setAddForm((p) => ({ ...p, room: e.target.value }))}
-                      placeholder="Optional"
-                    />
-                  </div>
-
-                  <div className="md:col-span-2">
-                    <label className="text-xs font-bold text-gray-500 dark:text-gray-400">Schedule</label>
-                    <input
-                      className="mt-1 w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 px-3 py-2 text-sm"
-                      value={addForm.schedule}
-                      onChange={(e) => setAddForm((p) => ({ ...p, schedule: e.target.value }))}
-                      placeholder='e.g. "Mon/Wed 10:00-11:30"'
-                    />
-                    <p className="mt-1 text-[11px] text-gray-400">Backend stores schedule as an array.</p>
-                  </div>
-
-                  <div className="md:col-span-2">
-                    <label className="text-xs font-bold text-gray-500 dark:text-gray-400">Prerequisites (comma separated)</label>
-                    <input
-                      className="mt-1 w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 px-3 py-2 text-sm"
-                      value={addForm.prerequisites}
-                      onChange={(e) => setAddForm((p) => ({ ...p, prerequisites: e.target.value }))}
-                      placeholder="e.g. CST-1010, CST-2010"
-                    />
-                  </div>
-
-                  <div className="md:col-span-2">
-                    <label className="text-xs font-bold text-gray-500 dark:text-gray-400">Description</label>
-                    <textarea
-                      className="mt-1 w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 px-3 py-2 text-sm"
-                      rows={3}
-                      value={addForm.description}
-                      onChange={(e) => setAddForm((p) => ({ ...p, description: e.target.value }))}
-                      placeholder="Optional"
-                    />
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          askDelete(course.course_code);
+                        }}
+                        className="h-9 w-9 rounded-xl border border-gray-200 dark:border-gray-700 flex items-center justify-center text-gray-500 dark:text-gray-200 hover:text-red-500 hover:border-red-400 transition-colors"
+                        title="Delete"
+                        disabled={mutating}
+                      >
+                        <span className="material-icons-outlined text-lg">delete</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
-
-                <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-100 dark:border-gray-700">
-                  <button
-                    onClick={() => setShowAdd(false)}
-                    className="rounded-lg border border-gray-200 dark:border-gray-700 px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-800"
-                    disabled={mutating}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handleCreate}
-                    className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-hover"
-                    disabled={mutating}
-                  >
-                    {mutating ? 'Saving...' : 'Create Course'}
-                  </button>
-                </div>
-              </div>
+              ))}
             </div>
           )}
 
-          {/* ✅ Edit Course Modal */}
-          {showEdit && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-              <div className="w-full max-w-xl rounded-xl bg-white dark:bg-surface-dark border border-gray-200 dark:border-gray-700 shadow-lg">
-                <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-700">
-                  <h3 className="font-bold text-gray-800 dark:text-white">
-                    Edit Course {editingCode ? `(${editingCode})` : ''}
-                  </h3>
-                  <button
-                    onClick={() => setShowEdit(false)}
-                    className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
-                    disabled={mutating}
-                  >
-                    <span className="material-icons-outlined">close</span>
-                  </button>
-                </div>
-
-                <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="md:col-span-2">
-                    <label className="text-xs font-bold text-gray-500 dark:text-gray-400">Title</label>
-                    <input
-                      className="mt-1 w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 px-3 py-2 text-sm"
-                      value={editForm.title}
-                      onChange={(e) => setEditForm((p) => ({ ...p, title: e.target.value }))}
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-xs font-bold text-gray-500 dark:text-gray-400">Department</label>
-                    <input
-                      className="mt-1 w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 px-3 py-2 text-sm"
-                      value={editForm.department}
-                      onChange={(e) => setEditForm((p) => ({ ...p, department: e.target.value }))}
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-xs font-bold text-gray-500 dark:text-gray-400">Credits</label>
-                    <input
-                      className="mt-1 w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 px-3 py-2 text-sm"
-                      value={editForm.credits}
-                      onChange={(e) => setEditForm((p) => ({ ...p, credits: e.target.value }))}
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-xs font-bold text-gray-500 dark:text-gray-400">Type</label>
-                    <select
-                      className="mt-1 w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 px-3 py-2 text-sm"
-                      value={editForm.type}
-                      onChange={(e) => setEditForm((p) => ({ ...p, type: e.target.value }))}
-                    >
-                      <option value="Core">Core</option>
-                      <option value="Elective">Elective</option>
-                      <option value="Prerequisite">Prerequisite</option>
-                      <option value="Major">Major</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="text-xs font-bold text-gray-500 dark:text-gray-400">Instructor</label>
-                    <input
-                      className="mt-1 w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 px-3 py-2 text-sm"
-                      value={editForm.instructor}
-                      onChange={(e) => setEditForm((p) => ({ ...p, instructor: e.target.value }))}
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-xs font-bold text-gray-500 dark:text-gray-400">Room</label>
-                    <input
-                      className="mt-1 w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 px-3 py-2 text-sm"
-                      value={editForm.room}
-                      onChange={(e) => setEditForm((p) => ({ ...p, room: e.target.value }))}
-                    />
-                  </div>
-
-                  <div className="md:col-span-2">
-                    <label className="text-xs font-bold text-gray-500 dark:text-gray-400">Schedule</label>
-                    <input
-                      className="mt-1 w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 px-3 py-2 text-sm"
-                      value={editForm.schedule}
-                      onChange={(e) => setEditForm((p) => ({ ...p, schedule: e.target.value }))}
-                    />
-                    <p className="mt-1 text-[11px] text-gray-400">Backend stores schedule as an array.</p>
-                  </div>
-
-                  <div className="md:col-span-2">
-                    <label className="text-xs font-bold text-gray-500 dark:text-gray-400">Prerequisites (comma separated)</label>
-                    <input
-                      className="mt-1 w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 px-3 py-2 text-sm"
-                      value={editForm.prerequisites}
-                      onChange={(e) => setEditForm((p) => ({ ...p, prerequisites: e.target.value }))}
-                    />
-                  </div>
-
-                  <div className="md:col-span-2">
-                    <label className="text-xs font-bold text-gray-500 dark:text-gray-400">Description</label>
-                    <textarea
-                      className="mt-1 w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 px-3 py-2 text-sm"
-                      rows={3}
-                      value={editForm.description}
-                      onChange={(e) => setEditForm((p) => ({ ...p, description: e.target.value }))}
-                    />
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-100 dark:border-gray-700">
-                  <button
-                    onClick={() => setShowEdit(false)}
-                    className="rounded-lg border border-gray-200 dark:border-gray-700 px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-800"
-                    disabled={mutating}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handleUpdate}
-                    className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-hover"
-                    disabled={mutating}
-                  >
-                    {mutating ? 'Saving...' : 'Save Changes'}
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
+          <button
+            onClick={openCreate}
+            className="fixed right-5 bottom-5 z-[50] rounded-2xl bg-primary text-white shadow-xl hover:bg-primary-hover transition-colors px-4 py-3 flex items-center gap-2"
+            disabled={mutating}
+            title="Add Course"
+          >
+            <span className="material-icons-outlined">add</span>
+            <span className="text-sm font-bold">Add Course</span>
+          </button>
         </main>
       </div>
+
+      <CourseWizardModal
+        open={wizardOpen}
+        mode={wizardMode}
+        initial={wizardInitial}
+        busy={mutating}
+        onClose={() => setWizardOpen(false)}
+        onSubmit={handleWizardSubmit}
+        prerequisiteOptions={prerequisiteOptions}
+      />
+
+      <ConfirmModal
+        open={confirmOpen}
+        title="Delete course?"
+        message={confirmCourseCode ? `This will permanently delete "${confirmCourseCode}".` : "This cannot be undone."}
+        confirmText="Delete"
+        danger
+        loading={mutating}
+        onCancel={() => {
+          setConfirmOpen(false);
+          setConfirmCourseCode(null);
+        }}
+        onConfirm={doDelete}
+      />
+
+      <ToastHost toasts={toasts} onDismiss={(id) => setToasts((p) => p.filter((t) => t.id !== id))} />
     </div>
   );
 };
