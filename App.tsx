@@ -15,12 +15,16 @@ import AdminStudentDetails from "./pages/AdminStudentDetails";
 import AdminAnnouncements from "./pages/AdminAnnouncements";
 import AdminMessages from "./pages/AdminMessages";
 
+// ✅ NEW: admin-only course details page (rename your file to AdminCourseDetails.tsx)
+import AdminCourseDetails from "./pages/AdminCourseDetails";
+
 import StudentDashboard from "./pages/StudentDashboard";
 import StudentEnrollment from "./pages/StudentEnrollment";
 import StudentResults from "./pages/StudentResults";
 import StudentStatus from "./pages/StudentStatus";
 import StudentCourses from "./pages/StudentCourses";
 
+// ✅ student course details page stays as CourseDetails.tsx (student-facing)
 import CourseDetails from "./pages/CourseDetails";
 
 import { User } from "./types";
@@ -79,7 +83,6 @@ const App: React.FC = () => {
     <HashRouter>
       <Routes>
         {/* ✅ Public routes ALWAYS available */}
-        {/* <Route path="/forgot-password" element={<ForgotPassword />} /> */}
         <Route path="/reset-password-token" element={<ResetPasswordToken />} />
 
         {/* ✅ Existing in-app reset route (must_reset_password flow) */}
@@ -125,25 +128,77 @@ const App: React.FC = () => {
 
             {user?.role === "admin" ? (
               <>
-                <Route path="/admin/dashboard" element={<AdminDashboard user={user} onLogout={handleLogout} />} />
-                <Route path="/admin/enrollment" element={<AdminEnrollment user={user} onLogout={handleLogout} />} />
-                <Route path="/admin/courses" element={<AdminCourses user={user} onLogout={handleLogout} />} />
-                <Route path="/admin/courses/:courseId" element={<CourseDetails user={user} onLogout={handleLogout} />} />
-                <Route path="/admin/students" element={<AdminStudents user={user} onLogout={handleLogout} />} />
-                <Route path="/admin/students/:studentId" element={<AdminStudentDetails user={user} onLogout={handleLogout} />} />
-                <Route path="/admin/announcements" element={<AdminAnnouncements user={user} onLogout={handleLogout} />} />
-                <Route path="/admin/messages" element={<AdminMessages user={user} onLogout={handleLogout} />} />
-                <Route path="/admin/grading" element={<AdminGrading user={user} onLogout={handleLogout} />} />
+                <Route
+                  path="/admin/dashboard"
+                  element={<AdminDashboard user={user} onLogout={handleLogout} />}
+                />
+                <Route
+                  path="/admin/enrollment"
+                  element={<AdminEnrollment user={user} onLogout={handleLogout} />}
+                />
+                <Route
+                  path="/admin/courses"
+                  element={<AdminCourses user={user} onLogout={handleLogout} />}
+                />
+
+                {/* ✅ FIX: admin course details uses AdminCourseDetails (NOT CourseDetails) */}
+                <Route
+                  path="/admin/courses/:courseId"
+                  element={<AdminCourseDetails user={user} onLogout={handleLogout} />}
+                />
+
+                <Route
+                  path="/admin/students"
+                  element={<AdminStudents user={user} onLogout={handleLogout} />}
+                />
+                <Route
+                  path="/admin/students/:studentId"
+                  element={<AdminStudentDetails user={user} onLogout={handleLogout} />}
+                />
+                <Route
+                  path="/admin/announcements"
+                  element={<AdminAnnouncements user={user} onLogout={handleLogout} />}
+                />
+                <Route
+                  path="/admin/messages"
+                  element={<AdminMessages user={user} onLogout={handleLogout} />}
+                />
+                <Route
+                  path="/admin/grading"
+                  element={<AdminGrading user={user} onLogout={handleLogout} />}
+                />
+
                 <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
               </>
             ) : user?.role === "student" ? (
               <>
-                <Route path="/student/dashboard" element={<StudentDashboard user={user} onLogout={handleLogout} />} />
-                <Route path="/student/enrollment" element={<StudentEnrollment user={user} onLogout={handleLogout} />} />
-                <Route path="/student/results" element={<StudentResults user={user} onLogout={handleLogout} />} />
-                <Route path="/student/status" element={<StudentStatus user={user} onLogout={handleLogout} />} />
-                <Route path="/student/courses" element={<StudentCourses user={user} onLogout={handleLogout} />} />
-                <Route path="/student/courses/:courseId" element={<CourseDetails user={user} onLogout={handleLogout} />} />
+                <Route
+                  path="/student/dashboard"
+                  element={<StudentDashboard user={user} onLogout={handleLogout} />}
+                />
+                <Route
+                  path="/student/enrollment"
+                  element={<StudentEnrollment user={user} onLogout={handleLogout} />}
+                />
+                <Route
+                  path="/student/results"
+                  element={<StudentResults user={user} onLogout={handleLogout} />}
+                />
+                <Route
+                  path="/student/status"
+                  element={<StudentStatus user={user} onLogout={handleLogout} />}
+                />
+                <Route
+                  path="/student/courses"
+                  element={<StudentCourses user={user} onLogout={handleLogout} />}
+                />
+
+                {/* ✅ student course details stays CourseDetails */}
+                <Route
+                  path="/student/courses/:courseId"
+                  element={<CourseDetails user={user} onLogout={handleLogout} />}
+                />
+
                 <Route path="*" element={<Navigate to="/student/dashboard" replace />} />
               </>
             ) : (

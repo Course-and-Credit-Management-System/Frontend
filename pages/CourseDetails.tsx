@@ -3,13 +3,12 @@ import { useParams, useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
 import { User } from '../types';
+import { api } from '../lib/api';
 
 interface CourseDetailsProps {
   user: User;
   onLogout: () => void;
 }
-
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
 
 type CourseDetailsData = {
   code: string;
@@ -17,7 +16,7 @@ type CourseDetailsData = {
   instructor: string;
   email: string;
   credits: number;
-  schedule: string[]; // ✅ array in UI (tolerates legacy string from backend)
+  schedule: string[];
   room: string;
   description: string;
   syllabus: { week: number; topic: string }[];
@@ -27,8 +26,17 @@ type CourseDetailsData = {
 };
 
 const CourseDetails: React.FC<CourseDetailsProps> = ({ user, onLogout }) => {
-  const { courseId } = useParams<{ courseId: string }>();
+  const params = useParams();
   const navigate = useNavigate();
+
+  // ✅ works with any route param name
+  const rawParam =
+    (params as any).courseId ??
+    (params as any).courseCode ??
+    (params as any).course_code ??
+    '';
+
+  const courseCode = rawParam ? decodeURIComponent(String(rawParam)) : '';
 
   const [course, setCourse] = useState<CourseDetailsData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -42,37 +50,23 @@ const CourseDetails: React.FC<CourseDetailsProps> = ({ user, onLogout }) => {
         setLoading(true);
         setError(null);
 
-        if (!courseId) throw new Error('Missing course id');
+        if (!courseCode) throw new Error('Missing course code');
 
-        const res = await fetch(
-          `${API_BASE}/api/v1/admin/courses/${encodeURIComponent(courseId)}`,
-          { credentials: 'include' }
-        );
+        // ✅ IMPORTANT: use the same API client as AdminCourses (same base URL + cookies + handling)
+        const data = await api.adminCourseByCode(courseCode);
 
-        const text = await res.text();
-        const data = text ? JSON.parse(text) : null;
-
-        if (!res.ok) {
-          const msg = data?.detail || data?.message || `Request failed (${res.status})`;
-          throw new Error(msg);
-        }
-
-        // ✅ schedule can be array OR string (supports legacy DB + current validator differences)
         const scheduleRaw = data?.schedule;
         const scheduleArr: string[] = Array.isArray(scheduleRaw)
-          ? scheduleRaw.filter((x: any) => typeof x === 'string' && x.trim().length > 0)
+          ? scheduleRaw.map((x: any) => String(x ?? '').trim()).filter((x: string) => x.length > 0)
           : typeof scheduleRaw === 'string' && scheduleRaw.trim()
             ? [scheduleRaw.trim()]
             : [];
 
         const mapped: CourseDetailsData = {
-          code: data?.course_code ?? courseId,
+          code: data?.course_code ?? courseCode,
           title: data?.title ?? '—',
           instructor: data?.instructor ?? '—',
-
-          // ✅ DB schema uses instructor_email
           email: data?.instructor_email ?? data?.email ?? '—',
-
           credits: Number(data?.credits ?? 0) || 0,
           schedule: scheduleArr,
           room: data?.room ?? '—',
@@ -97,7 +91,7 @@ const CourseDetails: React.FC<CourseDetailsProps> = ({ user, onLogout }) => {
     return () => {
       alive = false;
     };
-  }, [courseId]);
+  }, [courseCode]);
 
   if (loading) {
     return (
@@ -211,10 +205,7 @@ const CourseDetails: React.FC<CourseDetailsProps> = ({ user, onLogout }) => {
                     <div>
                       <p className="text-sm font-bold text-gray-800 dark:text-white">{course.instructor}</p>
                       {course.email !== '—' ? (
-                        <a
-                          href={`mailto:${course.email}`}
-                          className="text-xs text-gray-500 hover:text-primary"
-                        >
+                        <a href={`mailto:${course.email}`} className="text-xs text-gray-500 hover:text-primary">
                           {course.email}
                         </a>
                       ) : (
