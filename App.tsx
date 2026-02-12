@@ -13,6 +13,8 @@ import AdminStudents from "./pages/AdminStudents";
 import AdminGrading from "./pages/AdminGrading";
 import AdminStudentDetails from "./pages/AdminStudentDetails";
 import AdminAnnouncements from "./pages/AdminAnnouncements";
+// ✅ NEW: Manual Enrollment Page
+import AdminManualEnrollment from "./pages/AdminManualEnrollment";
 import AdminMessages from "./pages/AdminMessages";
 
 // ✅ NEW: admin-only course details page (rename your file to AdminCourseDetails.tsx)
@@ -147,6 +149,12 @@ const App: React.FC = () => {
                   element={<AdminCourseDetails user={user} onLogout={handleLogout} />}
                 />
 
+                {/* Manual Enrollment Route */}
+                <Route
+                  path="/admin/enrollment/manual"
+                  element={<AdminManualEnrollment user={user} onLogout={handleLogout} />}
+                />
+
                 <Route
                   path="/admin/students"
                   element={<AdminStudents user={user} onLogout={handleLogout} />}
@@ -179,6 +187,10 @@ const App: React.FC = () => {
                 <Route
                   path="/student/enrollment"
                   element={<StudentEnrollment user={user} onLogout={handleLogout} />}
+                />
+                <Route
+                  path="/student/enrollment/view/:courseId"
+                  element={<CourseDetails user={user} onLogout={handleLogout} />}
                 />
                 <Route
                   path="/student/results"

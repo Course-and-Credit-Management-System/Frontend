@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
 import { User, EnrollmentRequest } from '../types';
+import { api } from '../lib/api';
 
 interface EnrollmentProps {
   user: User;
@@ -9,20 +10,132 @@ interface EnrollmentProps {
 }
 
 const AdminEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
-  const requests: EnrollmentRequest[] = [
-    { id: '1', studentName: 'John Doe', studentInitials: 'JD', courseName: 'Introduction to CS (CST-1010)', status: 'Enrolled', date: 'Nov 02, 2024' },
-    { id: '2', studentName: 'Alice Smith', studentInitials: 'AS', courseName: 'Data Structures (CST-3020)', status: 'Conflict', date: 'Nov 02, 2024' },
-    { id: '3', studentName: 'Robert Johnson', studentInitials: 'RJ', courseName: 'Advanced Calculus (CST-3010)', status: 'Pending', date: 'Nov 01, 2024' },
-    { id: '4', studentName: 'Emily White', studentInitials: 'EW', courseName: 'Physics I (CST-1020)', status: 'Enrolled', date: 'Oct 31, 2024' },
-    { id: '5', studentName: 'Michael King', studentInitials: 'MK', courseName: 'History of Art (CST-1050)', status: 'Waitlisted', date: 'Oct 30, 2024' },
-  ];
+  const [requests, setRequests] = useState<EnrollmentRequest[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ message: string, type: 'success' | 'error' | null }>({ message: '', type: null });
+
+  const [sortConfig, setSortConfig] = useState<{ key: keyof EnrollmentRequest; direction: 'asc' | 'desc' } | null>(null);
+
+  const showToast = (message: string, type: 'success' | 'error') => {
+    setToast({ message, type });
+    setTimeout(() => setToast({ message: '', type: null }), 3000);
+  };
+
+
+  const fetchEnrollments = async () => {
+    try {
+      setLoading(true);
+      const data: any = await api.adminEnrollments();
+      // Map backend data to frontend interface
+      const items = Array.isArray(data) ? data : (data.items || []);
+      
+      const mapped: EnrollmentRequest[] = items.map((item: any) => ({
+        id: item._id, // Updated ID mapping
+        studentName: item.student_name || 'Unknown Student',
+        studentInitials: getInitials(item.student_name || 'Unknown Student'),
+        studentAvatar: item.student_avatar,
+        courseName: item.course_title || 'Unknown Course',
+        status: item.status || 'Pending',
+      }));
+      setRequests(mapped);
+    } catch (err: any) {
+      console.error(err);
+      setError("Failed to load enrollments");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchEnrollments();
+  }, []);
+
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map((n) => n[0])
+      .join('')
+      .toUpperCase()
+      .substring(0, 2);
+  };
+  
+  // Reject Modal State
+  const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
+  const [rejectReason, setRejectReason] = useState("");
+  const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null);
+
+  const handleSort = (key: keyof EnrollmentRequest) => {
+    let direction: 'asc' | 'desc' = 'asc';
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const sortedRequests = React.useMemo(() => {
+    if (!sortConfig) return requests;
+    return [...requests].sort((a, b) => {
+      if (a[sortConfig.key] < b[sortConfig.key]) {
+        return sortConfig.direction === 'asc' ? -1 : 1;
+      }
+      if (a[sortConfig.key] > b[sortConfig.key]) {
+        return sortConfig.direction === 'asc' ? 1 : -1;
+      }
+      return 0;
+    });
+  }, [requests, sortConfig]);
+
+  const openRejectModal = (id: string) => {
+    setSelectedRequestId(id);
+    setRejectReason("");
+    setIsRejectModalOpen(true);
+  };
+
+  const confirmReject = async () => {
+    if (selectedRequestId) {
+      try {
+        await api.adminUpdateEnrollmentStatus(selectedRequestId, { status: "Withdrawn", reason: rejectReason });
+        showToast("Mission Complete", 'success');
+        setRequests(prev => prev.filter(r => r.id !== selectedRequestId));
+      } catch (err: any) {
+        showToast(err.message || "Failed to reject enrollment", 'error');
+      } finally {
+        setIsRejectModalOpen(false);
+      }
+    }
+  };
+
+  const approveRequest = async (id: string) => {
+    try {
+      await api.adminUpdateEnrollmentStatus(id, { status: "Enrolled", reason: "" });
+      showToast("Mission Complete", 'success');
+      setRequests(prev => prev.map(r => r.id === id ? { ...r, status: 'Enrolled' } : r));
+    } catch (err: any) {
+      showToast(err.message || "Failed to approve enrollment", 'error');
+    }
+  };
+
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background-light dark:bg-background-dark">
+    <div className="flex h-screen overflow-hidden bg-background-light dark:bg-background-dark relative">
       <Sidebar user={user} onLogout={onLogout} />
+      
+      {/* Toast Notification */}
+      {toast.type && (
+        <div className={`fixed top-4 right-4 z-50 flex items-center gap-3 rounded-lg px-6 py-4 shadow-lg transition-all animate-in slide-in-from-top-5 ${
+            toast.type === 'success' ? 'bg-[#eafaf1] text-[#27ae60] border border-[#27ae60]/20' : 'bg-[#fdecea] text-[#e74c3c] border border-[#e74c3c]/20'
+        }`}>
+            <span className="material-icons-outlined text-xl">
+                {toast.type === 'success' ? 'check_circle' : 'error'}
+            </span>
+            <p className="font-medium text-sm">{toast.message}</p>
+        </div>
+      )}
+
       <div className="flex flex-1 flex-col overflow-hidden">
         <Header title="Enrollment Management" user={user} />
-        <main className="flex-1 overflow-y-auto p-6">
+        <main className="flex-1 overflow-y-auto p-6 relative">
           <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-3">
              <div className="group relative overflow-hidden rounded-xl bg-surface-light p-6 shadow-sm transition-all hover:shadow-md dark:bg-surface-dark">
               <div className="absolute right-0 top-0 -mt-4 -mr-4 h-24 w-24 rounded-full bg-teal-50 transition-all group-hover:scale-110 dark:bg-teal-900/10"></div>
@@ -36,7 +149,10 @@ const AdminEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
                 </div>
               </div>
               <div className="relative z-10 mt-6">
-                <button className="inline-flex items-center text-sm font-medium text-primary hover:text-primary-hover">
+                <button 
+                  onClick={() => window.location.hash = "#/admin/enrollment/manual"}
+                  className="inline-flex items-center text-sm font-medium text-primary hover:text-primary-hover"
+                >
                   Open Form <span className="material-icons-outlined ml-1 text-sm">arrow_forward</span>
                 </button>
               </div>
@@ -84,34 +200,52 @@ const AdminEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
                <div className="flex items-center justify-between border-b border-border-light px-6 py-4 dark:border-border-dark">
                 <h3 className="font-semibold text-gray-800 dark:text-white">Recent Enrollment Requests</h3>
                 <div className="flex items-center gap-2">
-                  <button className="flex items-center rounded-lg border border-border-light bg-white px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50 dark:border-border-dark dark:bg-slate-800 dark:text-gray-300">
-                    <span className="material-icons-outlined mr-1 text-sm">filter_list</span> Filter
+                  <button onClick={() => setSortConfig({ key: 'status', direction: 'asc' })} className="button-secondary text-xs flex items-center gap-1">
+                     <span className="material-icons-outlined text-sm">sort</span> Sort by Status
                   </button>
                   <button className="text-sm text-primary hover:underline">View All</button>
                 </div>
               </div>
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto max-h-[500px] border-b border-border-light dark:border-border-dark scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-slate-700 scrollbar-track-transparent">
                 <table className="w-full text-left text-sm text-gray-500 dark:text-gray-400">
-                   <thead className="bg-gray-50 text-xs uppercase text-gray-700 dark:bg-slate-800 dark:text-gray-300">
+                   <thead className="bg-gray-50 text-xs uppercase text-gray-700 dark:bg-slate-800 dark:text-gray-300 sticky top-0 z-10 shadow-sm">
                     <tr>
-                      <th className="px-6 py-3">Student Name</th>
-                      <th className="px-6 py-3">Course</th>
-                      <th className="px-6 py-3">Status</th>
-                      <th className="px-6 py-3">Date</th>
+                      <th className="px-6 py-3 cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-700" onClick={() => handleSort('studentName')}>
+                        <div className="flex items-center">Student Name {sortConfig?.key === 'studentName' && <span className="material-icons-outlined text-sm ml-1">{sortConfig.direction === 'asc' ? 'arrow_upward' : 'arrow_downward'}</span>}</div>
+                      </th>
+                      <th className="px-6 py-3 cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-700" onClick={() => handleSort('courseName')}>
+                        <div className="flex items-center">Course {sortConfig?.key === 'courseName' && <span className="material-icons-outlined text-sm ml-1">{sortConfig.direction === 'asc' ? 'arrow_upward' : 'arrow_downward'}</span>}</div>
+                      </th>
+                      <th className="px-6 py-3 cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-700" onClick={() => handleSort('status')}>
+                        <div className="flex items-center">Status {sortConfig?.key === 'status' && <span className="material-icons-outlined text-sm ml-1">{sortConfig.direction === 'asc' ? 'arrow_upward' : 'arrow_downward'}</span>}</div>
+                      </th>
                       <th className="px-6 py-3 text-right">Action</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border-light dark:divide-border-dark">
-                    {requests.map((req, i) => (
-                      <tr key={i} className={`hover:bg-gray-50 dark:hover:bg-slate-800/50 ${req.status === 'Conflict' ? 'bg-red-50/50 dark:bg-red-900/10' : ''}`}>
+                    {loading ? (
+                      <tr><td colSpan={4} className="px-6 py-4 text-center text-gray-500">Loading...</td></tr>
+                    ) : error ? (
+                      <tr><td colSpan={4} className="px-6 py-4 text-center text-red-500">{error}</td></tr>
+                    ) : sortedRequests.length === 0 ? (
+                      <tr><td colSpan={4} className="px-6 py-4 text-center text-gray-500">No enrollment requests found.</td></tr>
+                    ) : (
+                      sortedRequests.map((req, i) => (
+                      <tr key={i} className="hover:bg-gray-50 dark:hover:bg-slate-800/50">
                          <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">
                           <div className="flex items-center">
-                            <div className={`h-8 w-8 rounded-full flex items-center justify-center font-bold text-xs mr-3 ${
-                              req.status === 'Enrolled' ? 'bg-blue-100 text-blue-600' :
-                              req.status === 'Conflict' ? 'bg-pink-100 text-pink-600' :
-                              req.status === 'Pending' ? 'bg-purple-100 text-purple-600' :
-                              'bg-orange-100 text-orange-600'
-                            }`}>{req.studentInitials}</div>
+                            {req.studentAvatar ? (
+                              <img 
+                                src={req.studentAvatar} 
+                                alt={req.studentName}
+                                className="h-8 w-8 rounded-full object-cover mr-3"
+                              />
+                            ) : (
+                              <div className={`h-8 w-8 rounded-full flex items-center justify-center font-bold text-xs mr-3 ${
+                                req.status === 'Enrolled' ? 'bg-blue-100 text-blue-600' :
+                                'bg-purple-100 text-purple-600'
+                              }`}>{req.studentInitials}</div>
+                            )}
                             {req.studentName}
                           </div>
                         </td>
@@ -120,27 +254,21 @@ const AdminEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
                            <div className="flex items-center">
                             <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${
                               req.status === 'Enrolled' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
-                              req.status === 'Conflict' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' :
-                              req.status === 'Pending' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400' :
-                              'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
+                              'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
                             }`}>
-                              {req.status}{req.status === 'Waitlisted' ? ' #3' : ''}
+                              {req.status}
                             </span>
-                            {req.status === 'Conflict' && (
-                              <span className="ml-2 flex h-5 w-5 items-center justify-center rounded-full bg-red-100 text-red-600 dark:bg-red-900/50 dark:text-red-400" title="AI Detected Time Conflict">
-                                <span className="material-icons-outlined text-sm">smart_toy</span>
-                              </span>
-                            )}
                           </div>
                         </td>
-                        <td className="px-6 py-4">{req.date}</td>
                         <td className="px-6 py-4 text-right">
-                          {req.status === 'Conflict' ? (
-                            <button className="text-primary hover:text-primary-hover font-medium text-xs">Resolve</button>
-                          ) : req.status === 'Pending' ? (
+                          {req.status === 'Pending' ? (
                             <div className="flex justify-end space-x-2">
-                              <button className="text-green-600 hover:text-green-800 dark:text-green-400"><span className="material-icons-outlined text-base">check</span></button>
-                              <button className="text-red-600 hover:text-red-800 dark:text-red-400"><span className="material-icons-outlined text-base">close</span></button>
+                              <button onClick={() => approveRequest(req.id)} className="text-green-600 hover:text-green-800 dark:text-green-400" title="Approve">
+                                <span className="material-icons-outlined text-base">check</span>
+                              </button>
+                              <button onClick={() => openRejectModal(req.id)} className="text-red-600 hover:text-red-800 dark:text-red-400" title="Reject">
+                                <span className="material-icons-outlined text-base">close</span>
+                              </button>
                             </div>
                           ) : (
                             <button className="text-gray-400 hover:text-primary dark:hover:text-primary">
@@ -149,7 +277,7 @@ const AdminEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
                           )}
                         </td>
                       </tr>
-                    ))}
+                    )))}
                   </tbody>
                 </table>
               </div>
@@ -214,6 +342,51 @@ const AdminEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
               </div>
             </div>
           </div>
+          
+          {/* Reject Modal */}
+          {isRejectModalOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+              <div className="w-full max-w-md bg-white dark:bg-gray-800 rounded-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
+                  <h3 className="font-bold text-lg text-gray-800 dark:text-white">Reject Request</h3>
+                  <button onClick={() => setIsRejectModalOpen(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+                    <span className="material-icons-outlined">close</span>
+                  </button>
+                </div>
+                <div className="p-6">
+                  <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+                    Are you sure you want to reject this enrollment request? Please provide a reason for the student.
+                  </p>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">Reason for Rejection</label>
+                    <textarea 
+                      value={rejectReason}
+                      onChange={(e) => setRejectReason(e.target.value)}
+                      placeholder="e.g. Prerequisites not met, Class full..."
+                      className="w-full h-24 p-3 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500/20 focus:border-red-500 bg-white dark:bg-gray-900 resize-none outline-none transition-all"
+                    ></textarea>
+                  </div>
+                </div>
+                <div className="px-6 py-4 bg-gray-50 dark:bg-gray-800/50 flex justify-end gap-3">
+                   <button 
+                     onClick={() => setIsRejectModalOpen(false)}
+                     className="px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none"
+                   >
+                     Cancel
+                   </button>
+                   <button 
+                     onClick={confirmReject}
+                     disabled={!rejectReason.trim()}
+                     className="px-4 py-2 text-sm font-bold text-white bg-red-600 rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm transition-all flex items-center gap-2"
+                   >
+                     <span>Reject Enrollment</span>
+                     <span className="material-icons-outlined text-sm">gavel</span>
+                   </button>
+                </div>
+              </div>
+            </div>
+          )}
+
         </main>
       </div>
     </div>

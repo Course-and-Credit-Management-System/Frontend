@@ -34,9 +34,9 @@ export interface EnrollmentRequest {
   id: string;
   studentName: string;
   studentInitials: string;
+  studentAvatar?: string;
   courseName: string;
   status: 'Enrolled' | 'Pending' | 'Conflict' | 'Waitlisted';
-  date: string;
 }
 
 export interface StudentCourse {
@@ -94,4 +94,12 @@ export interface AvailableCourse {
 export interface AvailableCoursesResponse {
   data: AvailableCourse[];
   meta: any;
+}
+
+export interface StudentAlert {
+  _id: string;
+  student_id: string;
+  message: string;
+  is_read: boolean;
+  created_at: string;
 }
