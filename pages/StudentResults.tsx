@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
 import { User } from '../types';
@@ -60,16 +60,64 @@ interface ResultsProps {
 
 const StudentResults: React.FC<ResultsProps> = ({ user, onLogout }) => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [academicData, setAcademicData] = useState<AcademicData | null>(null);
   const [loading, setLoading] = useState(true);
   const [expandedSemester, setExpandedSemester] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [downloading, setDownloading] = useState(false);
   const [downloadMenuOpen, setDownloadMenuOpen] = useState(false);
+  const [highlightedSemester, setHighlightedSemester] = useState<string | null>(null);
+  const [highlightedCourse, setHighlightedCourse] = useState<string | null>(null);
 
   useEffect(() => {
     fetchAcademicData();
   }, []);
+
+  useEffect(() => {
+    // Handle URL parameters for semester and course highlighting
+    const semesterParam = searchParams.get('semester');
+    const courseParam = searchParams.get('course');
+    
+    if (semesterParam) {
+      setHighlightedSemester(semesterParam);
+      // Auto-expand highlighted semester
+      const semesterKey = academicData?.academic_summary?.semesters?.find(
+        sem => sem.academic_year === semesterParam || sem.semester === semesterParam
+      );
+      if (semesterKey) {
+        setExpandedSemester(`${semesterKey.academic_year}-${semesterKey.semester}`);
+      }
+    }
+    
+    if (courseParam) {
+      setHighlightedCourse(courseParam);
+    }
+
+    // Clear URL parameters after applying highlighting (release hook)
+    if (semesterParam || courseParam) {
+      const newSearchParams = new URLSearchParams(searchParams);
+      newSearchParams.delete('semester');
+      newSearchParams.delete('course');
+      navigate(`/student/results${newSearchParams.toString() ? '?' + newSearchParams.toString() : ''}`, { replace: true });
+      
+      // Clear highlighting after 5 seconds to release the visual highlight
+      const timer = setTimeout(() => {
+        setHighlightedSemester(null);
+        setHighlightedCourse(null);
+      }, 5000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [searchParams, academicData, navigate]);
+
+  // Clear highlighting on any user interaction (scroll, click, etc.)
+  const clearHighlighting = () => {
+    if (highlightedSemester || highlightedCourse) {
+      setHighlightedSemester(null);
+      setHighlightedCourse(null);
+    }
+  };
 
   const fetchAcademicData = async () => {
     try {
@@ -91,21 +139,65 @@ const StudentResults: React.FC<ResultsProps> = ({ user, onLogout }) => {
     setExpandedSemester(expandedSemester === semester ? null : semester);
   };
 
-  // Get unique academic years from semesters
+  // Get unique academic years from semesters (extract just year level)
   const getAcademicYears = () => {
     if (!academicData?.academic_summary?.semesters) return [];
     const years = new Set<string>();
     academicData.academic_summary.semesters.forEach(sem => {
-      years.add(sem.academic_year);
+      // Extract just the year level from academic_year
+      const academicYearStr = sem.academic_year;
+      
+      // Try multiple patterns to match different formats
+      if (academicYearStr.includes("1st Year") || academicYearStr.includes("First Year")) {
+        years.add("First Year");
+      } else if (academicYearStr.includes("2nd Year") || academicYearStr.includes("Second Year")) {
+        years.add("Second Year");
+      } else if (academicYearStr.includes("3rd Year") || academicYearStr.includes("Third Year")) {
+        years.add("Third Year");
+      } else if (academicYearStr.includes("4th Year") || academicYearStr.includes("Fourth Year")) {
+        years.add("Fourth Year");
+      } else {
+        // Try to extract year from patterns like "1st Year, First Sem" or similar
+        const yearMatch = academicYearStr.match(/^(\d+)(?:st|nd|rd|th)\s+Year/i);
+        if (yearMatch) {
+          const yearNum = yearMatch[1];
+          const yearNames: {[key: string]: string} = {
+            "1": "First Year",
+            "2": "Second Year", 
+            "3": "Third Year",
+            "4": "Fourth Year"
+          };
+          years.add(yearNames[yearNum] || academicYearStr);
+        } else {
+          // If none of the expected patterns match, add the full string for debugging
+          years.add(academicYearStr);
+        }
+      }
     });
     return Array.from(years).sort();
   };
 
-  // Get semesters grouped by year
-  const getSemestersByYear = (year: string) => {
-    return academicData?.academic_summary?.semesters?.filter(
-      sem => sem.academic_year === year
-    ) || [];
+  // Get semesters grouped by year level
+  const getSemestersByYear = (yearLevel: string) => {
+    if (!academicData?.academic_summary?.semesters) return [];
+    
+    return academicData.academic_summary.semesters.filter(sem => {
+      const academicYearStr = sem.academic_year;
+      
+      // Match by year level using multiple patterns
+      if (yearLevel === "First Year") {
+        return academicYearStr.includes("1st Year") || academicYearStr.includes("First Year");
+      } else if (yearLevel === "Second Year") {
+        return academicYearStr.includes("2nd Year") || academicYearStr.includes("Second Year");
+      } else if (yearLevel === "Third Year") {
+        return academicYearStr.includes("3rd Year") || academicYearStr.includes("Third Year");
+      } else if (yearLevel === "Fourth Year") {
+        return academicYearStr.includes("4th Year") || academicYearStr.includes("Fourth Year");
+      }
+      
+      // Fallback to exact match for any other cases
+      return academicYearStr.includes(yearLevel);
+    });
   };
 
   // Calculate total credits for a year
@@ -136,16 +228,16 @@ const StudentResults: React.FC<ResultsProps> = ({ user, onLogout }) => {
     }
   };
 
-  const handleDownloadYear = async (year: string) => {
+  const handleDownloadYear = async (yearLevel: string) => {
     try {
       setDownloading(true);
       setDownloadMenuOpen(false);
       
       const blob = await fetchPdf('/api/v1/student/results/certificate/pdf', {
         type: 'year',
-        academic_year: year,
+        academic_year: yearLevel, // Send the clean year level (e.g., "First Year")
       });
-      downloadFile(blob, `grading_certificate_${year.replace(/\s+/g, '_')}.pdf`);
+      downloadFile(blob, `grading_certificate_${yearLevel.replace(/\s+/g, '_')}.pdf`);
     } catch (error) {
       console.error('Error downloading year certificate:', error);
       alert('Failed to download year certificate. Please try again.');
@@ -182,6 +274,49 @@ const StudentResults: React.FC<ResultsProps> = ({ user, onLogout }) => {
     document.body.removeChild(a);
   };
 
+  // Check if download should be disabled
+  const shouldDisableDownload = () => {
+    if (!academicData?.academic_summary?.semesters) return true;
+    
+    // Check if CGPA is 0.0
+    if (academicData.academic_summary.cgpa === 0.0) return true;
+    
+    // Check for any failed or retake courses
+    for (const semester of academicData.academic_summary.semesters) {
+      for (const course of semester.results) {
+        if (course.status === 'Failed' || course.status === 'Retake' || course.grade === 'F') {
+          return true;
+        }
+      }
+    }
+    
+    return false;
+  };
+
+  // Format semester display name
+  const formatSemesterDisplay = (academicYear: string, semester: string) => {
+    // Convert "1st Year, First Sem(new)" to "First Year, First Semester"
+    if (academicYear.includes("1st Year") && semester.includes("First Sem")) {
+      return "First Year, First Semester";
+    } else if (academicYear.includes("1st Year") && semester.includes("Second Sem")) {
+      return "First Year, Second Semester";
+    } else if (academicYear.includes("2nd Year") && semester.includes("First Sem")) {
+      return "Second Year, First Semester";
+    } else if (academicYear.includes("2nd Year") && semester.includes("Second Sem")) {
+      return "Second Year, Second Semester";
+    } else if (academicYear.includes("3rd Year") && semester.includes("First Sem")) {
+      return "Third Year, First Semester";
+    } else if (academicYear.includes("3rd Year") && semester.includes("Second Sem")) {
+      return "Third Year, Second Semester";
+    } else if (academicYear.includes("4th Year") && semester.includes("First Sem")) {
+      return "Fourth Year, First Semester";
+    } else if (academicYear.includes("4th Year") && semester.includes("Second Sem")) {
+      return "Fourth Year, Second Semester";
+    }
+    // Fallback to original format if no pattern matches
+    return `${academicYear} - ${semester}`;
+  };
+
   // Filter courses based on search query
   const filterCourses = (courses: Course[]) => {
     if (!searchQuery.trim()) return courses;
@@ -207,7 +342,11 @@ const StudentResults: React.FC<ResultsProps> = ({ user, onLogout }) => {
   }, []);
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background-light dark:bg-background-dark font-poppins">
+    <div 
+      className="flex h-screen overflow-hidden bg-background-light dark:bg-background-dark font-poppins"
+      onClick={clearHighlighting}
+      onScroll={clearHighlighting}
+    >
       <Sidebar user={user} onLogout={onLogout} />
       <div className="flex flex-1 flex-col overflow-hidden">
         <Header title="Academic Records" user={user} />
@@ -224,11 +363,11 @@ const StudentResults: React.FC<ResultsProps> = ({ user, onLogout }) => {
             <div className="download-menu-container relative">
               <button 
                 onClick={() => setDownloadMenuOpen(!downloadMenuOpen)}
-                disabled={downloading || !academicData}
+                disabled={downloading || !academicData || shouldDisableDownload()}
                 className="flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-teal-600 to-teal-700 text-white rounded-xl text-base font-medium hover:from-teal-700 hover:to-teal-800 transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
               >
                 <span className="material-icons-outlined text-xl">download</span>
-                {downloading ? 'Downloading...' : 'Download Grading Certificate'}
+                {downloading ? 'Downloading...' : (shouldDisableDownload() ? 'Download Unavailable' : 'Download Grading Certificate')}
                 <span className="material-icons-outlined text-xl ml-1">
                   {downloadMenuOpen ? 'expand_less' : 'expand_more'}
                 </span>
@@ -257,7 +396,7 @@ const StudentResults: React.FC<ResultsProps> = ({ user, onLogout }) => {
                         >
                           <div>
                             <p className="font-medium text-gray-800 dark:text-white group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">
-                              {sem.academic_year} - {sem.semester}
+                              {formatSemesterDisplay(sem.academic_year, sem.semester)}
                             </p>
                           </div>
                         </button>
@@ -290,6 +429,13 @@ const StudentResults: React.FC<ResultsProps> = ({ user, onLogout }) => {
                               <p className="font-medium text-gray-800 dark:text-white group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">
                                 {year}
                               </p>
+                              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                {semesters.length} semester{semesters.length !== 1 ? 's' : ''} • {totalCredits} credits
+                              </p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-xs text-gray-500 dark:text-gray-400">Full Year</p>
+                              <span className="material-icons-outlined text-gray-400 text-sm">download</span>
                             </div>
                           </button>
                         );
@@ -382,12 +528,20 @@ const StudentResults: React.FC<ResultsProps> = ({ user, onLogout }) => {
               return (
                 <div 
                   key={`${semesterData.academic_year}-${semesterData.semester}`} 
-                  className="bg-surface-light dark:bg-surface-dark rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden"
+                  className={`bg-surface-light dark:bg-surface-dark rounded-xl border shadow-sm overflow-hidden ${
+                    highlightedSemester && (semesterData.academic_year === highlightedSemester || semesterData.semester === highlightedSemester)
+                      ? 'border-primary ring-2 ring-primary/20'
+                      : 'border-gray-200 dark:border-gray-700'
+                  }`}
                 >
                   {/* Semester Header - Clickable */}
                   <div 
                     onClick={() => toggleSemester(`${semesterData.academic_year}-${semesterData.semester}`)}
-                    className="p-6 cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors"
+                    className={`p-6 cursor-pointer transition-colors ${
+                      highlightedSemester && (semesterData.academic_year === highlightedSemester || semesterData.semester === highlightedSemester)
+                        ? 'bg-primary/5 dark:bg-primary/10'
+                        : 'hover:bg-gray-50 dark:hover:bg-slate-800/50'
+                    }`}
                   >
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                       <div className="flex items-start gap-4 w-full sm:w-auto">
@@ -398,7 +552,7 @@ const StudentResults: React.FC<ResultsProps> = ({ user, onLogout }) => {
                         </div>
                         <div className="flex-1">
                           <h3 className="font-bold text-lg text-gray-800 dark:text-white">
-                            {semesterData.academic_year} - {semesterData.semester}
+                            {formatSemesterDisplay(semesterData.academic_year, semesterData.semester)}
                           </h3>
                           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                             {courses.length} courses • {semesterData.total_credit_unit} credits
@@ -414,13 +568,30 @@ const StudentResults: React.FC<ResultsProps> = ({ user, onLogout }) => {
                         <div className="w-px h-12 bg-gray-200 dark:bg-gray-700 hidden sm:block"></div>
                         <div className="text-center">
                           <p className="text-xs text-gray-500 dark:text-gray-400">Status</p>
-                          <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wide ${
-                            courses.every(c => c.status === 'Passed') 
-                              ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                              : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
-                          }`}>
-                            {courses.some(c => c.status === 'Failed') ? 'Has Fails' : 'All Passed'}
-                          </span>
+                          {(() => {
+                            // Only show status if courses are actually completed (all passed) or have failed courses
+                            const hasCompletedCourses = courses.every(c => c.status === 'Passed');
+                            const hasFailedCourses = courses.some(c => c.status === 'Failed' || c.grade === 'F');
+                            
+                            if (hasCompletedCourses || hasFailedCourses) {
+                              return (
+                                <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wide ${
+                                  courses.every(c => c.status === 'Passed') 
+                                    ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                                    : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                                }`}>
+                                  {hasFailedCourses ? 'Has Fails' : 'All Passed'}
+                                </span>
+                              );
+                            } else {
+                              // Don't show any status for enrolled courses without completion
+                              return (
+                                <span className="text-xs text-gray-400 dark:text-gray-500">
+                                  In Progress
+                                </span>
+                              );
+                            }
+                          })()}
                         </div>
                       </div>
                     </div>
@@ -446,7 +617,11 @@ const StudentResults: React.FC<ResultsProps> = ({ user, onLogout }) => {
                               {filteredCourses.map((course, index) => (
                                 <tr 
                                   key={index} 
-                                  className="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors group"
+                                  className={`transition-colors group ${
+                                    highlightedCourse === course.course_code
+                                      ? 'bg-primary/10 dark:bg-primary/20 ring-1 ring-primary/30'
+                                      : 'hover:bg-gray-50 dark:hover:bg-slate-800/50'
+                                  }`}
                                 >
                                   <td className="px-6 py-4 font-medium text-primary dark:text-teal-400 group-hover:underline">
                                     <button className="hover:underline" onClick={() => handleCourseClick(course.course_code)}>
