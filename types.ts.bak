@@ -75,23 +75,3 @@ export interface CourseDetail {
   instructor_email?: string;
   email?: string;
 }
-
-export interface AvailableCourse {
-  code: string;
-  title: string;
-  type: string;
-  credits: number;
-  desc: string;
-  color: string;
-  status: string;
-  error?: string;
-  is_retake?: boolean;
-  schedule?: string;
-  message?: string;
-  enrollable?: boolean;
-}
-
-export interface AvailableCoursesResponse {
-  data: AvailableCourse[];
-  meta: any;
-}

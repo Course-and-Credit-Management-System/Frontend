@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
-import { User } from '../types';
+import { User, CourseDetail } from '../types';
 import { api } from '../lib/api';
 
 interface CourseDetailsProps {
@@ -10,35 +10,11 @@ interface CourseDetailsProps {
   onLogout: () => void;
 }
 
-type CourseDetailsData = {
-  code: string;
-  title: string;
-  instructor: string;
-  email: string;
-  credits: number;
-  schedule: string[];
-  room: string;
-  description: string;
-  syllabus: { week: number; topic: string }[];
-  prerequisites: string[];
-  type?: string;
-  department?: string;
-};
-
 const CourseDetails: React.FC<CourseDetailsProps> = ({ user, onLogout }) => {
-  const params = useParams();
+  const { courseId } = useParams<{ courseId: string }>();
   const navigate = useNavigate();
 
-  // ✅ works with any route param name
-  const rawParam =
-    (params as any).courseId ??
-    (params as any).courseCode ??
-    (params as any).course_code ??
-    '';
-
-  const courseCode = rawParam ? decodeURIComponent(String(rawParam)) : '';
-
-  const [course, setCourse] = useState<CourseDetailsData | null>(null);
+  const [course, setCourse] = useState<CourseDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -50,23 +26,23 @@ const CourseDetails: React.FC<CourseDetailsProps> = ({ user, onLogout }) => {
         setLoading(true);
         setError(null);
 
-        if (!courseCode) throw new Error('Missing course code');
+        if (!courseId) throw new Error('Missing course id');
 
-        // ✅ IMPORTANT: use the same API client as AdminCourses (same base URL + cookies + handling)
-        const data = await api.adminCourseByCode(courseCode);
+        const data: any = await api.studentCourseDetails(courseId);
 
+        // ✅ schedule can be array OR string (supports legacy DB + current validator differences)
         const scheduleRaw = data?.schedule;
         const scheduleArr: string[] = Array.isArray(scheduleRaw)
-          ? scheduleRaw.map((x: any) => String(x ?? '').trim()).filter((x: string) => x.length > 0)
+          ? scheduleRaw.filter((x: any) => typeof x === 'string' && x.trim().length > 0)
           : typeof scheduleRaw === 'string' && scheduleRaw.trim()
             ? [scheduleRaw.trim()]
             : [];
 
         const mapped: CourseDetailsData = {
-          code: data?.course_code ?? courseCode,
+          code: data?.course_code ?? courseId,
           title: data?.title ?? '—',
           instructor: data?.instructor ?? '—',
-          email: data?.instructor_email ?? data?.email ?? '—',
+
           credits: Number(data?.credits ?? 0) || 0,
           schedule: scheduleArr,
           room: data?.room ?? '—',
@@ -91,7 +67,7 @@ const CourseDetails: React.FC<CourseDetailsProps> = ({ user, onLogout }) => {
     return () => {
       alive = false;
     };
-  }, [courseCode]);
+  }, [courseId]);
 
   if (loading) {
     return (
@@ -189,7 +165,7 @@ const CourseDetails: React.FC<CourseDetailsProps> = ({ user, onLogout }) => {
                     ))
                   ) : (
                     <div className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
-                      No syllabus available yet.
+                      No syllabus currently available.
                     </div>
                   )}
                 </div>
@@ -204,13 +180,6 @@ const CourseDetails: React.FC<CourseDetailsProps> = ({ user, onLogout }) => {
                     <span className="material-icons-outlined text-gray-400 mt-0.5">person</span>
                     <div>
                       <p className="text-sm font-bold text-gray-800 dark:text-white">{course.instructor}</p>
-                      {course.email !== '—' ? (
-                        <a href={`mailto:${course.email}`} className="text-xs text-gray-500 hover:text-primary">
-                          {course.email}
-                        </a>
-                      ) : (
-                        <p className="text-xs text-gray-500">—</p>
-                      )}
                     </div>
                   </div>
 

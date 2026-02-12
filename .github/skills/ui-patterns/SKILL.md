@@ -13,6 +13,7 @@ This skill defines the visual language and component architecture for the applic
 The application relies on a specifc color palette defined by the brand guidelines.
 - **Primary Blue**: `#0d4a8f` (Navbar, primary buttons, highlights).
 - **Secondary Blue**: `#1e73be` (Hover states, accents).
+- **Action Teal**: `#077d8a` (Conflict resolution, secondary actions).
 - **Accent Yellow**: `#ffc20e` (Notifications, alerts, highlights).
 - **Neutrals**:
   - Backgrounds: `#f5f5f5` (Light Gray/Sections), `#ffffff` (White/Main).
