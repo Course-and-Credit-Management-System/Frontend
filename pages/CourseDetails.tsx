@@ -38,7 +38,7 @@ const CourseDetails: React.FC<CourseDetailsProps> = ({ user, onLogout }) => {
             ? [scheduleRaw.trim()]
             : [];
 
-        const mapped: CourseDetailsData = {
+        const mapped: CourseDetail = {
           code: data?.course_code ?? courseId,
           title: data?.title ?? '—',
           instructor: data?.instructor ?? '—',
