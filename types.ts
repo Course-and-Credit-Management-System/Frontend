@@ -19,6 +19,7 @@ export interface User {
   // backend may return these
   student_profile?: any;
   admin_profile?: any;
+  major_history?: any[];
 }
 
 export interface Course {

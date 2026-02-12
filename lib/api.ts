@@ -1,5 +1,7 @@
 /// <reference types="vite/client" />
 
+import { CurrentCoursesResponse } from '../types';
+
 const API_BASE = (import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000").replace(/\/$/, "");
 // const API_BASE = (import.meta.env.VITE_API_BASE_URL || "http://localhost:8000").replace(/\/$/, "");
 
@@ -273,5 +275,8 @@ export const api = {
     request(`/api/v1/student/results/summary${user_id ? `?user_id=${encodeURIComponent(user_id)}` : ""}`),
   studentResultsPdf: () =>
     request(`/api/v1/student/results/pdf`),
+
+  studentDegreeProgress: () =>
+    request("/api/v1/student/progress"),
 };
   
