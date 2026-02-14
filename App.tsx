@@ -25,6 +25,8 @@ import StudentEnrollment from "./pages/StudentEnrollment";
 import StudentResults from "./pages/StudentResults";
 import StudentStatus from "./pages/StudentStatus";
 import StudentCourses from "./pages/StudentCourses";
+import StudentChatPage from "./pages/StudentChatPage";
+import StudentChatTrigger from "./components/StudentChatTrigger";
 
 // ✅ student course details page stays as CourseDetails.tsx (student-facing)
 import CourseDetails from "./pages/CourseDetails";
@@ -76,6 +78,7 @@ const App: React.FC = () => {
       sessionStorage.removeItem("user");
       sessionStorage.removeItem("role");
       sessionStorage.removeItem("must_reset_password");
+      localStorage.removeItem("access_token");
     }
   };
 
@@ -204,6 +207,10 @@ const App: React.FC = () => {
                   path="/student/courses"
                   element={<StudentCourses user={user} onLogout={handleLogout} />}
                 />
+                <Route
+                  path="/student/chatbot"
+                  element={<StudentChatPage user={user} onLogout={handleLogout} />}
+                />
 
                 {/* ✅ student course details stays CourseDetails */}
                 <Route
@@ -219,6 +226,7 @@ const App: React.FC = () => {
           </>
         )}
       </Routes>
+      <StudentChatTrigger visible={!!user && user.role === "student" && !user.must_reset_password} />
     </HashRouter>
   );
 };
