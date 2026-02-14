@@ -3,6 +3,8 @@ import { HashRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import Login from "./pages/Login";
 import ResetPassword from "./pages/ResetPassword";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPasswordToken from "./pages/ResetPasswordToken";
 
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminEnrollment from "./pages/AdminEnrollment";
@@ -90,6 +92,10 @@ const App: React.FC = () => {
             )
           }
         />
+
+        {/* Public routes - accessible without login */}
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password-token" element={<ResetPasswordToken />} />
 
         {/* ✅ If user must reset password, force all routes to reset page */}
         {user?.must_reset_password ? (

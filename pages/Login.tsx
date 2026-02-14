@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Role, User } from "../types";
 import { api } from "../lib/api";
 
@@ -176,9 +176,9 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                     <input className="rounded border-gray-300 dark:border-gray-700 text-primary focus:ring-primary size-4 cursor-pointer" type="checkbox" />
                     Remember me
                   </label>
-                  <a className="text-primary font-semibold hover:underline decoration-2 underline-offset-4" href="#">
+                  <Link className="text-primary font-semibold hover:underline decoration-2 underline-offset-4" to="/forgot-password">
                     Forgot Password?
-                  </a>
+                  </Link>
                 </div>
 
                 <button

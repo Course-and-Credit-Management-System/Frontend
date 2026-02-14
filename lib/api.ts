@@ -1,6 +1,7 @@
 /// <reference types="vite/client" />
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
+const base = import.meta.env.VITE_API_BASE_URL;
+const API_BASE = base === "" ? "" : (base || "http://127.0.0.1:8000");
 
 type RequestOptions = {
   method?: string;
@@ -46,6 +47,12 @@ export const api = {
 
   resetPassword: (payload: { old_password: string; new_password: string }) =>
     request("/api/v1/auth/reset-password", { method: "POST", body: payload }),
+
+  forgotPassword: (payload: { email: string }) =>
+    request("/api/v1/auth/forgot-password", { method: "POST", body: payload }),
+
+  resetPasswordWithToken: (payload: { token: string; new_password: string }) =>
+    request("/api/v1/auth/reset-password-with-token", { method: "POST", body: payload }),
 
   adminStatistics: () => request("/api/v1/admin/statistics"),
   adminMajorDistribution: () => request("/api/v1/admin/major-distribution"),
