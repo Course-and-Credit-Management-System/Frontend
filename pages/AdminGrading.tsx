@@ -106,6 +106,7 @@ const AdminGrading: React.FC<GradingProps> = ({ user, onLogout }) => {
       const res = await fetch(`${API_BASE}/admin/exam-results/import-excel`, {
         method: 'POST',
         body: formData,
+        credentials: 'include',
       });
 
       const data = await res.json();
@@ -163,6 +164,7 @@ const AdminGrading: React.FC<GradingProps> = ({ user, onLogout }) => {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
+          credentials: 'include',
         });
 
         if (res.ok) {
@@ -216,6 +218,7 @@ const AdminGrading: React.FC<GradingProps> = ({ user, onLogout }) => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
+        credentials: 'include',
       });
 
       if (res.ok) {
@@ -250,6 +253,7 @@ const AdminGrading: React.FC<GradingProps> = ({ user, onLogout }) => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
+        credentials: 'include',
       });
 
       if (res.ok) {
@@ -275,22 +279,28 @@ const AdminGrading: React.FC<GradingProps> = ({ user, onLogout }) => {
       const params = new URLSearchParams({
         student_id: result.student_id,
         course_code: result.course_code,
-        year: result.year.toString(),
-        semester: result.semester.toString(),
       });
+      if (result.year != null && result.semester != null) {
+        params.append('year', String(result.year));
+        params.append('semester', String(result.semester));
+      }
 
       const res = await fetch(`${API_BASE}/admin/exam-results?${params}`, {
         method: 'DELETE',
+        credentials: 'include',
       });
 
+      const errData = await res.json().catch(() => ({}));
       if (res.ok) {
         setMessage({ type: 'success', text: 'Result deleted successfully' });
         fetchResults();
       } else {
-        setMessage({ type: 'error', text: 'Failed to delete result' });
+        const detail = errData?.detail ?? (res.status === 404 ? 'Exam result not found (may already be deleted)' : `HTTP ${res.status}`);
+        setMessage({ type: 'error', text: `Failed to delete: ${detail}` });
       }
     } catch (err) {
-      setMessage({ type: 'error', text: 'Failed to delete result: Network error' });
+      const msg = err instanceof Error ? err.message : 'Network error';
+      setMessage({ type: 'error', text: `Failed to delete: ${msg}. Check backend is running and CORS allows DELETE.` });
     }
   };
 
@@ -508,9 +518,10 @@ const AdminGrading: React.FC<GradingProps> = ({ user, onLogout }) => {
                         <td className="px-6 py-4 text-right">
                           <div className="flex items-center justify-end gap-1">
                             <button
-                              onClick={() => openEditModal(r)}
-                              className="text-slate-400 hover:text-primary transition-colors p-1"
-                              title="Edit"
+                              onClick={() => r.year != null && r.semester != null && openEditModal(r)}
+                              disabled={r.year == null || r.semester == null}
+                              className={`p-1 transition-colors ${r.year != null && r.semester != null ? 'text-slate-400 hover:text-primary cursor-pointer' : 'text-slate-300 cursor-not-allowed'}`}
+                              title={r.year != null && r.semester != null ? 'Edit' : 'Cannot edit: missing year or semester. Delete and re-add if needed.'}
                             >
                               <span className="material-icons-outlined text-lg">edit_note</span>
                             </button>
