@@ -348,23 +348,23 @@ const AdminEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
                         disabled={isLoading || isActive || advanceLoading !== null}
                         className={`rounded-[6px] border p-4 text-left transition-all ${
                           isActive
-                            ? 'border-[#077d8a] bg-[#eafaf1]'
-                            : 'border-[#cccccc] bg-white hover:border-[#077d8a] hover:bg-[#f5f5f5]'
+                            ? 'border-[#077d8a] bg-[#eafaf1] dark:border-teal-500 dark:bg-teal-900/25'
+                            : 'border-[#cccccc] bg-white hover:border-[#077d8a] hover:bg-[#f5f5f5] dark:border-gray-700 dark:bg-slate-800 dark:hover:border-teal-500 dark:hover:bg-slate-700'
                         } disabled:cursor-not-allowed disabled:opacity-70`}
                       >
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-3">
-                            <span className={`material-icons-outlined ${isActive ? 'text-[#077d8a]' : 'text-[#666666]'}`}>
+                            <span className={`material-icons-outlined ${isActive ? 'text-[#077d8a] dark:text-teal-300' : 'text-[#666666] dark:text-gray-300'}`}>
                               {item.icon}
                             </span>
                             <div>
-                              <p className="text-sm font-semibold text-[#333333]">{item.title}</p>
-                              <p className="text-xs text-[#666666]">{item.subtitle}</p>
+                              <p className="text-sm font-semibold text-[#333333] dark:text-gray-100">{item.title}</p>
+                              <p className="text-xs text-[#666666] dark:text-gray-400">{item.subtitle}</p>
                             </div>
                           </div>
                           <span
                             className={`text-xs font-semibold ${
-                              isActive ? 'text-[#27ae60]' : 'text-[#666666]'
+                              isActive ? 'text-[#27ae60] dark:text-green-300' : 'text-[#666666] dark:text-gray-300'
                             }`}
                           >
                             {isActive ? 'Current' : isLoading ? 'Processing...' : 'Switch'}

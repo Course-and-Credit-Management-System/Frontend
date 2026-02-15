@@ -324,29 +324,35 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
               </div>
             </div>
 
-            <div className="bg-white p-4 rounded-[8px] border border-[#cccccc] shadow-[0_2px_6px_rgba(0,0,0,0.1)] mb-6">
+            <div className="bg-white p-4 rounded-[8px] border border-[#cccccc] shadow-[0_2px_6px_rgba(0,0,0,0.1)] mb-6 dark:bg-surface-dark dark:border-gray-700">
               <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                 <div>
-                  <p className="text-sm text-[#666666]">Enrollment Status</p>
-                  <span className={`inline-flex mt-1 rounded-full px-3 py-1 text-xs font-semibold ${isEnrollmentActive ? "bg-[#eafaf1] text-[#27ae60]" : "bg-[#fdecea] text-[#e74c3c]"}`}>
+                  <p className="text-sm text-[#666666] dark:text-gray-300">Enrollment Status</p>
+                  <span
+                    className={`inline-flex mt-1 rounded-full px-3 py-1 text-xs font-semibold ${
+                      isEnrollmentActive
+                        ? "bg-[#eafaf1] text-[#27ae60] dark:bg-green-900/25 dark:text-green-300"
+                        : "bg-[#fdecea] text-[#e74c3c] dark:bg-red-900/25 dark:text-red-300"
+                    }`}
+                  >
                     {isEnrollmentActive ? "Open" : "Closed"}
                   </span>
                 </div>
                 <div>
-                  <p className="text-sm text-[#666666]">Open Time</p>
-                  <p className="text-sm font-semibold text-[#333333]">{formatLocalDateTime(enrollmentSetting?.enrollment_open_at)}</p>
+                  <p className="text-sm text-[#666666] dark:text-gray-300">Open Time</p>
+                  <p className="text-sm font-semibold text-[#333333] dark:text-gray-100">{formatLocalDateTime(enrollmentSetting?.enrollment_open_at)}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-[#666666]">Close Time</p>
-                  <p className="text-sm font-semibold text-[#333333]">{formatLocalDateTime(enrollmentSetting?.enrollment_close_at)}</p>
+                  <p className="text-sm text-[#666666] dark:text-gray-300">Close Time</p>
+                  <p className="text-sm font-semibold text-[#333333] dark:text-gray-100">{formatLocalDateTime(enrollmentSetting?.enrollment_close_at)}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-[#666666]">Remaining Time</p>
-                  <p className="text-sm font-semibold text-[#333333]">{formatRemainingTime(enrollmentSetting?.enrollment_close_at)}</p>
+                  <p className="text-sm text-[#666666] dark:text-gray-300">Remaining Time</p>
+                  <p className="text-sm font-semibold text-[#333333] dark:text-gray-100">{formatRemainingTime(enrollmentSetting?.enrollment_close_at)}</p>
                 </div>
               </div>
-              {settingLoading && <p className="mt-3 text-sm text-[#666666]">Loading enrollment setting...</p>}
-              {settingError && <p className="mt-3 text-sm text-[#e74c3c]">{settingError}</p>}
+              {settingLoading && <p className="mt-3 text-sm text-[#666666] dark:text-gray-300">Loading enrollment setting...</p>}
+              {settingError && <p className="mt-3 text-sm text-[#e74c3c] dark:text-red-300">{settingError}</p>}
             </div>
 
             <div className="bg-surface-light dark:bg-surface-dark p-4 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm mb-6 flex flex-col md:flex-row gap-4 items-center justify-between">
@@ -488,31 +494,33 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
                  <div 
                    key={course.code} 
                    onClick={() => navigate(`/student/enrollment/view/${course.code}`)} 
-                   className={`group relative bg-surface-light dark:bg-surface-dark rounded-xl p-5 border transition-all shadow-sm cursor-pointer ${
+                   className={`group relative bg-surface-light dark:bg-surface-dark rounded-xl p-4 md:p-5 border transition-all shadow-sm cursor-pointer ${
                    course.status === 'selected' ? 'border-2 border-primary ring-1 ring-primary/20 shadow-md' : 
                    course.status === 'locked' ? 'border-gray-200 dark:border-gray-700 opacity-60' : 'border-gray-200 dark:border-gray-700 hover:border-primary'
                  }`}>
-                   {course.status === 'selected' && (showValidation || isFinalized) && <div className="absolute -top-3 right-4 bg-primary text-white text-xs font-bold px-2 py-1 rounded shadow-sm">Selected</div>}
+                   {course.status === 'selected' && (showValidation || isFinalized) && <div className="absolute -top-3 right-4 bg-primary text-white text-[10px] font-bold px-2 py-1 rounded shadow-sm z-10">Selected</div>}
                    
                    {/* Hover Tooltip for Locked/Error Courses */}
                    {course.status === 'locked' && (course.message || course.error) && (
-                     <div className="absolute z-20 top-2 right-2 w-64 p-3 bg-gray-900/90 text-white text-xs rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none backdrop-blur-sm">
+                     <div className="absolute z-30 top-2 right-2 w-60 md:w-64 p-3 bg-gray-900/90 text-white text-[11px] rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none backdrop-blur-sm">
                        <div className="flex items-start gap-2">
                          <span className="material-icons-outlined text-sm text-yellow-400">info</span>
-                         <span>{course.message || course.error}</span>
+                         <span className="leading-relaxed">{course.message || course.error}</span>
                        </div>
                      </div>
                    )}
 
-                   <div className="flex justify-between items-start mb-3">
-                     <div className="flex gap-3">
-                       <div className={`h-10 w-10 rounded flex items-center justify-center font-bold text-xs uppercase bg-${course.color || 'blue'}-100 text-${course.color || 'blue'}-600`}>{course.code.split('-')[0]}</div>
-                       <div>
-                         <div className="flex items-center gap-2">
-                            <h4 className={`font-bold text-lg ${course.status === 'selected' ? 'text-primary' : ''}`}>{course.title}</h4>
-                            <span className="bg-gray-100 dark:bg-gray-800 text-xs px-1.5 py-0.5 rounded font-bold uppercase">{course.type}</span>
+                   <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-3">
+                     <div className="flex gap-3 min-w-0 flex-1">
+                       <div className={`h-10 w-10 rounded-xl flex items-center justify-center font-extrabold text-xs uppercase shrink-0 bg-${course.color || 'blue'}-100 text-${course.color || 'blue'}-600`}>
+                         {course.code.split('-')[0]}
+                       </div>
+                       <div className="min-w-0 flex-1">
+                         <div className="flex flex-wrap items-center gap-2 mb-0.5">
+                            <h4 className={`font-bold text-base md:text-lg truncate ${course.status === 'selected' ? 'text-primary' : 'text-gray-900 dark:text-white'}`}>{course.title}</h4>
+                            <span className="bg-gray-100 dark:bg-gray-800 text-[10px] px-1.5 py-0.5 rounded font-extrabold uppercase tracking-wider text-gray-500 shrink-0">{course.type}</span>
                          </div>
-                         <p className="text-xs text-gray-500 font-mono">{course.code} • {course.credits} Credits</p>
+                         <p className="text-[11px] text-gray-500 font-bold uppercase tracking-tight truncate">{course.code} • {course.credits} Credits</p>
                        </div>
                      </div>
                      <button 
@@ -520,22 +528,33 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
                          e.stopPropagation();
                          toggleCourse(course);
                        }}
-                       className={`h-8 w-8 rounded-full border flex items-center justify-center transition-all ${
-                       course.status === 'selected' ? 'bg-red-50 text-red-500 border-red-200' :
-                       course.status === 'locked' ? 'border-gray-200 text-gray-300 cursor-not-allowed' : 'border-gray-200 text-gray-400 hover:bg-primary hover:text-white'
+                       className={`w-full sm:w-auto px-4 py-2 rounded-xl border font-bold text-xs flex items-center justify-center gap-2 transition-all active:scale-95 shrink-0 ${
+                       course.status === 'selected' ? 'bg-rose-50 text-rose-600 border-rose-200 hover:bg-rose-100' :
+                       course.status === 'locked' ? 'border-gray-200 text-gray-300 cursor-not-allowed bg-gray-50/50' : 'bg-primary text-white border-primary hover:bg-opacity-90 shadow-sm'
                      }`}>
-                       <span className="material-icons-outlined text-sm">{course.status === 'selected' ? 'remove' : course.status === 'locked' ? 'lock' : 'add'}</span>
+                        <span className="material-icons-outlined text-sm">
+                          {course.status === 'selected' ? 'remove' : course.status === 'locked' ? 'lock' : 'add_circle_outline'}
+                        </span>
+                        <span>
+                          {course.status === 'selected' ? 'Remove' : course.status === 'locked' ? 'Locked' : 'Enroll'}
+                        </span>
                      </button>
                    </div>
-                   <p className="text-sm text-gray-600 dark:text-gray-300 mb-4 line-clamp-2">{course.desc}</p>
+                   <p className="text-sm text-gray-600 dark:text-gray-300 mb-4 line-clamp-2 leading-relaxed">{course.desc}</p>
                    {course.error ? (
-                     <div className="flex items-center gap-2 text-xs text-red-500 bg-red-50 dark:bg-red-900/20 py-1 px-2 rounded w-fit">
-                       <span className="material-icons-outlined text-xs">error</span> {course.error}
+                     <div className="flex items-center gap-2 text-[11px] font-bold text-rose-500 bg-rose-50 dark:bg-rose-900/20 py-1.5 px-3 rounded-lg w-fit">
+                       <span className="material-icons-outlined text-sm">error</span> {course.error}
                      </div>
                    ) : (
-                     <div className="flex flex-wrap items-center gap-4 text-xs text-gray-500 dark:text-gray-400 border-t border-gray-100 dark:border-gray-700 pt-3">
-                        <div className="flex items-center gap-1"><span className="material-icons-outlined text-xs">schedule</span> {course.schedule || 'N/A'}</div>
-                        <div className="flex items-center gap-1 text-green-600 font-medium"><span className="material-icons-outlined text-xs">check_circle</span> Prerequisites Met</div>
+                     <div className="flex flex-wrap items-center gap-y-2 gap-x-4 text-[11px] font-bold text-gray-500 dark:text-gray-400 border-t border-gray-100 dark:border-gray-700 pt-3">
+                        <div className="flex items-center gap-1.5 uppercase tracking-wide">
+                          <span className="material-icons-outlined text-sm text-primary/60">schedule</span> 
+                          {course.schedule || 'N/A'}
+                        </div>
+                        <div className="flex items-center gap-1.5 text-emerald-600 uppercase tracking-wide">
+                          <span className="material-icons-outlined text-sm">check_circle</span> 
+                          Prerequisites Met
+                        </div>
                      </div>
                    )}
                  </div>

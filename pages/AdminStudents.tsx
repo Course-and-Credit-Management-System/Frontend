@@ -215,31 +215,31 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
       <Sidebar user={user} onLogout={onLogout} />
       <div className="flex flex-1 flex-col overflow-hidden">
         <Header title="Students Directory" user={user} />
-        <main className="flex-1 overflow-y-auto p-6">
+        <main className="flex-1 overflow-y-auto p-4 md:p-6">
           {error && (
             <div className="mb-6 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900/40 dark:bg-red-900/20 dark:text-red-200">
               {error}
             </div>
           )}
 
-          <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div className="flex flex-1 flex-col gap-4 md:flex-row md:items-center">
-              <div className="relative">
+          <div className="mb-6 flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex flex-1 flex-col gap-4 sm:flex-row sm:items-center">
+              <div className="relative w-full sm:w-64">
                 <span className="absolute inset-y-0 left-0 flex items-center pl-3">
-                  <span className="material-icons-outlined text-gray-400">search</span>
+                  <span className="material-icons-outlined text-gray-400 text-[18px]">search</span>
                 </span>
                 <input
-                  className="w-full md:w-64 rounded-lg border border-border-light bg-surface-light py-2 pl-10 pr-4 text-sm focus:border-primary outline-none dark:border-border-dark dark:bg-surface-dark dark:text-gray-200"
-                  placeholder="Search by name, ID..."
+                  className="w-full rounded-xl border border-border-light bg-surface-light py-2.5 pl-10 pr-4 text-sm font-bold focus:border-primary outline-none dark:border-border-dark dark:bg-surface-dark dark:text-gray-200 transition-all focus:ring-2 focus:ring-primary/20"
+                  placeholder="Search students..."
                   type="text"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                 />
               </div>
 
-              <div className="flex gap-4">
+              <div className="flex gap-2 sm:gap-4">
                 <select
-                  className="rounded-lg border border-border-light bg-surface-light py-2 pl-3 pr-8 text-sm outline-none dark:border-border-dark dark:bg-surface-dark"
+                  className="flex-1 sm:flex-none rounded-xl border border-border-light bg-surface-light py-2.5 pl-3 pr-8 text-sm font-bold outline-none dark:border-border-dark dark:bg-surface-dark transition-all focus:ring-2 focus:ring-primary/20"
                   value={majorFilter}
                   onChange={(e) => setMajorFilter(e.target.value)}
                 >
@@ -252,7 +252,7 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
                 </select>
 
                 <select
-                  className="rounded-lg border border-border-light bg-surface-light py-2 pl-3 pr-8 text-sm outline-none dark:border-border-dark dark:bg-surface-dark"
+                  className="flex-1 sm:flex-none rounded-xl border border-border-light bg-surface-light py-2.5 pl-3 pr-8 text-sm font-bold outline-none dark:border-border-dark dark:bg-surface-dark transition-all focus:ring-2 focus:ring-primary/20"
                   value={yearFilter}
                   onChange={(e) => setYearFilter(e.target.value)}
                 >
@@ -266,43 +266,46 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
-              <button className="flex items-center rounded-lg border border-primary bg-surface-light px-4 py-2 text-sm font-medium text-primary hover:bg-gray-50 dark:bg-surface-dark dark:hover:bg-slate-800 transition-colors">
-                <span className="material-icons-outlined mr-2 text-base">table_view</span>
-                Import from Excel
+            <div className="flex items-center gap-2">
+              <button className="flex-1 sm:flex-none flex items-center justify-center rounded-xl border border-primary/30 bg-white px-4 py-2.5 text-sm font-bold text-primary hover:bg-gray-50 dark:bg-surface-dark dark:hover:bg-slate-800 transition-all shadow-sm">
+                <span className="material-icons-outlined mr-2 text-[18px]">table_view</span>
+                Import
               </button>
-              <button className="flex items-center rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-hover">
-                <span className="material-icons-outlined mr-2 text-base">add</span>
+              <button className="flex-1 sm:flex-none flex items-center justify-center rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-white hover:bg-opacity-90 transition-all shadow-md shadow-primary/20">
+                <span className="material-icons-outlined mr-2 text-[18px]">add</span>
                 Add Student
               </button>
             </div>
           </div>
 
-          <div className="rounded-xl bg-surface-light shadow-sm dark:bg-surface-dark overflow-hidden">
+          <div className="rounded-2xl border border-border-light bg-surface-light shadow-sm dark:border-border-dark dark:bg-surface-dark overflow-hidden">
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm text-gray-500 dark:text-gray-400">
-                <thead className="bg-gray-50 text-xs uppercase text-gray-700 dark:bg-slate-800 dark:text-gray-300">
+              <table className="w-full text-left text-sm">
+                <thead className="bg-gray-50 border-b border-border-light text-[10px] font-extrabold uppercase tracking-widest text-gray-600 dark:bg-slate-900/40 dark:border-border-dark dark:text-gray-400">
                   <tr>
-                    <th className="px-6 py-4 font-semibold">Student ID</th>
-                    <th className="px-6 py-4 font-semibold">Name</th>
-                    <th className="px-6 py-4 font-semibold">Major</th>
-                    <th className="px-6 py-4 font-semibold">Total Credits</th>
-                    <th className="px-6 py-4 font-semibold">Status</th>
-                    <th className="px-6 py-4 text-right font-semibold">Actions</th>
+                    <th className="px-4 md:px-6 py-4">Student ID</th>
+                    <th className="px-4 md:px-6 py-4">Name</th>
+                    <th className="px-4 md:px-6 py-4">Major</th>
+                    <th className="hidden sm:table-cell px-4 md:px-6 py-4">Credits</th>
+                    <th className="px-4 md:px-6 py-4">Status</th>
+                    <th className="px-4 md:px-6 py-4 text-right">Actions</th>
                   </tr>
                 </thead>
 
                 <tbody className="divide-y divide-border-light dark:divide-border-dark">
                   {loading ? (
                     <tr>
-                      <td className="px-6 py-6 text-sm text-gray-500 dark:text-gray-400" colSpan={6}>
-                        Loading students...
+                      <td className="px-6 py-12 text-center text-sm font-bold text-gray-500 dark:text-gray-400" colSpan={6}>
+                        <div className="flex flex-col items-center gap-2">
+                           <span className="material-icons-outlined animate-spin text-primary">refresh</span>
+                           Loading student directory...
+                        </div>
                       </td>
                     </tr>
                   ) : filtered.length === 0 ? (
                     <tr>
-                      <td className="px-6 py-6 text-sm text-gray-500 dark:text-gray-400" colSpan={6}>
-                        No students found.
+                      <td className="px-6 py-12 text-center text-sm font-bold text-gray-500 dark:text-gray-400" colSpan={6}>
+                        No students found matching your criteria.
                       </td>
                     </tr>
                   ) : (
@@ -310,61 +313,63 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
                       <tr
                         key={`${s.id}-${i}`}
                         onClick={() => handleStudentClick(s.id)}
-                        className="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer"
+                        className="hover:bg-gray-50 dark:hover:bg-slate-800/30 transition-colors cursor-pointer"
                       >
-                        <td className="px-6 py-4 font-mono text-gray-900 dark:text-white">{s.id}</td>
+                        <td className="px-4 md:px-6 py-4 font-mono font-bold text-gray-900 dark:text-white">{s.id}</td>
 
-                        <td className="px-6 py-4">
+                        <td className="px-4 md:px-6 py-4">
                           <div className="flex items-center">
                             <div
-                              className={`h-8 w-8 rounded-full flex items-center justify-center font-bold text-xs mr-3 ${colorClasses(
+                              className={`h-9 w-9 rounded-xl flex items-center justify-center font-extrabold text-xs mr-3 shrink-0 ${colorClasses(
                                 s.colorKey
                               )}`}
                             >
                               {s.init}
                             </div>
-                            <div>
-                              <div className="font-medium text-gray-900 dark:text-white">{s.name}</div>
-                              <div className="text-xs text-gray-500">{s.email}</div>
+                            <div className="min-w-0">
+                              <div className="font-bold text-gray-900 dark:text-white truncate">{s.name}</div>
+                              <div className="text-xs text-gray-500 truncate">{s.email}</div>
                             </div>
                           </div>
                         </td>
 
-                        <td className="px-6 py-4">{s.major}</td>
-
-                        <td className="px-6 py-4">
-                          <span className="font-medium">{s.creditsEarned}</span>{' '}
-                          <span className="text-xs text-gray-400">
-                            / {s.creditsTotal || '—'}
-                          </span>
+                        <td className="px-4 md:px-6 py-4">
+                           <div className="font-bold text-gray-700 dark:text-gray-300 truncate max-w-[120px]">{s.major}</div>
                         </td>
 
-                        <td className="px-6 py-4">
+                        <td className="hidden sm:table-cell px-4 md:px-6 py-4">
+                          <div className="flex items-center gap-1.5 font-bold">
+                             <span className="text-gray-900 dark:text-white">{s.creditsEarned}</span>
+                             <span className="text-[10px] text-gray-400">/ {s.creditsTotal || '—'}</span>
+                          </div>
+                        </td>
+
+                        <td className="px-4 md:px-6 py-4">
                           <span
-                            className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                            className={`inline-flex rounded-full px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wide ${
                               s.status === 'Active' || s.status === 'Current'
-                                ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300'
-                                : 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300'
+                                ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300'
+                                : 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300'
                             }`}
                           >
                             {s.status}
                           </span>
                         </td>
 
-                        <td className="px-6 py-4 text-right">
-                          <div className="flex items-center justify-end space-x-2">
+                        <td className="px-4 md:px-6 py-4 text-right">
+                          <div className="flex items-center justify-end space-x-1">
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
                                 handleStudentClick(s.id);
                               }}
-                              className="rounded p-1 text-gray-400 hover:text-primary"
+                              className="rounded-lg p-2 text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
                             >
                               <span className="material-icons-outlined text-lg">visibility</span>
                             </button>
                             <button
                               onClick={(e) => e.stopPropagation()}
-                              className="rounded p-1 text-gray-400 hover:text-blue-600"
+                              className="hidden sm:inline-flex rounded-lg p-2 text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
                             >
                               <span className="material-icons-outlined text-lg">edit</span>
                             </button>
@@ -377,15 +382,15 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
               </table>
             </div>
 
-            <div className="flex items-center justify-between border-t border-border-light px-6 py-4 dark:border-border-dark">
-              <div className="text-sm text-gray-500">
-                Showing {filtered.length === 0 ? 0 : 1} to {filtered.length} of {students.length} results
+            <div className="flex flex-col sm:flex-row items-center justify-between border-t border-border-light px-6 py-4 gap-4 dark:border-border-dark bg-gray-50/50 dark:bg-slate-900/20">
+              <div className="text-xs font-bold text-gray-500 uppercase tracking-widest">
+                Showing {filtered.length} of {students.length} students
               </div>
-              <div className="flex gap-2">
-                <button className="rounded-lg border border-border-light px-3 py-1 text-sm font-medium text-gray-500 disabled:opacity-50" disabled>
-                  Previous
+              <div className="flex gap-2 w-full sm:w-auto">
+                <button className="flex-1 sm:flex-none rounded-xl border border-border-light bg-white px-4 py-2 text-xs font-bold text-gray-500 disabled:opacity-50 dark:bg-slate-800 dark:border-border-dark" disabled>
+                  Prev
                 </button>
-                <button className="rounded-lg border border-border-light px-3 py-1 text-sm font-medium text-gray-500" disabled>
+                <button className="flex-1 sm:flex-none rounded-xl border border-border-light bg-white px-4 py-2 text-xs font-bold text-gray-500 dark:bg-slate-800 dark:border-border-dark" disabled>
                   Next
                 </button>
               </div>

@@ -72,6 +72,10 @@ function previewText(s: string, max = 110) {
   return v.slice(0, max - 1) + "…";
 }
 
+function clsx(...parts: Array<string | false | null | undefined>) {
+  return parts.filter(Boolean).join(" ");
+}
+
 export default function AdminMessages({ user, onLogout }: Props) {
   const [items, setItems] = useState<Msg[]>([]);
   const [loading, setLoading] = useState(true);
@@ -219,7 +223,11 @@ export default function AdminMessages({ user, onLogout }: Props) {
     }
 
     if (!selectedId) {
-      setSelectedId(filtered[0]._id);
+      // Keep mobile/tablet in list view when user taps "Back to Inbox".
+      // Auto-select only for desktop split-view.
+      if (window.innerWidth >= 1280) {
+        setSelectedId(filtered[0]._id);
+      }
       return;
     }
 
@@ -348,13 +356,13 @@ export default function AdminMessages({ user, onLogout }: Props) {
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background-light dark:bg-background-dark font-poppins">
+    <div className="flex min-h-screen overflow-x-hidden bg-background-light dark:bg-background-dark font-poppins">
       <Sidebar user={user} onLogout={onLogout} />
-      <div className="flex flex-1 flex-col overflow-hidden">
+      <div className="flex flex-1 flex-col">
         <Header title="Messages" user={user} />
 
-        <main className="flex-1 overflow-hidden p-6 lg:p-8">
-          <div className="h-full flex flex-col gap-6">
+        <main className="flex-1 overflow-y-auto p-3 sm:p-4 lg:p-6 xl:p-8">
+          <div className="flex flex-col gap-6 pb-4">
             {/* Toast */}
             {toast && (
               <div className="fixed right-6 top-6 z-50">
@@ -383,7 +391,7 @@ export default function AdminMessages({ user, onLogout }: Props) {
               <button
                 type="button"
                 onClick={() => setComposeOpen((v) => !v)}
-                className="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-gray-50 dark:hover:bg-slate-800/40"
+                className="w-full px-4 sm:px-6 py-4 flex items-center justify-between text-left hover:bg-gray-50 dark:hover:bg-slate-800/40"
               >
                 <div>
                   <div className="font-bold text-gray-800 dark:text-white">Send Message</div>
@@ -392,7 +400,7 @@ export default function AdminMessages({ user, onLogout }: Props) {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3 sm:gap-4">
                   <div className="text-xs text-gray-500 dark:text-gray-400">
                     Unread: <span className="font-bold text-gray-800 dark:text-white">{unreadCount}</span>
                   </div>
@@ -401,8 +409,8 @@ export default function AdminMessages({ user, onLogout }: Props) {
               </button>
 
               {composeOpen && (
-                <div className="p-6 border-t border-gray-200 dark:border-gray-700">
-                  <form onSubmit={onSend} className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div className="p-4 sm:p-6 border-t border-gray-200 dark:border-gray-700">
+                  <form onSubmit={onSend} className="grid grid-cols-1 xl:grid-cols-2 gap-4">
                     {/* Receiver (strict searchable select) */}
                     <div className="relative">
                     <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Receiver ID</label>
@@ -490,7 +498,7 @@ export default function AdminMessages({ user, onLogout }: Props) {
                       </select>
                     </div>
 
-                    <div className="lg:col-span-2">
+                    <div className="xl:col-span-2">
                       <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Subject</label>
                       <input
                         className="mt-1 w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-transparent px-3 py-2 text-sm text-gray-800 dark:text-white"
@@ -500,7 +508,7 @@ export default function AdminMessages({ user, onLogout }: Props) {
                       />
                     </div>
 
-                    <div className="lg:col-span-2">
+                    <div className="xl:col-span-2">
                       <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Body</label>
                       <textarea
                         className="mt-1 w-full min-h-[90px] rounded-lg border border-gray-200 dark:border-gray-700 bg-transparent px-3 py-2 text-sm text-gray-800 dark:text-white"
@@ -510,7 +518,7 @@ export default function AdminMessages({ user, onLogout }: Props) {
                       />
                     </div>
 
-                    <div className="flex items-end gap-2">
+                    <div className="flex items-end gap-2 xl:col-span-2">
                       <button
                         type="submit"
                         disabled={sending}
@@ -537,116 +545,129 @@ export default function AdminMessages({ user, onLogout }: Props) {
             </div>
 
             {/* Inbox */}
-            <div className="flex-1 min-h-0 bg-surface-light dark:bg-surface-dark rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden flex flex-col">
+            <div className="bg-surface-light dark:bg-surface-dark rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden flex flex-col">
               {/* Top bar */}
-              <div className="border-b border-gray-200 dark:border-gray-700 px-4 py-3 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
+              <div className="border-b border-gray-200 dark:border-gray-700 px-4 py-4 flex flex-col gap-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="min-w-0">
                     <div className="flex items-center gap-2">
                       <h3 className="font-bold text-gray-800 dark:text-white">Inbox</h3>
-                      <span className="text-xs text-gray-500 dark:text-gray-400">
+                      <span className="text-[10px] font-extrabold uppercase tracking-widest bg-gray-100 dark:bg-slate-800 px-2 py-0.5 rounded text-gray-500">
                         {filtered.length}/{items.length}
                       </span>
                     </div>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                      Click a message to preview • Unread messages auto-mark as read when opened
+                    <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-1">
+                      Unread messages auto-mark as read when opened.
                     </p>
-
-                    {/* Tabs + bulk */}
-                    <div className="mt-2 flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => setTab("All")}
-                        className={[
-                          "rounded-lg px-3 py-1 text-sm font-bold border",
-                          tab === "All"
-                            ? "bg-primary text-white border-primary"
-                            : "bg-transparent text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-700",
-                        ].join(" ")}
-                      >
-                        All <span className="ml-2 text-xs opacity-80">{items.length}</span>
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => setTab("Unread")}
-                        className={[
-                          "rounded-lg px-3 py-1 text-sm font-bold border",
-                          tab === "Unread"
-                            ? "bg-primary text-white border-primary"
-                            : "bg-transparent text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-700",
-                        ].join(" ")}
-                      >
-                        Unread <span className="ml-2 text-xs opacity-80">{unreadCount}</span>
-                      </button>
-
-                      <div className="flex-1" />
-
-                      <button
-                        type="button"
-                        onClick={markAllVisibleAsRead}
-                        className="rounded-lg border border-gray-200 bg-white px-3 py-1 text-sm font-bold text-gray-700 hover:opacity-90 dark:border-gray-700 dark:bg-slate-800 dark:text-gray-200"
-                      >
-                        Mark visible as read
-                      </button>
-                    </div>
                   </div>
 
-                  <button onClick={onRefresh} className="text-sm font-bold text-primary hover:opacity-80" disabled={loading}>
-                    {loading ? "Loading..." : "Refresh"}
-                  </button>
+                  <div className="grid grid-cols-2 sm:flex items-center gap-2 shrink-0 w-full sm:w-auto">
+                    <button onClick={onRefresh} className="flex items-center justify-center gap-2 rounded-lg border border-primary/20 px-3 py-2 text-xs font-bold text-primary hover:bg-primary/5 transition-colors" disabled={loading}>
+                      <span className={clsx("material-icons-outlined text-sm", loading && "animate-spin")}>refresh</span>
+                      Refresh
+                    </button>
+                    <button
+                      type="button"
+                      onClick={markAllVisibleAsRead}
+                      className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-bold text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-slate-800 dark:text-gray-200 transition-all shadow-sm"
+                    >
+                      Mark read
+                    </button>
+                  </div>
                 </div>
 
-                {/* Search + filters */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
-                  <input
-                    className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-transparent px-3 py-2 text-sm text-gray-800 dark:text-white"
-                    placeholder="Search..."
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                  />
+                <div className="flex flex-col lg:flex-row gap-3">
+                  {/* Tabs */}
+                  <div className="flex items-center gap-1 bg-gray-100 dark:bg-slate-900/50 p-1 rounded-xl shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => setTab("All")}
+                      className={clsx(
+                        "flex-1 lg:flex-none rounded-lg px-4 py-1.5 text-xs font-bold transition-all",
+                        tab === "All"
+                          ? "bg-white dark:bg-primary text-primary dark:text-white shadow-sm"
+                          : "text-gray-500 dark:text-gray-400 hover:text-gray-700"
+                      )}
+                    >
+                      All
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setTab("Unread")}
+                      className={clsx(
+                        "flex-1 lg:flex-none rounded-lg px-4 py-1.5 text-xs font-bold transition-all flex items-center justify-center gap-2",
+                        tab === "Unread"
+                          ? "bg-white dark:bg-primary text-primary dark:text-white shadow-sm"
+                          : "text-gray-500 dark:text-gray-400 hover:text-gray-700"
+                      )}
+                    >
+                      Unread
+                      {unreadCount > 0 && (
+                        <span className={clsx(
+                          "size-1.5 rounded-full",
+                          tab === "Unread" ? "bg-white" : "bg-primary"
+                        )} />
+                      )}
+                    </button>
+                  </div>
 
-                  <select
-                    className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-transparent px-3 py-2 text-sm text-gray-800 dark:text-white"
-                    value={catFilter}
-                    onChange={(e) => setCatFilter(e.target.value)}
-                  >
-                    <option value="All">All Categories</option>
-                    {CATEGORIES.map((c) => (
-                      <option key={c} value={c}>
-                        {c}
-                      </option>
-                    ))}
-                  </select>
+                  {/* Search + filters */}
+                  <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2">
+                    <div className="relative">
+                      <span className="material-icons-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm pointer-events-none">search</span>
+                      <input
+                        className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-transparent pl-8 pr-3 py-1.5 text-xs font-bold text-gray-800 dark:text-white focus:border-primary outline-none transition-all"
+                        placeholder="Search..."
+                        value={query}
+                        onChange={(e) => setQuery(e.target.value)}
+                      />
+                    </div>
 
-                  <select
-                    className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-transparent px-3 py-2 text-sm text-gray-800 dark:text-white"
-                    value={sortDir}
-                    onChange={(e) => setSortDir(e.target.value as any)}
-                  >
-                    <option value="Newest">Newest</option>
-                    <option value="Oldest">Oldest</option>
-                  </select>
+                    <select
+                      className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-transparent px-3 py-1.5 text-xs font-bold text-gray-800 dark:text-white outline-none focus:border-primary transition-all"
+                      value={catFilter}
+                      onChange={(e) => setCatFilter(e.target.value)}
+                    >
+                      <option value="All">Categories</option>
+                      {CATEGORIES.map((c) => (
+                        <option key={c} value={c}>{c}</option>
+                      ))}
+                    </select>
+
+                    <select
+                      className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-transparent px-3 py-1.5 text-xs font-bold text-gray-800 dark:text-white outline-none focus:border-primary transition-all"
+                      value={sortDir}
+                      onChange={(e) => setSortDir(e.target.value as any)}
+                    >
+                      <option value="Newest">Newest</option>
+                      <option value="Oldest">Oldest</option>
+                    </select>
+                  </div>
                 </div>
               </div>
 
               {/* Two-panel body (flex-1 = stable scrolling) */}
-              <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-12">
+              <div className="grid grid-cols-1 xl:grid-cols-12">
                 {/* LEFT: list */}
-                <div className="lg:col-span-5 xl:col-span-4 border-b lg:border-b-0 lg:border-r border-gray-200 dark:border-gray-700 min-h-0">
+                <div className={clsx(
+                  "xl:col-span-5 2xl:col-span-4 border-b xl:border-b-0 xl:border-r border-gray-200 dark:border-gray-700 min-h-0 flex flex-col bg-gray-50/20",
+                  selectedId && "hidden xl:flex" // hide list on mobile/tablet if message selected
+                )}>
                   <div ref={listTopRef} />
 
                   {loading ? (
-                    <div className="p-4 text-sm text-gray-500 dark:text-gray-400">Loading messages…</div>
+                    <div className="p-8 text-center text-xs font-bold text-gray-400 animate-pulse uppercase tracking-widest">
+                      Syncing messages…
+                    </div>
                   ) : filtered.length === 0 ? (
-                    <div className="p-6">
-                      <div className="text-sm font-bold text-gray-800 dark:text-white">
-                        {tab === "Unread" ? "No unread messages" : "No messages"}
+                    <div className="p-8 text-center">
+                      <div className="text-sm font-bold text-gray-400 uppercase tracking-wide">
+                        {tab === "Unread" ? "Clean Inbox" : "Empty Inbox"}
                       </div>
-                      <div className="mt-1 text-sm text-gray-500 dark:text-gray-400">Try changing filters or search.</div>
+                      <div className="mt-1 text-[11px] text-gray-400">Try adjusting your filters.</div>
                     </div>
                   ) : (
-                    <div className="h-full min-h-0 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-800 pb-6">
+                    <div className="flex-1 min-h-0 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-800 scrollbar-thin">
                       {filtered.map((m) => {
                         const isSelected = m._id === selectedId;
                         const isUnread = !m.is_read;
@@ -655,69 +676,53 @@ export default function AdminMessages({ user, onLogout }: Props) {
                           <button
                             key={m._id}
                             onClick={() => openMessage(m._id)}
-                            className={[
-                              "w-full text-left px-4 py-3",
-                              "hover:bg-gray-50 dark:hover:bg-slate-800/40",
-                              isSelected ? "bg-gray-50 dark:bg-slate-800/50" : "",
-                            ].join(" ")}
+                            className={clsx(
+                              "w-full text-left px-4 py-4 transition-all group",
+                              isSelected ? "bg-white dark:bg-slate-800/60 shadow-inner" : "hover:bg-gray-50 dark:hover:bg-slate-800/30"
+                            )}
                           >
                             <div className="flex items-start gap-3">
                               {/* unread dot */}
-                              <div className="pt-1">
+                              <div className="pt-1.5 shrink-0">
                                 <div
-                                  className={[
-                                    "h-2.5 w-2.5 rounded-full",
-                                    isUnread
-                                      ? "bg-primary"
-                                      : "bg-transparent border border-gray-300 dark:border-gray-700",
-                                  ].join(" ")}
-                                  title={isUnread ? "Unread" : "Read"}
+                                  className={clsx(
+                                    "h-2 w-2 rounded-full transition-all",
+                                    isUnread ? "bg-primary scale-110 shadow-[0_0_8px_rgba(7,125,138,0.4)]" : "bg-gray-300 dark:bg-slate-700 scale-75"
+                                  )}
                                 />
                               </div>
 
                               <div className="min-w-0 flex-1">
-                                <div className="flex items-center justify-between gap-2">
-                                  <div className="min-w-0">
-                                    <div className="flex items-center gap-2 min-w-0">
-                                      <span className="text-xs font-bold px-2 py-0.5 rounded bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 shrink-0">
-                                        {m.category ?? "General"}
-                                      </span>
-
-                                      <span
-                                        className={[
-                                          "text-sm truncate",
-                                          m.is_read
-                                            ? "font-semibold text-gray-800 dark:text-white"
-                                            : "font-extrabold text-gray-900 dark:text-white",
-                                        ].join(" ")}
-                                      >
-                                        {m.subject || "(No subject)"}
-                                      </span>
-                                    </div>
-
-                                    <div
-                                      className={[
-                                        "mt-1 text-xs truncate",
-                                        m.is_read ? "text-gray-500 dark:text-gray-400" : "text-gray-600 dark:text-gray-300",
-                                      ].join(" ")}
-                                    >
-                                      {previewText(m.body) || "—"}
-                                    </div>
-                                  </div>
-
-                                  <div className="shrink-0 text-xs text-gray-500 dark:text-gray-400">
-                                    {formatListDate(m.sent_at)}
-                                  </div>
+                                <div className="flex items-center justify-between gap-2 mb-1">
+                                   <span className={clsx(
+                                     "text-[10px] font-extrabold uppercase tracking-tight px-1.5 py-0.5 rounded shrink-0",
+                                     m.category === "Warning" ? "bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300" : "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300"
+                                   )}>
+                                     {m.category ?? "General"}
+                                   </span>
+                                   <span className="shrink-0 text-[10px] font-bold text-gray-400 uppercase">
+                                     {formatListDate(m.sent_at)}
+                                   </span>
                                 </div>
 
-                                <div className="mt-1 text-[11px] text-gray-500 dark:text-gray-400 flex flex-wrap gap-2">
-                                  <span>
-                                    From: <span className="font-mono">{m.sender_id}</span>
-                                  </span>
-                                  <span>•</span>
-                                  <span>
-                                    To: <span className="font-mono">{m.receiver_id}</span>
-                                  </span>
+                                <div className={clsx(
+                                  "text-sm truncate transition-colors",
+                                  isSelected ? "text-primary font-bold" : isUnread ? "text-gray-900 dark:text-white font-bold" : "text-gray-600 dark:text-gray-400 font-medium"
+                                )}>
+                                  {m.subject || "(No subject)"}
+                                </div>
+
+                                <div className={clsx(
+                                  "mt-1 text-xs truncate",
+                                  isUnread ? "text-gray-600 dark:text-gray-300 font-medium" : "text-gray-400 dark:text-gray-500"
+                                )}>
+                                  {previewText(m.body, 60)}
+                                </div>
+
+                                <div className="mt-2 text-[10px] font-bold text-gray-400 dark:text-slate-600 flex items-center gap-2 uppercase tracking-tighter">
+                                  <span className="truncate">From: {m.sender_id}</span>
+                                  <span className="opacity-30">|</span>
+                                  <span className="truncate">To: {m.receiver_id}</span>
                                 </div>
                               </div>
                             </div>
@@ -729,75 +734,86 @@ export default function AdminMessages({ user, onLogout }: Props) {
                 </div>
 
                 {/* RIGHT: detail */}
-                <div className="lg:col-span-7 xl:col-span-8 min-h-0">
+                <div className={clsx(
+                  "xl:col-span-7 2xl:col-span-8 min-h-0 flex flex-col bg-white dark:bg-transparent",
+                  !selectedId && "hidden xl:flex" // hide detail on mobile/tablet if none selected
+                )}>
                   {!selected ? (
-                    <div className="h-full flex items-center justify-center p-8">
+                    <div className="h-full flex items-center justify-center p-8 bg-gray-50/30">
                       <div className="text-center">
-                        <div className="text-sm font-bold text-gray-800 dark:text-white">Select a message</div>
-                        <div className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                          Choose an item on the left to view details.
+                        <div className="size-16 rounded-2xl bg-gray-100 dark:bg-slate-800 flex items-center justify-center mx-auto mb-4">
+                           <span className="material-icons-outlined text-gray-400 text-3xl">mail_outline</span>
                         </div>
+                        <div className="text-sm font-bold text-gray-400 uppercase tracking-widest">Select a message</div>
+                        <div className="mt-1 text-xs text-gray-400">Choose an item to read its full content.</div>
                       </div>
                     </div>
                   ) : (
                     <div className="h-full min-h-0 flex flex-col">
+                      {/* mobile back button */}
+                      <div className="xl:hidden px-4 py-2 border-b border-gray-100 dark:border-slate-800">
+                         <button 
+                           onClick={() => setSelectedId(null)}
+                           className="flex items-center gap-1 text-xs font-bold text-primary"
+                         >
+                           <span className="material-icons-outlined text-sm">arrow_back</span>
+                           Back to Inbox
+                         </button>
+                      </div>
+
                       {/* detail header */}
-                      <div className="border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex items-start justify-between gap-4">
+                      <div className="border-b border-gray-200 dark:border-gray-700 px-4 md:px-6 py-5 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 bg-gray-50/30 dark:bg-slate-900/10">
                         <div className="min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="text-xs font-bold px-2 py-1 rounded bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
+                          <div className="flex items-center gap-2 flex-wrap mb-3">
+                            <span className="text-[10px] font-extrabold uppercase tracking-wide px-2 py-1 rounded bg-primary/10 text-primary border border-primary/20">
                               {selected.category ?? "General"}
                             </span>
 
-                            <span
-                              className={[
-                                "text-xs font-bold px-2 py-1 rounded",
-                                selected.is_read
-                                  ? "bg-gray-100 text-gray-700 dark:bg-slate-800 dark:text-gray-200"
-                                  : "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300",
-                              ].join(" ")}
-                            >
+                            <span className={clsx(
+                              "text-[10px] font-extrabold uppercase tracking-wide px-2 py-1 rounded border",
+                              selected.is_read
+                                ? "bg-gray-100 text-gray-500 border-gray-200 dark:bg-slate-800 dark:text-gray-400 dark:border-gray-700"
+                                : "bg-emerald-50 text-emerald-700 border-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-300 dark:border-emerald-900/40"
+                            )}>
                               {selected.is_read ? "Read" : "Unread"}
                             </span>
                           </div>
 
-                          <h2 className="mt-2 text-lg font-bold text-gray-900 dark:text-white break-words">
+                          <h2 className="text-lg md:text-xl font-bold text-gray-900 dark:text-white break-words leading-tight">
                             {selected.subject || "(No subject)"}
                           </h2>
 
-                          <div className="mt-2 text-xs text-gray-500 dark:text-gray-400 flex flex-wrap gap-2">
-                            <span>
-                              From: <span className="font-mono">{selected.sender_id}</span>
-                            </span>
-                            <span>•</span>
-                            <span>
-                              To: <span className="font-mono">{selected.receiver_id}</span>
-                            </span>
-                            <span>•</span>
-                            <span>
-                              ID: <span className="font-mono">{selected._id}</span>
-                            </span>
-                          </div>
-
-                          {selected.sent_at && (
-                            <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                              {formatLocal(selected.sent_at)}{" "}
-                              <span className="text-gray-400">({formatUtc(selected.sent_at)})</span>
+                          <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-[11px] font-bold">
+                            <div className="flex items-center gap-2 text-gray-500">
+                               <span className="uppercase tracking-widest text-[9px] w-10">From:</span>
+                               <span className="font-mono text-gray-900 dark:text-white bg-gray-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">{selected.sender_id}</span>
                             </div>
-                          )}
+                            <div className="flex items-center gap-2 text-gray-500">
+                               <span className="uppercase tracking-widest text-[9px] w-10">To:</span>
+                               <span className="font-mono text-gray-900 dark:text-white bg-gray-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">{selected.receiver_id}</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-gray-500">
+                               <span className="uppercase tracking-widest text-[9px] w-10">Sent:</span>
+                               <span className="text-gray-700 dark:text-gray-300">{formatLocal(selected.sent_at)}</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-gray-500">
+                               <span className="uppercase tracking-widest text-[9px] w-10">ID:</span>
+                               <span className="font-mono text-gray-400 truncate">{selected._id}</span>
+                            </div>
+                          </div>
                         </div>
 
-                        <div className="flex flex-col gap-2 shrink-0">
+                        <div className="grid grid-cols-2 sm:grid-cols-1 gap-2 shrink-0 w-full sm:w-auto">
                           <button
                             onClick={() => setReadState(selected._id, !selected.is_read)}
-                            className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-bold text-gray-700 hover:opacity-90 dark:border-gray-700 dark:bg-slate-800 dark:text-gray-200"
+                            className="rounded-xl border border-gray-200 bg-white px-3 py-2 text-[10px] font-extrabold uppercase tracking-wide text-gray-700 hover:bg-gray-50 shadow-sm transition-all dark:border-gray-700 dark:bg-slate-800 dark:text-gray-200"
                           >
                             Mark {selected.is_read ? "Unread" : "Read"}
                           </button>
 
                           <button
                             onClick={() => onDelete(selected._id)}
-                            className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-bold text-red-700 hover:opacity-90 dark:border-red-900/40 dark:bg-red-900/20 dark:text-red-200"
+                            className="rounded-xl border border-rose-100 bg-rose-50 px-3 py-2 text-[10px] font-extrabold uppercase tracking-wide text-rose-600 hover:bg-rose-100 shadow-sm transition-all dark:border-rose-900/40 dark:bg-rose-900/20 dark:text-rose-200"
                           >
                             Delete
                           </button>
@@ -805,31 +821,32 @@ export default function AdminMessages({ user, onLogout }: Props) {
                       </div>
 
                       {/* body */}
-                      <div className="flex-1 min-h-0 overflow-y-auto px-6 py-5">
-                        <div className="whitespace-pre-wrap text-sm text-gray-800 dark:text-gray-200 break-words">
+                      <div className="px-4 md:px-8 py-6 md:py-8">
+                        <div className="whitespace-pre-wrap text-sm md:text-base text-gray-800 dark:text-gray-200 break-words leading-relaxed max-w-3xl">
                           {selected.body || "—"}
                         </div>
 
                         {/* attachments placeholder */}
-                        <div className="mt-6 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
-                          <div className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        <div className="mt-12 rounded-2xl border border-dashed border-gray-200 dark:border-gray-700 p-6 bg-gray-50/30">
+                          <div className="flex items-center gap-2 text-[10px] font-extrabold text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] mb-4">
+                            <span className="material-icons-outlined text-sm">attach_file</span>
                             Attachments
                           </div>
 
                           {selected.attachments && selected.attachments.length > 0 ? (
-                            <ul className="mt-2 space-y-2">
+                            <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                               {selected.attachments.map((a, idx) => (
                                 <li
                                   key={`${a}-${idx}`}
-                                  className="text-sm text-gray-700 dark:text-gray-200 flex items-center justify-between gap-3"
+                                  className="text-xs text-gray-700 dark:text-gray-200 flex items-center justify-between gap-3 p-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 shadow-sm hover:border-primary/30 transition-colors"
                                 >
-                                  <span className="font-mono break-all">{a}</span>
-                                  <span className="text-xs text-gray-500 dark:text-gray-400">(placeholder)</span>
+                                  <span className="font-mono truncate">{a}</span>
+                                  <span className="material-icons-outlined text-gray-400 text-sm">download</span>
                                 </li>
                               ))}
                             </ul>
                           ) : (
-                            <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">No attachments.</div>
+                            <div className="text-xs font-bold text-gray-400 italic">No files attached to this message.</div>
                           )}
                         </div>
                       </div>

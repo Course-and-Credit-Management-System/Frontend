@@ -35,6 +35,7 @@ import CourseDetails from "./pages/CourseDetails";
 
 import { User } from "./types";
 import { api } from "./lib/api";
+import { UIProvider } from "./context/UIContext";
 
 const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -106,8 +107,9 @@ const App: React.FC = () => {
   if (booting) return <div style={{ padding: 20 }}>Loading...</div>;
 
   return (
-    <HashRouter>
-      <Routes>
+    <UIProvider>
+      <HashRouter>
+        <Routes>
         {/* ✅ Public routes ALWAYS available */}
         <Route path="/reset-password-token" element={<ResetPasswordToken />} />
 
@@ -256,7 +258,8 @@ const App: React.FC = () => {
         )}
       </Routes>
       <StudentChatTrigger visible={!!user && user.role === "student" && !user.must_reset_password} />
-    </HashRouter>
+      </HashRouter>
+    </UIProvider>
   );
 };
 
