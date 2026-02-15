@@ -270,47 +270,76 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
     }
   };
 
-  // Handle delete student
-  const handleDeleteStudent = async (student: Student) => {
-    if (!confirm(`Are you sure you want to delete ${student.name} (${student.user_id})?`)) {
-      return;
-    }
+// Handle delete student
+const handleDeleteStudent = async (student: Student | StudentRow) => {
+  const userId = ('user_id' in student && student.user_id) ? student.user_id : student.id;
+  const name = student.name ?? 'this student';
 
-    try {
-      const res = await fetch(`${API_BASE}/admin/students/${encodeURIComponent(student.user_id)}/delete`, {
-        method: 'POST',
-        credentials: 'include',
-      });
+  if (!confirm(`Are you sure you want to delete ${name} (${userId})?`)) {
+    return;
+  }
 
-      if (res.ok) {
-        setMessage({ type: 'success', text: 'Student deleted successfully' });
-        fetchStudents();
-      } else {
-        const errData = await res.json().catch(() => ({}));
-        const detail = errData?.detail ?? (res.status ? `HTTP ${res.status}` : 'Unknown error');
-        const errText = Array.isArray(detail) ? detail.map((x: { msg?: string }) => x?.msg ?? JSON.stringify(x)).join('; ') : String(detail);
-        setMessage({ type: 'error', text: `Failed to delete: ${errText}` });
-      }
-    } catch (err) {
-      setMessage({ type: 'error', text: `Failed to delete: ${err instanceof Error ? err.message : 'Network error'}` });
-    }
-  };
-
-  // Open edit modal
-  const openEditModal = (student: Student) => {
-    setEditingStudent(student);
-    setFormData({
-      user_id: student.user_id,
-      name: student.name,
-      email: student.email,
-      major: student.major,
-      year: student.year,
-      semester: student.semester,
-      section: student.section ?? '',
-      status: student.status,
-      total_credits: student.total_credits,
+  try {
+    const res = await fetch(`${API_BASE}/admin/students/${encodeURIComponent(userId)}/delete`, {
+      method: 'POST',
+      credentials: 'include',
     });
-  };
+
+    if (res.ok) {
+      setMessage({ type: 'success', text: 'Student deleted successfully' });
+      fetchStudents();
+    } else {
+      const errData = await res.json().catch(() => ({}));
+      const detail = errData?.detail ?? (res.status ? `HTTP ${res.status}` : 'Unknown error');
+      const errText = Array.isArray(detail)
+        ? detail.map((x: { msg?: string }) => x?.msg ?? JSON.stringify(x)).join('; ')
+        : String(detail);
+      setMessage({ type: 'error', text: `Failed to delete: ${errText}` });
+    }
+  } catch (err) {
+    setMessage({ type: 'error', text: `Failed to delete: ${err instanceof Error ? err.message : 'Network error'}` });
+  }
+};
+
+// Open edit modal
+const openEditModal = (student: Student | StudentRow) => {
+  const userId = ('user_id' in student && student.user_id) ? student.user_id : student.id;
+
+  setEditingStudent(
+    'user_id' in student
+      ? student
+      : ({
+          id: student.id,
+          user_id: userId,
+          name: student.name,
+          email: student.email,
+          major: student.major,
+          year: (student as any).year ?? 1,
+          semester: (student as any).semester ?? 1,
+          section: (student as any).section ?? null,
+          status: student.status ?? 'Active',
+          total_credits: (student as any).total_credits ?? 0,
+          required_credits: (student as any).required_credits ?? 0,
+        } as Student)
+  );
+
+  setFormData({
+    user_id: userId,
+    name: student.name ?? '',
+    email: student.email ?? '',
+    major: student.major ?? 'CS',
+    year: ('year' in student && typeof student.year === 'number') ? student.year : 1,
+    semester: ('semester' in student && typeof student.semester === 'number') ? student.semester : 1,
+    section: ('section' in student && student.section) ? (student.section ?? '') : '',
+    status: ('status' in student && student.status) ? student.status : 'Active',
+    total_credits: ('total_credits' in student && typeof (student as any).total_credits === 'number')
+      ? (student as any).total_credits
+      : 0,
+  });
+
+  setShowAddModal(true);
+};
+
 
   // Reset form
   const resetForm = () => {

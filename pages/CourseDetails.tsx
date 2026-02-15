@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
+import CourseChatbot from '../components/CourseChatbot';
 import { User, CourseDetail } from '../types';
 import { api } from '../lib/api';
 
@@ -250,6 +251,7 @@ const CourseDetails: React.FC<CourseDetailsProps> = ({ user, onLogout }) => {
           </div>
         </main>
       </div>
+      {courseId && <CourseChatbot courseId={courseId} />}
     </div>
   );
 };

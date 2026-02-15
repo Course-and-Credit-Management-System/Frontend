@@ -28,7 +28,7 @@ const Sidebar: React.FC<SidebarProps> = ({ user, onLogout }) => {
     { to: '/admin/courses', icon: 'library_books', label: 'Courses', section: 'Academic' },
     { to: '/admin/announcements', icon: 'campaign', label: 'Announcements'},
     { to: '/admin/grading', icon: 'assessment', label: 'Exam Results' },
-    
+    { to: '/admin/chatbot', icon: 'smart_toy', label: 'AI Assistant', section: 'System', badge: 'AI' },
   ];
 
   const studentLinks: SidebarLink[] = [
