@@ -16,6 +16,7 @@ import AdminAnnouncements from "./pages/AdminAnnouncements";
 // ✅ NEW: Manual Enrollment Page
 import AdminManualEnrollment from "./pages/AdminManualEnrollment";
 import AdminMessages from "./pages/AdminMessages";
+import AdminChatPage from "./pages/AdminChatPage";
 
 // ✅ NEW: admin-only course details page (rename your file to AdminCourseDetails.tsx)
 import AdminCourseDetails from "./pages/AdminCourseDetails";
@@ -177,6 +178,10 @@ const App: React.FC = () => {
                 <Route
                   path="/admin/grading"
                   element={<AdminGrading user={user} onLogout={handleLogout} />}
+                />
+                <Route
+                  path="/admin/chatbot"
+                  element={<AdminChatPage user={user} onLogout={handleLogout} />}
                 />
 
                 <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />

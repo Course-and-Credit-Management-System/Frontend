@@ -1,7 +1,8 @@
 /// <reference types="vite/client" />
 
-import { CurrentCoursesResponse } from '../types';
+import { DropRecommendationResponse, EnrollmentAssistanceRequest, EnrollmentAssistanceResponse } from '../types';
 import { StudentChatRequest, StudentChatResponse } from '../types/studentChat';
+import { AdminChatRequest, AdminChatResponse } from '../types/adminChat';
 
 const API_BASE = (import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000").replace(/\/$/, "");
 // const API_BASE = (import.meta.env.VITE_API_BASE_URL || "http://localhost:8000").replace(/\/$/, "");
@@ -255,6 +256,14 @@ export const api = {
       body: payload
     }),
 
+  studentEnrollmentAssistance: (payload: EnrollmentAssistanceRequest) =>
+    request<EnrollmentAssistanceResponse>("/api/v1/student/courses/enrollment-assistance", {
+      method: "POST",
+      body: payload,
+    }),
+  studentDropRecommendation: () =>
+    request<DropRecommendationResponse>("/api/v1/student/courses/drop-recommendation"),
+
   currentStudentCourses: () => request<CurrentCoursesResponse>("/api/v1/student/courses/current"),
 
   studentCourseDetails: (code: string) =>
@@ -358,6 +367,43 @@ export const api = {
     }
 
     return data as StudentChatResponse;
+  },
+
+  adminAiChat: async (payload: AdminChatRequest): Promise<AdminChatResponse> => {
+    const token = localStorage.getItem("access_token");
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+    };
+
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+
+    const response = await fetch(`${API_BASE}/api/v1/ai/ai/admin/chat`, {
+      method: "POST",
+      headers,
+      credentials: "include",
+      body: JSON.stringify(payload),
+    });
+
+    const text = await response.text();
+    let data: any;
+    try {
+      data = text ? JSON.parse(text) : null;
+    } catch {
+      data = null;
+    }
+
+    if (!response.ok) {
+      const msg = data?.detail || data?.message || `Request failed (${response.status})`;
+      throw new HttpStatusError(response.status, msg);
+    }
+
+    if (!data || typeof data.answer !== "string") {
+      throw new HttpStatusError(500, "Unexpected response format from AI service.");
+    }
+
+    return data as AdminChatResponse;
   },
 };
   

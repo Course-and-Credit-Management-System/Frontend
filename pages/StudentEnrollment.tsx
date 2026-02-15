@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
-import { User, AvailableCourse } from '../types';
+import { User, AvailableCourse, DropRecommendationResponse, EnrollmentAssistanceCourse } from '../types';
 import { api } from '../lib/api';
 
 interface EnrollmentProps {
@@ -17,6 +17,15 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
   const [sortOption, setSortOption] = useState<'enrollable' | 'prereq' | null>(null);
   const [showValidation, setShowValidation] = useState(false);
   const [isFinalized, setIsFinalized] = useState(false);
+  const [aiMessage, setAiMessage] = useState("");
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
+  const [aiResults, setAiResults] = useState<EnrollmentAssistanceCourse[]>([]);
+  const [hasAskedAi, setHasAskedAi] = useState(false);
+  const [dropLoading, setDropLoading] = useState(false);
+  const [dropError, setDropError] = useState<string | null>(null);
+  const [dropRecommendation, setDropRecommendation] = useState<DropRecommendationResponse | null>(null);
+  const [dropSelectedCodes, setDropSelectedCodes] = useState<Set<string>>(new Set());
   
   const [courses, setCourses] = useState<AvailableCourse[]>([]);
   const [loading, setLoading] = useState(false);
@@ -99,6 +108,66 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
   const totalCredits = baseCredits + selectedCredits;
   const isOverLimit = totalCredits > 18;
   const hasPrereqError = Array.from(selectedRegistry.values()).some(c => !!c.error);
+  const selectedCourses = Array.from(selectedRegistry.values());
+  const recommendedDropCodes = new Set([
+    ...(dropRecommendation?.elective?.code ? [dropRecommendation.elective.code] : []),
+    ...((dropRecommendation?.others || []).map((course) => course.code)),
+  ]);
+
+  const fetchDropRecommendation = async () => {
+    setDropLoading(true);
+    setDropError(null);
+
+    try {
+      const response = await api.studentDropRecommendation();
+      setDropRecommendation(response);
+      const autoSelected = [
+        ...(response.elective?.code ? [response.elective.code] : []),
+        ...((response.others || []).map((course) => course.code)),
+      ];
+      setDropSelectedCodes(new Set(autoSelected));
+    } catch (error) {
+      setDropRecommendation(null);
+      setDropSelectedCodes(new Set());
+      setDropError(error instanceof Error ? error.message : "Failed to get drop recommendation.");
+    } finally {
+      setDropLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!isOverLimit) {
+      setDropRecommendation(null);
+      setDropSelectedCodes(new Set());
+      setDropError(null);
+      setDropLoading(false);
+      return;
+    }
+
+    fetchDropRecommendation();
+  }, [isOverLimit, selectedRegistry.size, totalCredits]);
+
+  const toggleDropSelection = (code: string) => {
+    setDropSelectedCodes((prev) => {
+      const updated = new Set(prev);
+      if (updated.has(code)) {
+        updated.delete(code);
+      } else {
+        updated.add(code);
+      }
+      return updated;
+    });
+  };
+
+  const applySelectedDrops = () => {
+    if (dropSelectedCodes.size === 0) return;
+
+    setSelectedRegistry((prev) => {
+      const updated = new Map(prev);
+      dropSelectedCodes.forEach((code) => updated.delete(code));
+      return updated;
+    });
+  };
 
   const handleFinalize = async () => {
     try {
@@ -115,6 +184,44 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
     } catch (error) {
       console.error("Enrollment failed", error);
     }
+  };
+
+  const handleAiAssist = async () => {
+    const message = aiMessage.trim();
+    if (!message || aiLoading) return;
+
+    setAiLoading(true);
+    setAiError(null);
+    setHasAskedAi(true);
+
+    try {
+      const response = await api.studentEnrollmentAssistance({ message });
+      setAiResults(response.data || []);
+    } catch (error) {
+      setAiError(error instanceof Error ? error.message : "Failed to get enrollment assistance.");
+      setAiResults([]);
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  const applyAiSuggestion = (course: EnrollmentAssistanceCourse) => {
+    const mappedCourse: AvailableCourse = {
+      code: course.code,
+      title: course.title,
+      type: course.type,
+      credits: course.credits,
+      desc: course.desc,
+      color: course.color,
+      status: course.enrollable === false ? 'locked' : (course.status || 'available'),
+      error: course.error,
+      is_retake: course.is_retake,
+      schedule: course.schedule,
+      message: course.message,
+      enrollable: course.enrollable,
+    };
+
+    toggleCourse(mappedCourse);
   };
 
   return (
@@ -163,6 +270,113 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
                 </button>
               </div>
             </div>
+
+            <section className="bg-white dark:bg-surface-dark p-4 rounded-[6px] border border-[#d8e3e8] dark:border-gray-700 shadow-[0_2px_6px_rgba(0,0,0,0.08)] mb-6">
+              <div className="flex flex-col lg:flex-row gap-3 lg:items-center lg:justify-between mb-4">
+                <div>
+                  <h3 className="text-lg font-semibold text-[#1f6f5f]">AI Enrollment Assistant</h3>
+                  <p className="text-sm text-[#666666] dark:text-gray-300">Describe your goal and get smart course suggestions based on your enrollment constraints.</p>
+                </div>
+              </div>
+
+              <form
+                className="flex flex-col md:flex-row gap-3"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleAiAssist();
+                }}
+              >
+                <div className="relative flex-1">
+                  <span className="material-icons-outlined absolute left-3 top-2.5 text-[#1f6f5f] text-sm">smart_toy</span>
+                  <input
+                    type="text"
+                    value={aiMessage}
+                    onChange={(e) => setAiMessage(e.target.value)}
+                    placeholder="Try: I need 2 electives that keep me under 18 credits and avoid schedule conflicts."
+                    className="w-full pl-9 pr-4 py-2.5 text-sm rounded-[6px] border border-[#b8ced6] bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-[#1f6f5f]/20 focus:border-[#1f6f5f] transition-all"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={aiLoading || !aiMessage.trim()}
+                  className={`px-4 py-2.5 rounded-[6px] text-sm font-semibold text-white transition-colors ${
+                    aiLoading || !aiMessage.trim()
+                      ? 'bg-[#9bbab3] cursor-not-allowed'
+                      : 'bg-[#1f6f5f] hover:bg-[#185a4e]'
+                  }`}
+                >
+                  {aiLoading ? 'Processing...' : 'Ask AI'}
+                </button>
+              </form>
+
+              {aiError && (
+                <div className="mt-3 bg-[#fdecea] text-[#e74c3c] px-3 py-2 rounded-[6px] text-sm border border-[#f6c9c4]">
+                  {aiError}
+                </div>
+              )}
+
+              {aiLoading && (
+                <div className="mt-4 grid grid-cols-1 xl:grid-cols-2 gap-3">
+                  {[1, 2, 3, 4].map((item) => (
+                    <div key={item} className="animate-pulse border border-[#d8e3e8] dark:border-gray-700 rounded-[6px] p-4 bg-[#f9fbfc] dark:bg-gray-800">
+                      <div className="h-4 w-2/5 bg-gray-200 dark:bg-gray-700 rounded mb-3"></div>
+                      <div className="h-3 w-4/5 bg-gray-200 dark:bg-gray-700 rounded mb-2"></div>
+                      <div className="h-3 w-3/5 bg-gray-200 dark:bg-gray-700 rounded mb-4"></div>
+                      <div className="h-8 w-24 bg-gray-200 dark:bg-gray-700 rounded-[6px]"></div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {!aiLoading && hasAskedAi && !aiError && aiResults.length === 0 && (
+                <div className="mt-4 bg-[#fff4e5] text-[#8a6d1f] px-3 py-2 rounded-[6px] border border-[#ffe1a8] text-sm">
+                  No course suggestions were returned for this request. Try rephrasing with credits, type, or schedule preferences.
+                </div>
+              )}
+
+              {!aiLoading && aiResults.length > 0 && (
+                <div className="mt-4 grid grid-cols-1 xl:grid-cols-2 gap-3">
+                  {aiResults.map((course) => {
+                    const selected = selectedRegistry.has(course.code);
+                    const isLocked = course.enrollable === false;
+                    return (
+                      <div key={`${course.code}-${course.title}`} className="border border-[#d8e3e8] dark:border-gray-700 rounded-[6px] p-4 bg-[#fbfdfd] dark:bg-gray-800">
+                        <div className="flex justify-between gap-3 mb-2">
+                          <div>
+                            <h4 className="font-semibold text-[#333333] dark:text-gray-100">{course.title}</h4>
+                            <p className="text-xs text-[#666666] dark:text-gray-400">{course.code} • {course.credits} Credits • {course.type}</p>
+                          </div>
+                          <span className={`text-[10px] px-2 py-1 rounded-full font-bold uppercase ${isLocked ? 'bg-red-100 text-red-700' : 'bg-[#eaf6f3] text-[#1f6f5f]'}`}>
+                            {isLocked ? 'Blocked' : 'Suggested'}
+                          </span>
+                        </div>
+                        <p className="text-sm text-[#666666] dark:text-gray-300 mb-2 line-clamp-2">{course.desc}</p>
+                        {course.reason && <p className="text-xs text-[#1f6f5f] dark:text-green-300 mb-2">{course.reason}</p>}
+                        {(course.message || course.error) && (
+                          <p className={`text-xs mb-3 ${course.error ? 'text-[#e74c3c]' : 'text-[#666666] dark:text-gray-300'}`}>
+                            {course.error || course.message}
+                          </p>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => applyAiSuggestion(course)}
+                          disabled={isLocked}
+                          className={`px-3 py-2 rounded-[6px] text-xs font-semibold transition-colors ${
+                            isLocked
+                              ? 'bg-gray-200 dark:bg-gray-700 text-gray-500 cursor-not-allowed'
+                              : selected
+                                ? 'bg-red-50 text-red-600 border border-red-200'
+                                : 'bg-[#1f6f5f] text-white hover:bg-[#185a4e]'
+                          }`}
+                        >
+                          {selected ? 'Remove' : 'Add to Selection'}
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </section>
 
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
                {displayCourses.map((course) => (
@@ -314,27 +528,109 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
               )}
 
               {isOverLimit && (
-                <div className="bg-gradient-to-br from-primary/5 to-primary/10 dark:from-primary/20 dark:to-primary/10 border border-primary/20 dark:border-primary/50 rounded-xl p-4 relative overflow-hidden">
-                    <div className="relative z-10">
-                    <div className="flex items-center gap-2 mb-3">
-                        <span className="material-symbols-outlined text-primary">smart_toy</span>
-                        <h4 className="font-bold text-primary">Trade-off Assistant</h4>
+                <div className="bg-gradient-to-br from-[#eaf6f3] to-[#f4fbf9] dark:from-[#1f6f5f]/20 dark:to-[#1f6f5f]/10 border border-[#b7d8d0] dark:border-[#1f6f5f]/40 rounded-[6px] p-4">
+                  <div className="flex items-center justify-between gap-2 mb-3">
+                    <div className="flex items-center gap-2">
+                      <span className="material-icons-outlined text-[#1f6f5f]">smart_toy</span>
+                      <h4 className="font-bold text-[#1f6f5f]">AI Drop Selection</h4>
                     </div>
-                    <p className="text-sm text-gray-700 dark:text-gray-300 mb-4 font-light leading-relaxed">
-                        You've exceeded the credit limit. Based on your major (CS) and academic history, I recommend dropping one of these electives:
-                    </p>
-                    <div className="bg-white dark:bg-gray-800 border border-primary/20 rounded-lg p-3 mb-3 shadow-sm">
-                        <div className="flex justify-between items-start mb-2">
-                        <div>
-                            <p className="text-sm font-bold">Photography 101</p>
-                            <p className="text-xs text-gray-500">Arts Elective • 3 Credits</p>
+                    <button
+                      onClick={fetchDropRecommendation}
+                      disabled={dropLoading}
+                      className={`text-xs px-2.5 py-1 rounded-[6px] border ${
+                        dropLoading
+                          ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
+                          : 'bg-white text-[#1f6f5f] border-[#1f6f5f]/30 hover:bg-[#eaf6f3]'
+                      }`}
+                    >
+                      Refresh
+                    </button>
+                  </div>
+                  <p className="text-xs text-[#35574f] dark:text-green-200 mb-3">
+                    {dropRecommendation?.message || "AI prioritizes retakes, then electives, then core courses if needed."}
+                  </p>
+                  {dropLoading && (
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 text-xs text-[#1f6f5f]">
+                        <span className="h-2 w-2 rounded-full bg-[#1f6f5f] animate-pulse"></span>
+                        AI is thinking and selecting the best courses to drop...
+                      </div>
+                      {[1, 2].map((item) => (
+                        <div key={item} className="animate-pulse bg-white/80 dark:bg-gray-800 border border-[#cfe4df] dark:border-gray-700 rounded-[6px] p-3">
+                          <div className="h-3 w-2/5 bg-gray-200 dark:bg-gray-700 rounded mb-2"></div>
+                          <div className="h-2.5 w-4/5 bg-gray-200 dark:bg-gray-700 rounded"></div>
                         </div>
-                        <span className="bg-green-100 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-tighter">Recommended</span>
-                        </div>
-                        <p className="text-xs text-gray-600 dark:text-gray-400 italic">"Dropping this keeps your workload balanced for the heavy ML course."</p>
-                        <button className="mt-2 text-xs w-full py-1.5 bg-primary/10 text-primary rounded font-bold hover:bg-primary/20 transition-all">Drop Course</button>
+                      ))}
                     </div>
+                  )}
+                  {!dropLoading && dropError && (
+                    <div className="bg-[#fdecea] text-[#e74c3c] border border-[#f6c9c4] rounded-[6px] px-3 py-2 text-xs">
+                      {dropError}
                     </div>
+                  )}
+                  {!dropLoading && !dropError && dropRecommendation && (
+                    <div>
+                      <div className="text-xs text-[#666666] dark:text-gray-300 mb-3">
+                        Current: {dropRecommendation.current_total_credits} | Limit: {dropRecommendation.credit_limit} | Need to drop: {dropRecommendation.credits_to_drop}
+                      </div>
+                      <div className="space-y-2 mb-3">
+                        {selectedCourses.map((course) => {
+                          const checked = dropSelectedCodes.has(course.code);
+                          const isRecommended = recommendedDropCodes.has(course.code);
+                          const reason =
+                            (dropRecommendation.elective?.code === course.code ? dropRecommendation.elective.reason : null) ||
+                            dropRecommendation.others.find((item) => item.code === course.code)?.reason;
+                          return (
+                            <label
+                              key={course.code}
+                              className={`block rounded-[6px] border p-3 cursor-pointer transition-colors ${
+                                checked
+                                  ? 'border-[#1f6f5f] bg-[#edf8f5] dark:bg-[#1f6f5f]/20'
+                                  : 'border-[#cfe4df] dark:border-gray-700 bg-white dark:bg-gray-800'
+                              }`}
+                            >
+                              <div className="flex items-start gap-2">
+                                <input
+                                  type="checkbox"
+                                  className="mt-0.5 h-4 w-4 accent-[#1f6f5f]"
+                                  checked={checked}
+                                  onChange={() => toggleDropSelection(course.code)}
+                                />
+                                <div className="flex-1">
+                                  <div className="flex items-center justify-between gap-2">
+                                    <p className="text-sm font-semibold text-[#333333] dark:text-gray-100">{course.title}</p>
+                                    {isRecommended && (
+                                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#dff1ec] text-[#1f6f5f] font-bold uppercase">
+                                        Recommended
+                                      </span>
+                                    )}
+                                  </div>
+                                  <p className="text-xs text-[#666666] dark:text-gray-400">{course.code} • {course.type} • {course.credits} Credits</p>
+                                  {reason && <p className="text-xs text-[#1f6f5f] dark:text-green-300 mt-1">{reason}</p>}
+                                </div>
+                              </div>
+                            </label>
+                          );
+                        })}
+                      </div>
+                      {dropRecommendation.elective && (
+                        <p className="text-xs text-[#1f6f5f] dark:text-green-300 mb-3">
+                          Elective priority: {dropRecommendation.elective.code} - {dropRecommendation.elective.title}
+                        </p>
+                      )}
+                      <button
+                        onClick={applySelectedDrops}
+                        disabled={dropSelectedCodes.size === 0}
+                        className={`w-full py-2 rounded-[6px] text-sm font-semibold transition-colors ${
+                          dropSelectedCodes.size === 0
+                            ? 'bg-gray-200 dark:bg-gray-700 text-gray-500 cursor-not-allowed'
+                            : 'bg-[#1f6f5f] text-white hover:bg-[#185a4e]'
+                        }`}
+                      >
+                        Apply Selected Drops ({dropSelectedCodes.size})
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -373,3 +669,4 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
 };
 
 export default StudentEnrollment;
+
