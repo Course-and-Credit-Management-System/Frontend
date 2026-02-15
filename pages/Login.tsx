@@ -221,15 +221,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                       Forgot Password?
                     </button>
                   </div>
-                <div className="flex items-center justify-between text-sm py-2">
-                  <label className="flex items-center gap-2 cursor-pointer text-gray-600 dark:text-gray-400">
-                    <input className="rounded border-gray-300 dark:border-gray-700 text-primary focus:ring-primary size-4 cursor-pointer" type="checkbox" />
-                    Remember me
-                  </label>
-                  <Link className="text-primary font-semibold hover:underline decoration-2 underline-offset-4" to="/forgot-password">
-                    Forgot Password?
-                  </Link>
-                </div>
+                
 
                   <button
                     type="submit"

@@ -10,7 +10,10 @@ import {
 import { AdminChatRequest, AdminChatResponse } from '../types/adminChat';
 import type { CurrentCoursesResponse } from "../types";
 
- const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
+// Use relative path so requests go through Vite proxy (same-origin = cookies work)
+const API_BASE = (import.meta.env.VITE_API_BASE_URL || "").trim()
+  ? (import.meta.env.VITE_API_BASE_URL || "").replace(/\/$/, "")
+  : "";
 
 type RequestOptions = {
   method?: string;
