@@ -7,8 +7,11 @@ interface StudentChatTriggerProps {
 
 const StudentChatTrigger: React.FC<StudentChatTriggerProps> = ({ visible }) => {
   const location = useLocation();
+  const hideOnCourseDetail =
+    location.pathname.startsWith("/student/courses/") ||
+    location.pathname.startsWith("/student/enrollment/view/");
 
-  if (!visible || location.pathname === "/student/chatbot") {
+  if (!visible || location.pathname === "/student/chatbot" || hideOnCourseDetail) {
     return null;
   }
 

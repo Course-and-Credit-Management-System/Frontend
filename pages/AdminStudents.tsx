@@ -326,18 +326,22 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
       <Sidebar user={user} onLogout={onLogout} />
       <div className="flex flex-1 flex-col overflow-hidden">
         <Header title="Students Directory" user={user} />
-        <main className="flex-1 overflow-y-auto p-6">
-          {/* Filters Row */}
-          <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div className="flex flex-1 flex-wrap items-center gap-3">
-              {/* Search */}
-              <div className="relative">
+        <main className="flex-1 overflow-y-auto p-4 md:p-6">
+          {error && (
+            <div className="mb-6 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900/40 dark:bg-red-900/20 dark:text-red-200">
+              {error}
+            </div>
+          )}
+
+          <div className="mb-6 flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex flex-1 flex-col gap-4 sm:flex-row sm:items-center">
+              <div className="relative w-full sm:w-64">
                 <span className="absolute inset-y-0 left-0 flex items-center pl-3">
-                  <span className="material-icons-outlined text-gray-400">search</span>
+                  <span className="material-icons-outlined text-gray-400 text-[18px]">search</span>
                 </span>
                 <input
-                  className="w-full md:w-64 rounded-lg border border-border-light bg-surface-light py-2 pl-10 pr-4 text-sm focus:border-primary outline-none dark:border-border-dark dark:bg-surface-dark dark:text-gray-200"
-                  placeholder="Search by name, ID..."
+                  className="w-full rounded-xl border border-border-light bg-surface-light py-2.5 pl-10 pr-4 text-sm font-bold focus:border-primary outline-none dark:border-border-dark dark:bg-surface-dark dark:text-gray-200 transition-all focus:ring-2 focus:ring-primary/20"
+                  placeholder="Search students..."
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -403,7 +407,7 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
                 <select
                   value={major}
                   onChange={(e) => setMajor(e.target.value)}
-                  className="rounded-lg border border-border-light bg-surface-light py-2 pl-3 pr-8 text-sm outline-none dark:border-border-dark dark:bg-surface-dark dark:text-gray-200"
+                  className="flex-1 sm:flex-none rounded-xl border border-border-light bg-surface-light py-2.5 pl-3 pr-8 text-sm font-bold outline-none dark:border-border-dark dark:bg-surface-dark transition-all focus:ring-2 focus:ring-primary/20 dark:text-gray-200"
                 >
                   <option value="">All Majors</option>
                   {majorOptions.map((m) => (
@@ -453,9 +457,9 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
                   resetForm();
                   setShowAddModal(true);
                 }}
-                className="flex items-center rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-hover"
+                className="flex-1 sm:flex-none flex items-center justify-center rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-white hover:bg-opacity-90 transition-all shadow-md shadow-primary/20"
               >
-                <span className="material-icons-outlined mr-2 text-base">add</span>
+                <span className="material-icons-outlined mr-2 text-[18px]">add</span>
                 Add Student
               </button>
             </div>
@@ -469,7 +473,7 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
           )}
 
           {/* Students Table */}
-          <div className="rounded-xl bg-surface-light shadow-sm dark:bg-surface-dark overflow-hidden">
+          <div className="rounded-2xl border border-border-light bg-surface-light shadow-sm dark:border-border-dark dark:bg-surface-dark overflow-hidden">
             <div className="overflow-x-auto">
                 <table className="w-full text-left text-sm text-gray-500 dark:text-gray-400">
                   <thead className="bg-gray-50 text-xs uppercase text-gray-700 dark:bg-slate-800 dark:text-gray-300">
