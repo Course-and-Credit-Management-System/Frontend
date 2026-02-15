@@ -9,16 +9,19 @@ import {
   EnrollmentSettingUpsertPayload,
   StudentEnrollmentSettingCurrent,
 } from '../types';
-import { StudentChatRequest, StudentChatResponse } from '../types/studentChat';
+import {
+  StudentChatRequest,
+  StudentChatResponse,
+  StudentChatHistoryItem
+} from "../types/studentChat";
+
 import { AdminChatRequest, AdminChatResponse } from '../types/adminChat';
+import type { CurrentCoursesResponse } from "../types";
 
-const API_BASE = (import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000").replace(/\/$/, "");
-// const API_BASE = (import.meta.env.VITE_API_BASE_URL || "http://localhost:8000").replace(/\/$/, "");
-
-export type CurrentCoursesResponse = {
-  data: any[];     // safest without breaking backend variations
-  meta?: any;
-};
+// Use relative path so requests go through Vite proxy (same-origin = cookies work)
+const API_BASE = (import.meta.env.VITE_API_BASE_URL || "").trim()
+  ? (import.meta.env.VITE_API_BASE_URL || "").replace(/\/$/, "")
+  : "";
 
 type RequestOptions = {
   method?: string;
@@ -157,17 +160,11 @@ export const api = {
   resetPassword: (payload: { old_password: string; new_password: string }) =>
     request("/api/v1/auth/reset-password", { method: "POST", body: payload }),
 
-  forgotPassword: (email: string) =>
-    request("/api/v1/auth/forgot-password", {
-      method: "POST",
-      body: { email },
-    }),
+  forgotPassword: (payload: { email: string }) =>
+    request("/api/v1/auth/forgot-password", { method: "POST", body: payload }),
 
   resetPasswordWithToken: (payload: { token: string; new_password: string }) =>
-    request("/api/v1/auth/reset-password-with-token", {
-      method: "POST",
-      body: payload,
-    }),
+    request("/api/v1/auth/reset-password-with-token", { method: "POST", body: payload }),
 
   adminStatistics: () => request("/api/v1/admin/statistics"),
   adminMajorDistribution: () => request("/api/v1/admin/major-distribution"),

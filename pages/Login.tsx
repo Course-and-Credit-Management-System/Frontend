@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, Link } from "react-router-dom";
+
 import ForgotPassword from "./ForgotPassword"; // must be the modal component version (Props: onClose)
 import { Role, User } from "../types";
 import { api } from "../lib/api";
@@ -220,6 +221,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                       Forgot Password?
                     </button>
                   </div>
+                
 
                   <button
                     type="submit"
