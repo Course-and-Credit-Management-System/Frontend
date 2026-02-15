@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
-import { User } from '../types';
+import { User, StudentAlert } from '../types';
+import { api } from '../lib/api';
 
 interface DashboardProps {
   user: User;
@@ -9,8 +10,54 @@ interface DashboardProps {
 }
 
 const StudentDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
+  const [alerts, setAlerts] = useState<StudentAlert[]>([]);
+
+  useEffect(() => {
+    // Fetch alerts on mount
+    api.studentAlerts()
+      .then((data) => {
+        if (Array.isArray(data)) setAlerts(data);
+      })
+      .catch((err) => console.error("Failed to fetch alerts", err));
+  }, []);
+
+  const handleDismissAlert = async (id: string) => {
+    try {
+      await api.studentDeleteAlert(id);
+      setAlerts((prev) => prev.filter((a) => a._id !== id));
+    } catch (err) {
+      console.error("Failed to dismiss alert", err);
+    }
+  };
+
   return (
-    <div className="flex h-screen overflow-hidden bg-background-light dark:bg-background-dark font-poppins">
+    <div className="flex h-screen overflow-hidden bg-background-light dark:bg-background-dark font-poppins relative">
+      {/* Toast Container */}
+      <div className="fixed top-24 right-6 z-50 flex flex-col gap-3 max-w-sm w-full">
+        {alerts.map((alert) => (
+          <div 
+            key={alert._id} 
+            className="flex items-start gap-3 rounded-lg bg-[#fff4e5] px-5 py-4 shadow-[0_4px_12px_rgba(0,0,0,0.1)] border-l-4 border-[#ffc20e] transition-all animate-in slide-in-from-right duration-300"
+          >
+            <span className="material-icons-outlined text-[#ffc20e] mt-0.5">warning</span>
+            <div className="flex-1">
+              <p className="text-sm font-medium text-[#333333] leading-relaxed">
+                {alert.message}
+              </p>
+              <p className="text-xs text-[#666666] mt-2 opacity-80">
+                {new Date(alert.created_at).toLocaleDateString()}
+              </p>
+            </div>
+            <button 
+              onClick={() => handleDismissAlert(alert._id)}
+              className="text-[#666666] hover:text-[#333333] transition-colors p-1 -mr-2 -mt-2"
+            >
+              <span className="material-icons-outlined text-sm">close</span>
+            </button>
+          </div>
+        ))}
+      </div>
+
       <Sidebar user={user} onLogout={onLogout} />
       <div className="flex flex-1 flex-col overflow-hidden">
         <Header title={`Welcome back, Alex! 👋`} user={user} />
