@@ -15,6 +15,7 @@ import AdminStudentDetails from "./pages/AdminStudentDetails";
 import AdminAnnouncements from "./pages/AdminAnnouncements";
 // ✅ NEW: Manual Enrollment Page
 import AdminManualEnrollment from "./pages/AdminManualEnrollment";
+import AdminEnrollmentSettings from "./pages/AdminEnrollmentSettings";
 import AdminMessages from "./pages/AdminMessages";
 import AdminChatPage from "./pages/AdminChatPage";
 
@@ -39,6 +40,16 @@ const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [booting, setBooting] = useState(true);
 
+  const syncStudentEnrollmentSettings = async () => {
+    try {
+      const setting = await api.studentEnrollmentSettingCurrent();
+      localStorage.setItem("max_credits", String(setting.max_credits));
+      localStorage.setItem("student_enrollment_setting_current", JSON.stringify(setting));
+    } catch {
+      // non-blocking for app bootstrap
+    }
+  };
+
   useEffect(() => {
     const boot = async () => {
       try {
@@ -47,6 +58,9 @@ const App: React.FC = () => {
         sessionStorage.setItem("user", JSON.stringify(me));
         sessionStorage.setItem("role", me.role);
         sessionStorage.setItem("must_reset_password", String(!!me.must_reset_password));
+        if (me.role === "student" && !me.must_reset_password) {
+          await syncStudentEnrollmentSettings();
+        }
       } catch {
         setUser(null);
       } finally {
@@ -62,6 +76,9 @@ const App: React.FC = () => {
     sessionStorage.setItem("user", JSON.stringify(userFromBackend));
     sessionStorage.setItem("role", userFromBackend.role);
     sessionStorage.setItem("must_reset_password", String(!!userFromBackend.must_reset_password));
+    if (userFromBackend.role === "student" && !userFromBackend.must_reset_password) {
+      void syncStudentEnrollmentSettings();
+    }
   };
 
   const handlePasswordReset = (updatedUser: User) => {
@@ -69,6 +86,9 @@ const App: React.FC = () => {
     sessionStorage.setItem("user", JSON.stringify(updatedUser));
     sessionStorage.setItem("role", updatedUser.role);
     sessionStorage.setItem("must_reset_password", String(!!updatedUser.must_reset_password));
+    if (updatedUser.role === "student" && !updatedUser.must_reset_password) {
+      void syncStudentEnrollmentSettings();
+    }
   };
 
   const handleLogout = async () => {
@@ -157,6 +177,10 @@ const App: React.FC = () => {
                 <Route
                   path="/admin/enrollment/manual"
                   element={<AdminManualEnrollment user={user} onLogout={handleLogout} />}
+                />
+                <Route
+                  path="/admin/enrollment-settings"
+                  element={<AdminEnrollmentSettings user={user} onLogout={handleLogout} />}
                 />
 
                 <Route

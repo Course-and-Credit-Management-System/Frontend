@@ -3,17 +3,28 @@ import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
 import { User, EnrollmentRequest } from '../types';
 import { api } from '../lib/api';
+import { useNavigate } from 'react-router-dom';
 
 interface EnrollmentProps {
   user: User;
   onLogout: () => void;
 }
 
+type SemesterKey = 'fall' | 'summer';
+
 const AdminEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
+  const navigate = useNavigate();
   const [requests, setRequests] = useState<EnrollmentRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [toast, setToast] = useState<{ message: string, type: 'success' | 'error' | null }>({ message: '', type: null });
+  const [advanceLoading, setAdvanceLoading] = useState<SemesterKey | null>(null);
+  const [advanceDetail, setAdvanceDetail] = useState<string | null>(null);
+  const [advanceState, setAdvanceState] = useState<'success' | 'error' | 'info'>('info');
+  const [currentSemester, setCurrentSemester] = useState<SemesterKey>(() => {
+    const raw = localStorage.getItem("admin_current_semester");
+    return raw === "summer" ? "summer" : "fall";
+  });
 
   const [sortConfig, setSortConfig] = useState<{ key: keyof EnrollmentRequest; direction: 'asc' | 'desc' } | null>(null);
 
@@ -116,6 +127,36 @@ const AdminEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
     }
   };
 
+  const handleAdvanceSemester = async (targetSemester: SemesterKey) => {
+    if (targetSemester === currentSemester) return;
+
+    try {
+      setAdvanceLoading(targetSemester);
+      setAdvanceDetail(null);
+      const res = await api.adminAdvanceSemester();
+      const detail = res?.detail || "Semester advanced successfully.";
+      const isBlocked = detail.toLowerCase().includes("blocked");
+      if (isBlocked) {
+        setAdvanceState('error');
+        setAdvanceDetail("Can't advance now.");
+        showToast("Can't advance now.", 'error');
+      } else {
+        setAdvanceState('success');
+        setCurrentSemester(targetSemester);
+        localStorage.setItem("admin_current_semester", targetSemester);
+        const targetLabel = targetSemester === 'fall' ? 'Fall (First Sem)' : 'Summer (Second Sem)';
+        setAdvanceDetail(`Changed to ${targetLabel}.`);
+        showToast("Semester changed successfully.", 'success');
+      }
+    } catch (err: any) {
+      setAdvanceState('error');
+      setAdvanceDetail("Can't advance now.");
+      showToast("Can't advance now.", 'error');
+    } finally {
+      setAdvanceLoading(null);
+    }
+  };
+
 
   return (
     <div className="flex h-screen overflow-hidden bg-background-light dark:bg-background-dark relative">
@@ -188,7 +229,10 @@ const AdminEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
                 </div>
               </div>
               <div className="relative z-10 mt-6">
-                <button className="inline-flex items-center text-sm font-medium text-purple-600 hover:text-purple-700 dark:text-purple-400">
+                <button
+                  onClick={() => navigate('/admin/enrollment-settings')}
+                  className="inline-flex items-center text-sm font-medium text-purple-600 hover:text-purple-700 dark:text-purple-400"
+                >
                   Configure <span className="material-icons-outlined ml-1 text-sm">arrow_forward</span>
                 </button>
               </div>
@@ -284,61 +328,66 @@ const AdminEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
             </div>
 
             <div className="flex flex-col gap-6 lg:col-span-4">
-              <div className="rounded-xl bg-surface-light p-6 shadow-sm dark:bg-surface-dark">
-                <h3 className="mb-4 font-semibold text-gray-800 dark:text-white">Enrollment Period</h3>
-                <div className="mb-6 flex items-center justify-between rounded-lg bg-gray-50 p-4 dark:bg-slate-800">
-                  <div>
-                    <div className="text-sm font-medium text-gray-900 dark:text-white">Fall 2024</div>
-                    <div className="text-xs text-green-600 dark:text-green-400 font-medium">Currently Open</div>
-                  </div>
-                  <label className="relative inline-flex cursor-pointer items-center">
-                    <input checked readOnly className="peer sr-only" type="checkbox" />
-                    <div className="peer h-6 w-11 rounded-full bg-gray-200 after:absolute after:top-[2px] after:left-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-primary peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none dark:bg-gray-700 dark:border-gray-600"></div>
-                  </label>
-                </div>
-                <div className="relative pt-1">
-                   <div className="mb-2 flex items-center justify-between">
-                    <div className="text-xs font-semibold text-primary">Capacity Filled</div>
-                    <div className="text-right text-xs font-semibold text-primary">85%</div>
-                  </div>
-                  <div className="flex h-2 overflow-hidden rounded bg-teal-100 dark:bg-slate-700">
-                    <div className="flex flex-col justify-center bg-primary transition-all duration-500" style={{ width: '85%' }}></div>
-                  </div>
-                  <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">1,240 / 1,500 Seats Taken</p>
-                </div>
-              </div>
+              <div className="rounded-[8px] bg-surface-light p-6 shadow-[0_2px_6px_rgba(0,0,0,0.1)] dark:bg-surface-dark">
+                <h3 className="font-semibold text-[#333333] dark:text-white">Advance Semester</h3>
+                <p className="mt-2 text-sm text-[#666666] dark:text-gray-400">
+                  Select target semester to advance.
+                </p>
 
-               <div className="flex-1 rounded-xl bg-surface-light p-6 shadow-sm dark:bg-surface-dark">
-                <h3 className="mb-4 font-semibold text-gray-800 dark:text-white">Attention Required</h3>
-                <div className="space-y-4">
-                   <div className="flex items-start rounded-lg border border-red-200 bg-red-50 p-3 dark:border-red-900/50 dark:bg-red-900/20">
-                    <span className="material-icons-outlined mt-0.5 text-red-500">smart_toy</span>
-                    <div className="ml-3 w-full">
-                      <div className="flex justify-between">
-                        <h4 className="text-sm font-medium text-red-800 dark:text-red-300">Schedule Conflicts</h4>
-                        <span className="text-xs text-red-500">Now</span>
-                      </div>
-                      <p className="mt-1 text-xs text-red-600 dark:text-red-400">AI detected 3 students with overlapping course times.</p>
-                      <div className="mt-2 flex gap-2">
-                        <button className="text-xs font-bold text-red-700 hover:text-red-900 dark:text-red-400">View Conflicts</button>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start rounded-lg border border-border-light bg-gray-50 p-3 dark:border-border-dark dark:bg-slate-800/50">
-                    <span className="material-icons-outlined mt-0.5 text-orange-500">warning</span>
-                    <div className="ml-3 w-full">
-                      <div className="flex justify-between">
-                        <h4 className="text-sm font-medium text-gray-900 dark:text-white">Prerequisite Waivers</h4>
-                        <span className="text-xs text-gray-500">2h ago</span>
-                      </div>
-                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">8 students requesting waivers for prerequisites.</p>
-                      <div className="mt-2 flex gap-2">
-                        <button className="text-xs font-medium text-primary hover:text-primary-hover">Review Requests</button>
-                      </div>
-                    </div>
-                  </div>
+                <div className="mt-4 grid grid-cols-1 gap-3">
+                  {([
+                    { key: 'fall' as SemesterKey, title: 'Fall', subtitle: 'First Sem', icon: 'looks_one' },
+                    { key: 'summer' as SemesterKey, title: 'Summer', subtitle: 'Second Sem', icon: 'looks_two' },
+                  ]).map((item) => {
+                    const isActive = currentSemester === item.key;
+                    const isLoading = advanceLoading === item.key;
+                    return (
+                      <button
+                        key={item.key}
+                        onClick={() => handleAdvanceSemester(item.key)}
+                        disabled={isLoading || isActive || advanceLoading !== null}
+                        className={`rounded-[6px] border p-4 text-left transition-all ${
+                          isActive
+                            ? 'border-[#077d8a] bg-[#eafaf1]'
+                            : 'border-[#cccccc] bg-white hover:border-[#077d8a] hover:bg-[#f5f5f5]'
+                        } disabled:cursor-not-allowed disabled:opacity-70`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <span className={`material-icons-outlined ${isActive ? 'text-[#077d8a]' : 'text-[#666666]'}`}>
+                              {item.icon}
+                            </span>
+                            <div>
+                              <p className="text-sm font-semibold text-[#333333]">{item.title}</p>
+                              <p className="text-xs text-[#666666]">{item.subtitle}</p>
+                            </div>
+                          </div>
+                          <span
+                            className={`text-xs font-semibold ${
+                              isActive ? 'text-[#27ae60]' : 'text-[#666666]'
+                            }`}
+                          >
+                            {isActive ? 'Current' : isLoading ? 'Processing...' : 'Switch'}
+                          </span>
+                        </div>
+                      </button>
+                    );
+                  })}
                 </div>
+
+                {advanceDetail && (
+                  <div
+                    className={`mt-4 rounded-[6px] px-4 py-3 text-sm ${
+                      advanceState === 'success'
+                        ? 'bg-[#eafaf1] text-[#27ae60] border border-[#27ae60]/20'
+                        : advanceState === 'error'
+                        ? 'bg-[#fdecea] text-[#e74c3c] border border-[#e74c3c]/20'
+                        : 'bg-[#e6f2fa] text-[#0d4a8f] border border-[#0d4a8f]/20'
+                    }`}
+                  >
+                    {advanceDetail}
+                  </div>
+                )}
               </div>
             </div>
           </div>
