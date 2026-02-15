@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
-import { User, CurrentCoursesResponse } from '../types';
+import { User, CurrentCoursesResponse, DropRecommendationResponse } from '../types';
 import { api } from '../lib/api';
 
 interface CoursesProps {
@@ -18,6 +18,9 @@ const StudentCourses: React.FC<CoursesProps> = ({ user, onLogout }) => {
   const [showTradeOff, setShowTradeOff] = useState(false);
   const [selectedToDrop, setSelectedToDrop] = useState<string[]>([]);
   const [selectedElective, setSelectedElective] = useState<string | null>(null);
+  const [dropRecommendation, setDropRecommendation] = useState<DropRecommendationResponse | null>(null);
+  const [dropRecommendationLoading, setDropRecommendationLoading] = useState(false);
+  const [dropRecommendationError, setDropRecommendationError] = useState<string>("");
 
   const fetchData = async () => {
     try {
@@ -100,6 +103,53 @@ const StudentCourses: React.FC<CoursesProps> = ({ user, onLogout }) => {
     }
   };
 
+  const applyDropRecommendation = (recommendation: DropRecommendationResponse) => {
+    if (!data) return;
+
+    const recommendedCodes = [
+      ...(recommendation.elective?.code ? [recommendation.elective.code] : []),
+      ...recommendation.others.map((c) => c.code),
+    ];
+
+    const droppableCodes = new Set(
+      data.courses
+        .filter((course) => !course.is_retake)
+        .map((course) => course.code)
+    );
+
+    const validDropCodes = recommendedCodes.filter((code) => droppableCodes.has(code));
+    setSelectedToDrop(Array.from(new Set(validDropCodes)));
+
+    const electives = data.courses.filter((course) => course.tag?.toUpperCase() === 'ELECTIVE');
+    if (electives.length > 1) {
+      const keptElective = electives.find(
+        (course) => !validDropCodes.includes(course.code) || course.is_retake
+      );
+      setSelectedElective(keptElective?.code || null);
+    }
+  };
+
+  const fetchDropRecommendation = async () => {
+    try {
+      setDropRecommendationLoading(true);
+      setDropRecommendationError("");
+      const recommendation = await api.studentDropRecommendation();
+      setDropRecommendation(recommendation);
+      applyDropRecommendation(recommendation);
+    } catch (err: any) {
+      setDropRecommendation(null);
+      setDropRecommendationError(err?.message || "Failed to load drop recommendations.");
+    } finally {
+      setDropRecommendationLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    const hasConflict = !!data && data.total_credits > data.max_credits;
+    if (!showTradeOff || !hasConflict) return;
+    fetchDropRecommendation();
+  }, [showTradeOff, data?.total_credits, data?.max_credits]);
+
   const handleDropCourse = async (courseCode: string) => {
     if (!window.confirm(`Are you sure you want to drop ${courseCode}?`)) return;
     
@@ -153,6 +203,12 @@ const StudentCourses: React.FC<CoursesProps> = ({ user, onLogout }) => {
   }
 
   const isConflict = data && data.total_credits > data.max_credits;
+  const dropReasonByCode = new Map<string, string>(
+    [
+      ...(dropRecommendation?.elective ? [dropRecommendation.elective] : []),
+      ...(dropRecommendation?.others || []),
+    ].map((item) => [item.code, item.reason])
+  );
 
   return (
     <div className="flex h-screen overflow-hidden bg-background-light dark:bg-background-dark font-poppins relative">
@@ -292,10 +348,45 @@ const StudentCourses: React.FC<CoursesProps> = ({ user, onLogout }) => {
                         </h3>
                         <p className="text-white/80 text-sm mt-1 font-medium">Please drop courses to reach the {data.max_credits} limit.</p>
                     </div>
+                    <button
+                        onClick={fetchDropRecommendation}
+                        disabled={dropRecommendationLoading}
+                        className={`px-3 py-2 rounded-[6px] text-xs font-bold uppercase tracking-wider ${
+                            dropRecommendationLoading
+                                ? 'bg-white/20 text-white/60 cursor-not-allowed'
+                                : 'bg-white/20 hover:bg-white/30 text-white'
+                        }`}
+                    >
+                        {dropRecommendationLoading ? 'Thinking...' : 'Refresh AI'}
+                    </button>
                 </div>
                 
 
                 <div className="p-8 max-h-[60vh] overflow-y-auto bg-[#f5f5f5] dark:bg-background-dark">
+                    <div className="mb-4 bg-white dark:bg-white/5 rounded-[6px] border border-[#b7d8d0] dark:border-[#1f6f5f]/40 p-4">
+                        <div className="flex items-center gap-2 mb-2">
+                            <span className="material-icons-outlined text-[#1f6f5f] text-sm">smart_toy</span>
+                            <p className="text-sm font-bold text-[#1f6f5f]">AI Drop Recommendation</p>
+                        </div>
+                        {dropRecommendationLoading && (
+                            <div className="space-y-2">
+                                <p className="text-xs text-[#1f6f5f]">AI is thinking and selecting optimal courses to drop...</p>
+                                <div className="animate-pulse h-3 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+                                <div className="animate-pulse h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+                            </div>
+                        )}
+                        {!dropRecommendationLoading && dropRecommendationError && (
+                            <p className="text-xs text-[#e74c3c]">{dropRecommendationError}</p>
+                        )}
+                        {!dropRecommendationLoading && !dropRecommendationError && dropRecommendation && (
+                            <div>
+                                <p className="text-xs text-[#35574f] dark:text-green-200">{dropRecommendation.message}</p>
+                                <p className="text-[11px] text-gray-500 mt-1">
+                                    Current: {dropRecommendation.current_total_credits} | Limit: {dropRecommendation.credit_limit} | Need to drop: {dropRecommendation.credits_to_drop}
+                                </p>
+                            </div>
+                        )}
+                    </div>
                     <div className="space-y-6">
                         {/* Electives Section */}
                         {(() => {
@@ -332,6 +423,9 @@ const StudentCourses: React.FC<CoursesProps> = ({ user, onLogout }) => {
                                                             <span className="text-xs font-bold text-[#0d4a8f]">{course.credits} Cr</span>
                                                         </div>
                                                         <p className="text-xs text-gray-500">{course.code}</p>
+                                                        {dropReasonByCode.has(course.code) && (
+                                                            <p className="text-[11px] text-[#1f6f5f] mt-1">{dropReasonByCode.get(course.code)}</p>
+                                                        )}
                                                         {course.is_retake && <p className="text-[10px] text-red-500 font-bold uppercase mt-1">Retake - Cannot Drop</p>}
                                                     </div>
                                                 </label>
@@ -383,7 +477,13 @@ const StudentCourses: React.FC<CoursesProps> = ({ user, onLogout }) => {
                                                             <span className="px-2 py-0.5 bg-orange-100 text-orange-700 text-[10px] font-bold rounded uppercase tracking-tighter ml-2">Cannot Drop</span>
                                                         )}
                                                         <span className="px-1.5 py-0.5 rounded text-[10px] font-bold uppercase bg-gray-100 text-gray-500">{course.tag}</span>
+                                                        {dropReasonByCode.has(course.code) && (
+                                                            <span className="px-1.5 py-0.5 rounded text-[10px] font-bold uppercase bg-[#eaf6f3] text-[#1f6f5f]">AI Suggested</span>
+                                                        )}
                                                     </div>
+                                                    {dropReasonByCode.has(course.code) && (
+                                                        <p className="text-[11px] text-[#1f6f5f] mt-1">{dropReasonByCode.get(course.code)}</p>
+                                                    )}
                                                 </div>
                                             </div>
                                             {isSelected && (

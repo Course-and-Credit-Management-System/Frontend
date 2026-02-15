@@ -11,9 +11,9 @@ This skill defines the visual language and component architecture for the applic
 
 ### 1. Color System (Tailwind)
 The application relies on a specifc color palette defined by the brand guidelines.
-- **Primary Blue**: `#0d4a8f` (Navbar, primary buttons, highlights).
-- **Secondary Blue**: `#1e73be` (Hover states, accents).
-- **Action Teal**: `#077d8a` (Conflict resolution, secondary actions).
+- **Primary Teal**: `#077d8a` (Navbar, primary buttons, highlights).
+- **Secondary Teal**: `#066a75` (Hover states, accents).
+- **Action Blue**: `#0d4a8f` (Secondary actions, special highlights).
 - **Accent Yellow**: `#ffc20e` (Notifications, alerts, highlights).
 - **Neutrals**:
   - Backgrounds: `#f5f5f5` (Light Gray/Sections), `#ffffff` (White/Main).
@@ -21,6 +21,12 @@ The application relies on a specifc color palette defined by the brand guideline
 - **Status Indicators**:
   - **Success**: `#27ae60` (Green).
   - **Error**: `#e74c3c` (Red).
+
+#### Student AI Chatbot Exception
+- For Student AI Chatbot surfaces, use a neutral + green accent scheme:
+  - Primary Accent: `#1f6f5f`
+  - Hover Accent: `#185a4e`
+  - Avoid blue-heavy accents in chatbot message/composer/mode controls.
 
 ### 2. Layout & Typography
 - **Families**: 

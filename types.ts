@@ -97,6 +97,50 @@ export interface AvailableCoursesResponse {
   meta: any;
 }
 
+export interface EnrollmentAssistanceRequest {
+  message: string;
+}
+
+export interface EnrollmentAssistanceCourse {
+  code: string;
+  title: string;
+  type: string;
+  credits: number;
+  desc: string;
+  color: string;
+  status: string;
+  error?: string;
+  is_retake?: boolean;
+  schedule?: string;
+  message?: string;
+  enrollable?: boolean;
+  reason?: string;
+}
+
+export interface EnrollmentAssistanceResponse {
+  data: EnrollmentAssistanceCourse[];
+  meta: Record<string, unknown>;
+}
+
+export interface DropRecommendationCourse {
+  course_id?: string;
+  code: string;
+  title: string;
+  type: string;
+  credits: number;
+  reason: string;
+}
+
+export interface DropRecommendationResponse {
+  exceeds_limit: boolean;
+  message: string;
+  credit_limit: number;
+  current_total_credits: number;
+  credits_to_drop: number;
+  elective: DropRecommendationCourse | null;
+  others: DropRecommendationCourse[];
+}
+
 export interface StudentAlert {
   _id: string;
   student_id: string;

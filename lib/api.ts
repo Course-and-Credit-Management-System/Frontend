@@ -1,6 +1,8 @@
 /// <reference types="vite/client" />
 
-import { CurrentCoursesResponse } from '../types';
+import { DropRecommendationResponse, EnrollmentAssistanceRequest, EnrollmentAssistanceResponse } from '../types';
+import { StudentChatRequest, StudentChatResponse } from '../types/studentChat';
+import { AdminChatRequest, AdminChatResponse } from '../types/adminChat';
 
 const API_BASE = (import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000").replace(/\/$/, "");
 // const API_BASE = (import.meta.env.VITE_API_BASE_URL || "http://localhost:8000").replace(/\/$/, "");
@@ -14,6 +16,15 @@ type RequestOptions = {
   method?: string;
   body?: any;
 };
+
+export class HttpStatusError extends Error {
+  status: number;
+
+  constructor(status: number, message: string) {
+    super(message);
+    this.status = status;
+  }
+}
 
 // ---- Global auth-failure handling (401/403) ----
 function clearAuthSession() {
@@ -245,17 +256,21 @@ export const api = {
       body: payload
     }),
 
+  studentEnrollmentAssistance: (payload: EnrollmentAssistanceRequest) =>
+    request<EnrollmentAssistanceResponse>("/api/v1/student/courses/enrollment-assistance", {
+      method: "POST",
+      body: payload,
+    }),
+  studentDropRecommendation: () =>
+    request<DropRecommendationResponse>("/api/v1/student/courses/drop-recommendation"),
+
   currentStudentCourses: () => request<CurrentCoursesResponse>("/api/v1/student/courses/current"),
 
   studentCourseDetails: (code: string) =>
     request<any>(`/api/v1/student/courses/detail/${encodeURIComponent(code)}`),
 
   // --- Student Alerts ---
-  studentAlerts: () => request<StudentAlert[]>("/api/v1/student/alerts/"),
-  studentDeleteAlert: (alertId: string) => request(`/api/v1/student/alerts/${encodeURIComponent(alertId)}`, { method: "DELETE" }),
-
-  // --- Student Alerts ---
-  studentAlerts: () => request<StudentAlert[]>("/api/v1/student/alerts/"),
+  studentAlerts: () => request<any[]>("/api/v1/student/alerts/"),
   studentDeleteAlert: (alertId: string) => request(`/api/v1/student/alerts/${encodeURIComponent(alertId)}`, { method: "DELETE" }),
 
   dropCourse: (code: string) =>
@@ -278,5 +293,117 @@ export const api = {
 
   studentDegreeProgress: () =>
     request("/api/v1/student/progress"),
+
+  studentAiChat: async (payload: StudentChatRequest): Promise<StudentChatResponse> => {
+    const token = localStorage.getItem("access_token");
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+    };
+
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+
+    const response = await fetch(`${API_BASE}/api/v1/ai/ai/student/chat`, {
+      method: "POST",
+      headers,
+      credentials: "include",
+      body: JSON.stringify(payload),
+    });
+
+    const text = await response.text();
+    let data: any;
+    try {
+      data = text ? JSON.parse(text) : null;
+    } catch {
+      data = null;
+    }
+
+    if (!response.ok) {
+      const msg = data?.detail || data?.message || `Request failed (${response.status})`;
+      throw new HttpStatusError(response.status, msg);
+    }
+
+    if (!data || typeof data.answer !== "string") {
+      throw new HttpStatusError(500, "Unexpected response format from AI service.");
+    }
+
+    return data as StudentChatResponse;
+  },
+
+  studentCourseChat: async (payload: {
+    message: string;
+    course_id: string;
+    history: StudentChatHistoryItem[];
+    mode: "auto";
+  }): Promise<StudentChatResponse> => {
+    const token = localStorage.getItem("access_token");
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+    };
+
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+
+    const response = await fetch(`${API_BASE}/api/v1/ai/ai/student/course-chat`, {
+      method: "POST",
+      headers,
+      credentials: "include",
+      body: JSON.stringify(payload),
+    });
+
+    const text = await response.text();
+    let data: any;
+    try {
+      data = text ? JSON.parse(text) : null;
+    } catch {
+      data = null;
+    }
+
+    if (!response.ok) {
+      const msg = data?.detail || data?.message || `Request failed (${response.status})`;
+      throw new HttpStatusError(response.status, msg);
+    }
+
+    return data as StudentChatResponse;
+  },
+
+  adminAiChat: async (payload: AdminChatRequest): Promise<AdminChatResponse> => {
+    const token = localStorage.getItem("access_token");
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+    };
+
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+
+    const response = await fetch(`${API_BASE}/api/v1/ai/ai/admin/chat`, {
+      method: "POST",
+      headers,
+      credentials: "include",
+      body: JSON.stringify(payload),
+    });
+
+    const text = await response.text();
+    let data: any;
+    try {
+      data = text ? JSON.parse(text) : null;
+    } catch {
+      data = null;
+    }
+
+    if (!response.ok) {
+      const msg = data?.detail || data?.message || `Request failed (${response.status})`;
+      throw new HttpStatusError(response.status, msg);
+    }
+
+    if (!data || typeof data.answer !== "string") {
+      throw new HttpStatusError(500, "Unexpected response format from AI service.");
+    }
+
+    return data as AdminChatResponse;
+  },
 };
   
