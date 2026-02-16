@@ -21,7 +21,10 @@ const renderInline = (text: string, keyPrefix: string) => {
     }
     if (part.startsWith("`") && part.endsWith("`")) {
       return (
-        <code key={key} className="rounded bg-[#f0f0f0] px-1 py-0.5 text-[0.92em] font-mono text-[#1f6f5f]">
+        <code
+          key={key}
+          className="rounded bg-[#f0f0f0] px-1 py-0.5 text-[0.92em] font-mono text-[#1f6f5f] dark:bg-slate-700/70 dark:text-teal-300"
+        >
           {part.slice(1, -1)}
         </code>
       );
@@ -113,7 +116,7 @@ const MarkdownContent: React.FC<MarkdownContentProps> = ({ content }) => {
   const blocks = parseMarkdown(content);
 
   return (
-    <div className="space-y-2 text-sm leading-6">
+    <div className="space-y-2 text-sm leading-6 text-[#333333] dark:text-gray-100">
       {blocks.map((block, index) => {
         const key = `block-${index}`;
 
@@ -167,7 +170,7 @@ const MarkdownContent: React.FC<MarkdownContentProps> = ({ content }) => {
           return (
             <blockquote
               key={key}
-              className="rounded-[6px] border-l-4 border-[#1f6f5f] bg-[#edf4f2] px-3 py-2 text-[#333333]"
+              className="rounded-[6px] border-l-4 border-[#1f6f5f] bg-[#edf4f2] px-3 py-2 text-[#333333] dark:border-teal-400 dark:bg-teal-900/20 dark:text-gray-100"
             >
               {block.lines.map((line, lineIndex) => (
                 <p key={`${key}-q-${lineIndex}`}>{renderInline(line, `${key}-q-${lineIndex}`)}</p>
@@ -176,7 +179,7 @@ const MarkdownContent: React.FC<MarkdownContentProps> = ({ content }) => {
           );
         }
 
-        return <hr key={key} className="border-[#cccccc]" />;
+        return <hr key={key} className="border-[#cccccc] dark:border-gray-700" />;
       })}
     </div>
   );

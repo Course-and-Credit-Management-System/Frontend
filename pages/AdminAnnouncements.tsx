@@ -861,134 +861,149 @@ const AdminAnnouncements: React.FC<Props> = ({ user, onLogout }) => {
 
           {/* List */}
           <div className="bg-surface-light dark:bg-surface-dark rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
-            <div className="border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex items-center justify-between">
+            <div className="border-b border-gray-200 dark:border-gray-700 px-4 md:px-6 py-4 flex items-center justify-between bg-gray-50/50 dark:bg-slate-900/20">
               <div>
                 <h3 className="font-bold text-gray-800 dark:text-white">Announcements</h3>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  Showing {filtered.length} of {items.length}
+                <p className="text-[10px] md:text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mt-1">
+                  Showing {filtered.length} items
                 </p>
               </div>
-              <div className="flex items-center gap-3">
-                <button onClick={load} className="text-sm font-bold text-primary hover:opacity-80" disabled={loading}>
-                  {loading ? "Loading..." : "Refresh"}
-                </button>
-              </div>
+              <button 
+                onClick={load} 
+                className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-bold text-primary hover:bg-primary/10 transition-colors" 
+                disabled={loading}
+              >
+                <span className={clsx("material-icons-outlined text-sm", loading && "animate-spin")}>refresh</span>
+                Refresh
+              </button>
             </div>
 
             {loading ? (
-              <div className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">Loading announcements...</div>
+              <div className="px-6 py-12 text-center text-sm font-bold text-gray-500 dark:text-gray-400 animate-pulse">
+                Loading database records...
+              </div>
             ) : filtered.length === 0 ? (
-              <div className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">No announcements match filters.</div>
+              <div className="px-6 py-12 text-center text-sm font-bold text-gray-500 dark:text-gray-400">
+                No announcements found matching your filters.
+              </div>
             ) : (
               <div className="divide-y divide-gray-100 dark:divide-gray-800">
-                <div className="px-6 py-3 text-xs font-bold text-gray-500 dark:text-gray-400 flex items-center gap-3">
+                {/* Desktop Header - hidden on mobile */}
+                <div className="hidden lg:flex px-6 py-3 text-[10px] font-extrabold uppercase tracking-widest text-gray-400 dark:text-gray-500 items-center gap-3 bg-gray-50/30 dark:bg-slate-900/10">
                   <input
                     type="checkbox"
                     checked={filtered.length > 0 && selectedIds.length === filtered.length}
                     onChange={(e) => setAllSelected(filtered.map((x) => x._id), e.target.checked)}
-                    className="h-4 w-4 rounded border-gray-300 dark:border-gray-600"
+                    className="h-4 w-4 rounded border-gray-300 dark:border-gray-600 accent-primary"
                     aria-label="Select all"
                   />
                   <span className="w-20">Type</span>
                   <span className="w-24">Status</span>
                   <span className="w-24">Pinned</span>
                   <span className="flex-1">Details</span>
-                  <span className="w-[320px] text-right">Actions</span>
+                  <span className="w-[280px] text-right">Actions</span>
                 </div>
 
                 {filtered.map((a) => {
                   const expired = isExpired(a);
                   const status = (a.status ?? "draft") as AnnouncementStatus;
-
                   const createdIso = a.updated_at ?? a.published_at ?? a.date_posted ?? null;
                   const expIso = a.expiry_date ?? null;
 
                   return (
-                    <div key={a._id} className="px-6 py-4">
-                      <div className="flex items-start gap-3">
-                        <input
-                          type="checkbox"
-                          checked={!!selected[a._id]}
-                          onChange={() => toggleSelected(a._id)}
-                          className="mt-1 h-4 w-4 rounded border-gray-300 dark:border-gray-600"
-                          aria-label={`Select ${a._id}`}
-                        />
+                    <div key={a._id} className="px-4 md:px-6 py-5 hover:bg-gray-50/50 dark:hover:bg-slate-800/30 transition-colors">
+                      <div className="flex flex-col lg:flex-row lg:items-start gap-4">
+                        <div className="flex items-center gap-3 shrink-0">
+                          <input
+                            type="checkbox"
+                            checked={!!selected[a._id]}
+                            onChange={() => toggleSelected(a._id)}
+                            className="h-4 w-4 rounded border-gray-300 dark:border-gray-600 accent-primary"
+                            aria-label={`Select ${a._id}`}
+                          />
+                          <div className="lg:hidden flex items-center gap-2">
+                             <span className={clsx("text-[10px] font-extrabold uppercase tracking-wide px-2 py-0.5 rounded-full", typeBadge(a.type))}>
+                               {a.type ?? "General"}
+                             </span>
+                             <span className={clsx("text-[10px] font-extrabold uppercase tracking-wide px-2 py-0.5 rounded-full", statusBadge(status))}>
+                               {status}
+                             </span>
+                          </div>
+                        </div>
 
-                        <div className="w-20 shrink-0">
-                          <span className={clsx("text-xs font-bold px-2 py-1 rounded", typeBadge(a.type))}>
+                        {/* Desktop Columns */}
+                        <div className="hidden lg:block w-20 shrink-0">
+                          <span className={clsx("text-[10px] font-extrabold uppercase tracking-wide px-2 py-1 rounded", typeBadge(a.type))}>
                             {a.type ?? "General"}
                           </span>
                         </div>
 
-                        <div className="w-24 shrink-0">
-                          <span className={clsx("text-xs font-bold px-2 py-1 rounded", statusBadge(status))}>
+                        <div className="hidden lg:block w-24 shrink-0">
+                          <span className={clsx("text-[10px] font-extrabold uppercase tracking-wide px-2 py-1 rounded", statusBadge(status))}>
                             {status}
                           </span>
                         </div>
 
-                        <div className="w-24 shrink-0">
+                        <div className="hidden lg:block w-24 shrink-0">
                           {a.pinned ? (
-                            <span className="text-xs font-bold px-2 py-1 rounded bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-200">
+                            <span className="flex items-center gap-1 text-[10px] font-extrabold uppercase tracking-wide text-yellow-600 dark:text-yellow-400">
+                              <span className="material-icons-round text-sm">push_pin</span>
                               Pinned
                             </span>
                           ) : (
-                            <span className="text-xs text-gray-500 dark:text-gray-400">—</span>
+                            <span className="text-[10px] text-gray-400">—</span>
                           )}
                         </div>
 
+                        {/* Details Area */}
                         <div className="min-w-0 flex-1">
-                          <div className="flex items-center flex-wrap gap-2 mb-2">
-                            <span className="text-xs text-gray-500 dark:text-gray-400">
-                              Audience: <span className="font-bold">{a.target_audience ?? "All"}</span>
+                          <div className="flex items-center flex-wrap gap-x-4 gap-y-1.5 mb-2">
+                            <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-tight">
+                              Audience: <span className="text-gray-900 dark:text-white">{a.target_audience ?? "All"}</span>
                             </span>
 
                             {createdIso && (
-                              <span className="text-xs text-gray-500 dark:text-gray-400">
-                                • Updated: {formatLocalWithTz(createdIso)}{" "}
-                                <span className="text-gray-400">({formatUtc(createdIso)})</span>
+                              <span className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-tight flex items-center gap-1">
+                                <span className="material-icons-outlined text-xs">edit_calendar</span>
+                                {formatLocalWithTz(createdIso)}
                               </span>
                             )}
 
                             {expIso && (
-                              <span className="text-xs text-gray-500 dark:text-gray-400">
-                                • Expires: {formatLocalWithTz(expIso)}{" "}
-                                <span className="text-gray-400">({formatUtc(expIso)})</span>
+                              <span className={clsx(
+                                "text-[10px] font-bold uppercase tracking-tight flex items-center gap-1",
+                                expired ? "text-rose-500" : "text-gray-400 dark:text-slate-500"
+                              )}>
+                                <span className="material-icons-outlined text-xs">event_busy</span>
+                                {expired ? "Expired" : `Expires: ${formatLocalWithTz(expIso)}`}
                               </span>
                             )}
-
-                            {expired && (
-                              <span className="text-xs font-bold px-2 py-1 rounded bg-gray-100 text-gray-600 dark:bg-slate-800 dark:text-gray-300">
-                                Expired
-                              </span>
-                            )}
-
-                            <span className="text-xs text-gray-500 dark:text-gray-400">• {nextExpiryText(a)}</span>
                           </div>
 
-                          <h4 className="font-bold text-gray-800 dark:text-white break-words">{a.title}</h4>
-                          <p className="mt-1 text-sm text-gray-600 dark:text-gray-300 break-words">{a.content}</p>
+                          <h4 className="font-bold text-gray-900 dark:text-white break-words leading-tight">{a.title}</h4>
+                          <p className="mt-1.5 text-sm text-gray-600 dark:text-gray-300 break-words line-clamp-3 md:line-clamp-none leading-relaxed">{a.content}</p>
 
-                          <div className="mt-2 text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2 flex-wrap">
-                            <span>
-                              ID: <span className="font-mono">{shortId(a._id)}</span>
-                            </span>
-                            <button
-                              type="button"
-                              onClick={() => copy(a._id)}
-                              className="text-primary font-bold hover:opacity-80"
-                            >
-                              Copy
-                            </button>
-                            {a.posted_by ? <span>• Posted by: {a.posted_by}</span> : null}
+                          <div className="mt-3 text-[10px] font-bold text-gray-400 dark:text-slate-500 flex items-center gap-3 flex-wrap uppercase tracking-widest">
+                            <div className="flex items-center gap-1">
+                              ID: <span className="font-mono text-gray-600 dark:text-gray-400">{shortId(a._id)}</span>
+                              <button
+                                type="button"
+                                onClick={() => copy(a._id)}
+                                className="ml-1 text-primary hover:underline transition-all"
+                              >
+                                Copy
+                              </button>
+                            </div>
+                            {a.posted_by && <span className="flex items-center gap-1"><span className="material-icons-outlined text-xs">person</span> {a.posted_by}</span>}
                           </div>
                         </div>
 
-                        <div className="flex flex-col items-end gap-2 shrink-0 w-[320px]">
-                          <div className="flex flex-wrap gap-2 justify-end">
+                        {/* Actions Area */}
+                        <div className="mt-4 lg:mt-0 flex flex-wrap lg:flex-nowrap items-center gap-2 shrink-0 lg:w-[280px] lg:justify-end">
                             {status === "draft" && (
                               <button
                                 onClick={() => onPublish(a)}
-                                className="rounded-lg bg-green-600 px-3 py-2 text-xs font-bold text-white hover:opacity-90"
+                                className="flex-1 lg:flex-none rounded-lg bg-emerald-600 px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-wide text-white hover:bg-emerald-700 transition-colors shadow-sm"
                               >
                                 Publish
                               </button>
@@ -996,7 +1011,7 @@ const AdminAnnouncements: React.FC<Props> = ({ user, onLogout }) => {
                             {status === "published" && (
                               <button
                                 onClick={() => onArchive(a)}
-                                className="rounded-lg bg-gray-700 px-3 py-2 text-xs font-bold text-white hover:opacity-90"
+                                className="flex-1 lg:flex-none rounded-lg bg-slate-700 px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-wide text-white hover:bg-slate-800 transition-colors shadow-sm"
                               >
                                 Archive
                               </button>
@@ -1005,36 +1020,31 @@ const AdminAnnouncements: React.FC<Props> = ({ user, onLogout }) => {
                             <button
                               onClick={() => onPinToggle(a)}
                               className={clsx(
-                                "rounded-lg px-3 py-2 text-xs font-bold hover:opacity-90 border",
+                                "flex-1 lg:flex-none rounded-lg px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-wide border transition-all shadow-sm flex items-center justify-center gap-1",
                                 a.pinned
-                                  ? "bg-yellow-100 text-yellow-900 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-200 dark:border-yellow-900/50"
+                                  ? "bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-300 dark:border-yellow-900/50"
                                   : "bg-white text-gray-700 border-gray-200 dark:bg-slate-800 dark:text-gray-200 dark:border-gray-700"
                               )}
                             >
+                              <span className="material-icons-outlined text-sm">{a.pinned ? "push_pin" : "push_pin"}</span>
                               {a.pinned ? "Unpin" : "Pin"}
                             </button>
 
                             <button
-                              onClick={() => onDuplicate(a)}
-                              className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-bold text-gray-700 hover:opacity-90 dark:border-gray-700 dark:bg-slate-800 dark:text-gray-200"
-                            >
-                              Duplicate
-                            </button>
-
-                            <button
                               onClick={() => openEdit(a)}
-                              className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-bold text-gray-700 hover:opacity-90 dark:border-gray-700 dark:bg-slate-800 dark:text-gray-200"
+                              className="rounded-lg border border-gray-200 bg-white p-1.5 text-gray-500 hover:text-primary hover:border-primary transition-all dark:border-gray-700 dark:bg-slate-800 dark:text-gray-400"
+                              title="Edit"
                             >
-                              Edit
+                              <span className="material-icons-outlined text-sm">edit</span>
                             </button>
 
                             <button
                               onClick={() => onDelete(a._id)}
-                              className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-bold text-red-700 hover:opacity-90 dark:border-red-900/40 dark:bg-red-900/20 dark:text-red-200"
+                              className="rounded-lg border border-rose-100 bg-rose-50 p-1.5 text-rose-600 hover:bg-rose-600 hover:text-white transition-all dark:bg-rose-900/20 dark:border-rose-900/40"
+                              title="Delete"
                             >
-                              Delete
+                              <span className="material-icons-outlined text-sm">delete_outline</span>
                             </button>
-                          </div>
                         </div>
                       </div>
                     </div>

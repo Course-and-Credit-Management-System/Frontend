@@ -1,6 +1,14 @@
 /// <reference types="vite/client" />
 
-import { DropRecommendationResponse, EnrollmentAssistanceRequest, EnrollmentAssistanceResponse } from '../types';
+import {
+  DropRecommendationResponse,
+  EnrollmentAssistanceRequest,
+  EnrollmentAssistanceResponse,
+  EnrollmentSetting,
+  EnrollmentSettingStatusPayload,
+  EnrollmentSettingUpsertPayload,
+  StudentEnrollmentSettingCurrent,
+} from '../types';
 import {
   StudentChatRequest,
   StudentChatResponse,
@@ -10,7 +18,10 @@ import {
 import { AdminChatRequest, AdminChatResponse } from '../types/adminChat';
 import type { CurrentCoursesResponse } from "../types";
 
- const API_BASE = (import.meta.env.VITE_API_BASE_URL ?? "").replace(/\/$/, "");
+// Use relative path so requests go through Vite proxy (same-origin = cookies work)
+const API_BASE = (import.meta.env.VITE_API_BASE_URL || "").trim()
+  ? (import.meta.env.VITE_API_BASE_URL || "").replace(/\/$/, "")
+  : "";
 
 type RequestOptions = {
   method?: string;
@@ -85,12 +96,12 @@ async function request<T = any>(path: string, options: RequestOptions = {}): Pro
     clearAuthSession();
     redirectToLogin();
     const msg = (data as any)?.detail || (data as any)?.message || `Not authorized (${res.status})`;
-    throw new Error(msg);
+    throw new HttpStatusError(res.status, msg);
   }
 
   if (!res.ok) {
     const msg = (data as any)?.detail || (data as any)?.message || `Request failed (${res.status})`;
-    throw new Error(msg);
+    throw new HttpStatusError(res.status, msg);
   }
 
   return data;
@@ -214,6 +225,33 @@ export const api = {
         body: payload
   }),
 
+  adminAdvanceSemester: () =>
+    request<{ detail: string }>("/api/v1/admin/semester/advance", {
+      method: "POST",
+    }),
+
+  // --- Admin Enrollment Settings (singleton) ---
+  adminEnrollmentSettingCurrent: () =>
+    request<EnrollmentSetting>("/api/v1/admin/enrollment-settings"),
+
+  adminReplaceEnrollmentSetting: (payload: EnrollmentSettingUpsertPayload) =>
+    request<EnrollmentSetting>("/api/v1/admin/enrollment-settings", {
+      method: "POST",
+      body: payload,
+    }),
+
+  adminUpsertEnrollmentSetting: (payload: EnrollmentSettingUpsertPayload) =>
+    request<EnrollmentSetting>("/api/v1/admin/enrollment-settings", {
+      method: "PUT",
+      body: payload,
+    }),
+
+  adminSetEnrollmentSettingStatus: (payload: EnrollmentSettingStatusPayload) =>
+    request<EnrollmentSetting>("/api/v1/admin/enrollment-settings/status", {
+      method: "PATCH",
+      body: payload,
+    }),
+
   // --- Admin Messages ---
   adminMessages: () => request("/api/v1/admin/messages"),
   adminStudents: () => request("/api/v1/admin/students"),
@@ -243,6 +281,9 @@ export const api = {
     if (sort) params.append("sort", sort);
     return request<{ data: any[]; meta: any }>(`/api/v1/student/courses?${params.toString()}`);
   },
+
+  studentEnrollmentSettingCurrent: () =>
+    request<StudentEnrollmentSettingCurrent>("/api/v1/student/enrollment/settings/current"),
 
   enrollStudent: (payload: { selected_code: string }) => 
     request<{ success: boolean; message: string; credit_usage: any }>("/api/v1/student/courses/enrollment", {
