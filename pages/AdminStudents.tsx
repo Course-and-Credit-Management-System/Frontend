@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useState } from "react";
-import { useNavigate, Link } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
 import { User } from '../types';
@@ -43,8 +43,9 @@ const API_BASE = (import.meta.env.VITE_API_BASE_URL || "").trim()
 
 const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
   const navigate = useNavigate();
-
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  // State for students data
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(false);
   const [importing, setImporting] = useState(false);
@@ -243,16 +244,14 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
     }
   };
 
+  // Handle delete student
   const handleDeleteStudent = async (student: Student) => {
-    const userId = student.user_id;
-    const name = student.name ?? 'this student';
-
-    if (!confirm(`Are you sure you want to delete ${name} (${userId})?`)) {
+    if (!confirm(`Are you sure you want to delete ${student.name} (${student.user_id})?`)) {
       return;
     }
 
     try {
-      const res = await fetch(`${API_BASE}/admin/students/${encodeURIComponent(userId)}/delete`, {
+      const res = await fetch(`${API_BASE}/admin/students/${encodeURIComponent(student.user_id)}/delete`, {
         method: 'POST',
         credentials: 'include',
       });
@@ -263,9 +262,7 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
       } else {
         const errData = await res.json().catch(() => ({}));
         const detail = errData?.detail ?? (res.status ? `HTTP ${res.status}` : 'Unknown error');
-        const errText = Array.isArray(detail)
-          ? detail.map((x: { msg?: string }) => x?.msg ?? JSON.stringify(x)).join('; ')
-          : String(detail);
+        const errText = Array.isArray(detail) ? detail.map((x: { msg?: string }) => x?.msg ?? JSON.stringify(x)).join('; ') : String(detail);
         setMessage({ type: 'error', text: `Failed to delete: ${errText}` });
       }
     } catch (err) {
@@ -273,6 +270,7 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
     }
   };
 
+  // Open edit modal
   const openEditModal = (student: Student) => {
     setEditingStudent(student);
     setFormData({
@@ -287,7 +285,6 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
       total_credits: student.total_credits,
     });
   };
-
 
   // Reset form
   const resetForm = () => {
@@ -320,7 +317,6 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
     navigate(`/admin/students/${studentId}`);
   };
 
-
   return (
     <div className="flex h-screen overflow-hidden bg-background-light dark:bg-background-dark">
       <Sidebar user={user} onLogout={onLogout} />
@@ -335,9 +331,9 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
                 <span className="absolute inset-y-0 left-0 flex items-center pl-3">
                   <span className="material-icons-outlined text-gray-400">search</span>
                 </span>
-                <input
-                  className="w-full md:w-64 rounded-lg border border-border-light bg-surface-light py-2 pl-10 pr-4 text-sm focus:border-primary outline-none dark:border-border-dark dark:bg-surface-dark dark:text-gray-200"
-                  placeholder="Search by name, ID..."
+                <input 
+                  className="w-full md:w-64 rounded-lg border border-border-light bg-surface-light py-2 pl-10 pr-4 text-sm focus:border-primary outline-none dark:border-border-dark dark:bg-surface-dark dark:text-gray-200" 
+                  placeholder="Search by name, ID..." 
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -400,20 +396,17 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
 
               {/* Major Filter (shown for years 3-5) */}
               {showMajorFilter && (
-                <select
+                <select 
                   value={major}
                   onChange={(e) => setMajor(e.target.value)}
                   className="rounded-lg border border-border-light bg-surface-light py-2 pl-3 pr-8 text-sm outline-none dark:border-border-dark dark:bg-surface-dark dark:text-gray-200"
                 >
                   <option value="">All Majors</option>
                   {majorOptions.map((m) => (
-                    <option key={m} value={m}>
-                      {m}
-                    </option>
+                    <option key={m} value={m}>{m}</option>
                   ))}
                 </select>
               )}
-
 
               {/* Status Filter */}
               <select 
@@ -428,7 +421,6 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
                 <option value="Graduated">Graduated</option>
               </select>
             </div>
-
 
             {/* Action Buttons */}
             <div className="flex items-center gap-3">
@@ -449,7 +441,6 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
               </button>
               <button 
                 onClick={() => {
-                  setEditingStudent(null);
                   resetForm();
                   setShowAddModal(true);
                 }}
@@ -470,7 +461,7 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
 
           {/* Students Table */}
           <div className="rounded-xl bg-surface-light shadow-sm dark:bg-surface-dark overflow-hidden">
-            <div className="overflow-x-auto">
+             <div className="overflow-x-auto">
                 <table className="w-full text-left text-sm text-gray-500 dark:text-gray-400">
                   <thead className="bg-gray-50 text-xs uppercase text-gray-700 dark:bg-slate-800 dark:text-gray-300">
                     <tr>
@@ -496,7 +487,7 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
                     ) : (
                       students.map((s) => (
                         <tr 
-                          key={s.user_id} 
+                          key={s.id} 
                           onClick={() => handleStudentClick(s.user_id)}
                           className="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer"
                         >
@@ -534,14 +525,13 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
                           </td>
                           <td className="px-6 py-4 text-right">
                             <div className="flex items-center justify-end space-x-2">
-                              <Link
-                                  to={`/admin/students/${encodeURIComponent(s.user_id || s.id)}`}
-                                  onClick={(e) => e.stopPropagation()}
-                                  className="inline-flex rounded p-1 text-gray-400 hover:text-primary"
+                              <button 
+                                  onClick={(e) => { e.stopPropagation(); handleStudentClick(s.user_id); }}
+                                  className="rounded p-1 text-gray-400 hover:text-primary"
                                   title="View"
                               >
                                   <span className="material-icons-outlined text-lg">visibility</span>
-                              </Link>
+                              </button>
                               <button 
                                   onClick={(e) => { e.stopPropagation(); openEditModal(s); }} 
                                   className="rounded p-1 text-gray-400 hover:text-blue-600"
@@ -899,4 +889,3 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
 };
 
 export default AdminStudents;
-

@@ -149,11 +149,11 @@ const StudentChatPage: React.FC<StudentChatPageProps> = ({ user, onLogout }) => 
   };
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[#f5f5f5] font-roboto">
+    <div className="flex h-screen overflow-hidden bg-[#f5f5f5] font-roboto dark:bg-background-dark">
       <Sidebar user={user} onLogout={onLogout} />
       <div className="flex flex-1 flex-col overflow-hidden">
         <Header title="Student AI Chatbot" user={user} />
-        <main className="flex-1 overflow-hidden p-4 md:p-6">
+        <main className="flex-1 overflow-hidden p-4 md:p-6 dark:bg-background-dark">
           <div className="h-full min-h-0">
             <ChatWindow
               selectedMode={selectedMode}

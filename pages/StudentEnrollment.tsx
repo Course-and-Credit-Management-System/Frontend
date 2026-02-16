@@ -2,12 +2,39 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
-import { User, AvailableCourse, DropRecommendationResponse, EnrollmentAssistanceCourse } from '../types';
+import {
+  User,
+  AvailableCourse,
+  DropRecommendationResponse,
+  EnrollmentAssistanceCourse,
+  StudentEnrollmentSettingCurrent,
+} from '../types';
 import { api } from '../lib/api';
+import { parseEnrollmentDateMs } from '../lib/enrollmentSettingsValidation';
 
 interface EnrollmentProps {
   user: User;
   onLogout: () => void;
+}
+
+function formatRemainingTime(closeAt?: string) {
+  if (!closeAt) return 'N/A';
+  const closeMs = parseEnrollmentDateMs(closeAt);
+  if (!Number.isFinite(closeMs)) return 'N/A';
+  const remaining = closeMs - Date.now();
+  if (remaining <= 0) return 'Expired';
+  const totalSeconds = Math.floor(remaining / 1000);
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  return `${hours}h ${minutes}m ${seconds}s`;
+}
+
+function formatLocalDateTime(value?: string) {
+  if (!value) return 'N/A';
+  const ms = parseEnrollmentDateMs(value);
+  if (!Number.isFinite(ms)) return 'N/A';
+  return new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(ms));
 }
 
 const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
@@ -26,6 +53,22 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
   const [dropError, setDropError] = useState<string | null>(null);
   const [dropRecommendation, setDropRecommendation] = useState<DropRecommendationResponse | null>(null);
   const [dropSelectedCodes, setDropSelectedCodes] = useState<Set<string>>(new Set());
+  const [maxCreditsLimit, setMaxCreditsLimit] = useState<number>(() => {
+    const stored = Number(localStorage.getItem("max_credits"));
+    return Number.isFinite(stored) && stored > 0 ? stored : 18;
+  });
+  const [enrollmentSetting, setEnrollmentSetting] = useState<StudentEnrollmentSettingCurrent | null>(() => {
+    const raw = localStorage.getItem("student_enrollment_setting_current");
+    if (!raw) return null;
+    try {
+      return JSON.parse(raw) as StudentEnrollmentSettingCurrent;
+    } catch {
+      return null;
+    }
+  });
+  const [settingLoading, setSettingLoading] = useState(false);
+  const [settingError, setSettingError] = useState<string | null>(null);
+  const [, setTimeTick] = useState(Date.now());
   
   const [courses, setCourses] = useState<AvailableCourse[]>([]);
   const [loading, setLoading] = useState(false);
@@ -47,9 +90,34 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
     fetchCourses();
   }, [sortOption]);
 
+  useEffect(() => {
+    const fetchEnrollmentSetting = async () => {
+      setSettingLoading(true);
+      setSettingError(null);
+      try {
+        const res = await api.studentEnrollmentSettingCurrent();
+        setEnrollmentSetting(res);
+        setMaxCreditsLimit(res.max_credits);
+        localStorage.setItem("max_credits", String(res.max_credits));
+        localStorage.setItem("student_enrollment_setting_current", JSON.stringify(res));
+      } catch (error) {
+        setSettingError(error instanceof Error ? error.message : "Failed to load enrollment setting.");
+      } finally {
+        setSettingLoading(false);
+      }
+    };
+
+    fetchEnrollmentSetting();
+  }, []);
+
+  useEffect(() => {
+    const timer = setInterval(() => setTimeTick(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
   const toggleCourse = (course: AvailableCourse) => {
     // Prevent toggling if locked or enrolled (assuming enrolled shouldn't be toggled here usually, but adherence to status 'locked' is key)
-    if (course.status === 'locked') return;
+    if (course.status === 'locked' || !isEnrollmentActive) return;
 
     setSelectedRegistry(prev => {
       const newMap = new Map(prev);
@@ -71,6 +139,9 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
   }, [searchQuery, sortOption]);
 
   const filteredCourses = courses.filter(c => {
+    const enrollmentClosedForEnrollableSort = sortOption === 'enrollable' && enrollmentSetting && !enrollmentSetting.is_active;
+    if (enrollmentClosedForEnrollableSort) return false;
+
     const q = searchQuery.toLowerCase();
     return (
       (c.title?.toLowerCase() || '').includes(q) || 
@@ -102,11 +173,14 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
     if (stored) setCredits(stored);
   }, []);
 
+  const isEnrollmentActive = enrollmentSetting ? enrollmentSetting.is_active : true;
+  const enrollmentClosedForEnrollableSort = sortOption === 'enrollable' && !isEnrollmentActive;
+
   const baseCredits = parseInt(credits) || 0;
   const selectedCredits = Array.from(selectedRegistry.values())
     .reduce((acc, curr) => acc + curr.credits, 0);
   const totalCredits = baseCredits + selectedCredits;
-  const isOverLimit = totalCredits > 18;
+  const isOverLimit = totalCredits > maxCreditsLimit;
   const hasPrereqError = Array.from(selectedRegistry.values()).some(c => !!c.error);
   const selectedCourses = Array.from(selectedRegistry.values());
   const recommendedDropCodes = new Set([
@@ -170,6 +244,7 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
   };
 
   const handleFinalize = async () => {
+    if (!isEnrollmentActive) return;
     try {
       // 1. Prepare Payload
       const selectedCodes = Array.from(selectedRegistry.keys()).join(',');
@@ -239,7 +314,7 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
               <div className="flex items-center gap-4 bg-surface-light dark:bg-surface-dark px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
                 <div className="text-center">
                   <span className="block text-xs text-gray-500 uppercase font-bold tracking-wider">Credits</span>
-                  <span className="text-lg font-bold text-primary">{credits}<span className="text-gray-400 text-sm font-normal">/18</span></span>
+                  <span className="text-lg font-bold text-primary">{credits}<span className="text-gray-400 text-sm font-normal">/{maxCreditsLimit}</span></span>
                 </div>
                 <div className="h-8 w-px bg-gray-200 dark:bg-gray-700"></div>
                 <div className="text-center">
@@ -247,6 +322,37 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
                   <span className="text-lg font-bold text-green-500">3.4</span>
                 </div>
               </div>
+            </div>
+
+            <div className="bg-white p-4 rounded-[8px] border border-[#cccccc] shadow-[0_2px_6px_rgba(0,0,0,0.1)] mb-6 dark:bg-surface-dark dark:border-gray-700">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                <div>
+                  <p className="text-sm text-[#666666] dark:text-gray-300">Enrollment Status</p>
+                  <span
+                    className={`inline-flex mt-1 rounded-full px-3 py-1 text-xs font-semibold ${
+                      isEnrollmentActive
+                        ? "bg-[#eafaf1] text-[#27ae60] dark:bg-green-900/25 dark:text-green-300"
+                        : "bg-[#fdecea] text-[#e74c3c] dark:bg-red-900/25 dark:text-red-300"
+                    }`}
+                  >
+                    {isEnrollmentActive ? "Open" : "Closed"}
+                  </span>
+                </div>
+                <div>
+                  <p className="text-sm text-[#666666] dark:text-gray-300">Open Time</p>
+                  <p className="text-sm font-semibold text-[#333333] dark:text-gray-100">{formatLocalDateTime(enrollmentSetting?.enrollment_open_at)}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-[#666666] dark:text-gray-300">Close Time</p>
+                  <p className="text-sm font-semibold text-[#333333] dark:text-gray-100">{formatLocalDateTime(enrollmentSetting?.enrollment_close_at)}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-[#666666] dark:text-gray-300">Remaining Time</p>
+                  <p className="text-sm font-semibold text-[#333333] dark:text-gray-100">{formatRemainingTime(enrollmentSetting?.enrollment_close_at)}</p>
+                </div>
+              </div>
+              {settingLoading && <p className="mt-3 text-sm text-[#666666] dark:text-gray-300">Loading enrollment setting...</p>}
+              {settingError && <p className="mt-3 text-sm text-[#e74c3c] dark:text-red-300">{settingError}</p>}
             </div>
 
             <div className="bg-surface-light dark:bg-surface-dark p-4 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm mb-6 flex flex-col md:flex-row gap-4 items-center justify-between">
@@ -292,7 +398,7 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
                     type="text"
                     value={aiMessage}
                     onChange={(e) => setAiMessage(e.target.value)}
-                    placeholder="Try: I need 2 electives that keep me under 18 credits and avoid schedule conflicts."
+                    placeholder={`Try: I need 2 electives that keep me under ${maxCreditsLimit} credits and avoid schedule conflicts.`}
                     className="w-full pl-9 pr-4 py-2.5 text-sm rounded-[6px] border border-[#b8ced6] bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-[#1f6f5f]/20 focus:border-[#1f6f5f] transition-all"
                   />
                 </div>
@@ -379,35 +485,42 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
             </section>
 
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+              {enrollmentClosedForEnrollableSort && (
+                <div className="xl:col-span-2 rounded-[6px] border border-[#f6c9c4] bg-[#fdecea] px-4 py-3 text-sm text-[#e74c3c]">
+                  Enrollment is currently closed now.
+                </div>
+              )}
                {displayCourses.map((course) => (
                  <div 
                    key={course.code} 
                    onClick={() => navigate(`/student/enrollment/view/${course.code}`)} 
-                   className={`group relative bg-surface-light dark:bg-surface-dark rounded-xl p-5 border transition-all shadow-sm cursor-pointer ${
+                   className={`group relative bg-surface-light dark:bg-surface-dark rounded-xl p-4 md:p-5 border transition-all shadow-sm cursor-pointer ${
                    course.status === 'selected' ? 'border-2 border-primary ring-1 ring-primary/20 shadow-md' : 
                    course.status === 'locked' ? 'border-gray-200 dark:border-gray-700 opacity-60' : 'border-gray-200 dark:border-gray-700 hover:border-primary'
                  }`}>
-                   {course.status === 'selected' && (showValidation || isFinalized) && <div className="absolute -top-3 right-4 bg-primary text-white text-xs font-bold px-2 py-1 rounded shadow-sm">Selected</div>}
+                   {course.status === 'selected' && (showValidation || isFinalized) && <div className="absolute -top-3 right-4 bg-primary text-white text-[10px] font-bold px-2 py-1 rounded shadow-sm z-10">Selected</div>}
                    
                    {/* Hover Tooltip for Locked/Error Courses */}
                    {course.status === 'locked' && (course.message || course.error) && (
-                     <div className="absolute z-20 top-2 right-2 w-64 p-3 bg-gray-900/90 text-white text-xs rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none backdrop-blur-sm">
+                     <div className="absolute z-30 top-2 right-2 w-60 md:w-64 p-3 bg-gray-900/90 text-white text-[11px] rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none backdrop-blur-sm">
                        <div className="flex items-start gap-2">
                          <span className="material-icons-outlined text-sm text-yellow-400">info</span>
-                         <span>{course.message || course.error}</span>
+                         <span className="leading-relaxed">{course.message || course.error}</span>
                        </div>
                      </div>
                    )}
 
-                   <div className="flex justify-between items-start mb-3">
-                     <div className="flex gap-3">
-                       <div className={`h-10 w-10 rounded flex items-center justify-center font-bold text-xs uppercase bg-${course.color || 'blue'}-100 text-${course.color || 'blue'}-600`}>{course.code.split('-')[0]}</div>
-                       <div>
-                         <div className="flex items-center gap-2">
-                            <h4 className={`font-bold text-lg ${course.status === 'selected' ? 'text-primary' : ''}`}>{course.title}</h4>
-                            <span className="bg-gray-100 dark:bg-gray-800 text-xs px-1.5 py-0.5 rounded font-bold uppercase">{course.type}</span>
+                   <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-3">
+                     <div className="flex gap-3 min-w-0 flex-1">
+                       <div className={`h-10 w-10 rounded-xl flex items-center justify-center font-extrabold text-xs uppercase shrink-0 bg-${course.color || 'blue'}-100 text-${course.color || 'blue'}-600`}>
+                         {course.code.split('-')[0]}
+                       </div>
+                       <div className="min-w-0 flex-1">
+                         <div className="flex flex-wrap items-center gap-2 mb-0.5">
+                            <h4 className={`font-bold text-base md:text-lg truncate ${course.status === 'selected' ? 'text-primary' : 'text-gray-900 dark:text-white'}`}>{course.title}</h4>
+                            <span className="bg-gray-100 dark:bg-gray-800 text-[10px] px-1.5 py-0.5 rounded font-extrabold uppercase tracking-wider text-gray-500 shrink-0">{course.type}</span>
                          </div>
-                         <p className="text-xs text-gray-500 font-mono">{course.code} • {course.credits} Credits</p>
+                         <p className="text-[11px] text-gray-500 font-bold uppercase tracking-tight truncate">{course.code} • {course.credits} Credits</p>
                        </div>
                      </div>
                      <button 
@@ -415,22 +528,33 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
                          e.stopPropagation();
                          toggleCourse(course);
                        }}
-                       className={`h-8 w-8 rounded-full border flex items-center justify-center transition-all ${
-                       course.status === 'selected' ? 'bg-red-50 text-red-500 border-red-200' :
-                       course.status === 'locked' ? 'border-gray-200 text-gray-300 cursor-not-allowed' : 'border-gray-200 text-gray-400 hover:bg-primary hover:text-white'
+                       className={`w-full sm:w-auto px-4 py-2 rounded-xl border font-bold text-xs flex items-center justify-center gap-2 transition-all active:scale-95 shrink-0 ${
+                       course.status === 'selected' ? 'bg-rose-50 text-rose-600 border-rose-200 hover:bg-rose-100' :
+                       course.status === 'locked' ? 'border-gray-200 text-gray-300 cursor-not-allowed bg-gray-50/50' : 'bg-primary text-white border-primary hover:bg-opacity-90 shadow-sm'
                      }`}>
-                       <span className="material-icons-outlined text-sm">{course.status === 'selected' ? 'remove' : course.status === 'locked' ? 'lock' : 'add'}</span>
+                        <span className="material-icons-outlined text-sm">
+                          {course.status === 'selected' ? 'remove' : course.status === 'locked' ? 'lock' : 'add_circle_outline'}
+                        </span>
+                        <span>
+                          {course.status === 'selected' ? 'Remove' : course.status === 'locked' ? 'Locked' : 'Enroll'}
+                        </span>
                      </button>
                    </div>
-                   <p className="text-sm text-gray-600 dark:text-gray-300 mb-4 line-clamp-2">{course.desc}</p>
+                   <p className="text-sm text-gray-600 dark:text-gray-300 mb-4 line-clamp-2 leading-relaxed">{course.desc}</p>
                    {course.error ? (
-                     <div className="flex items-center gap-2 text-xs text-red-500 bg-red-50 dark:bg-red-900/20 py-1 px-2 rounded w-fit">
-                       <span className="material-icons-outlined text-xs">error</span> {course.error}
+                     <div className="flex items-center gap-2 text-[11px] font-bold text-rose-500 bg-rose-50 dark:bg-rose-900/20 py-1.5 px-3 rounded-lg w-fit">
+                       <span className="material-icons-outlined text-sm">error</span> {course.error}
                      </div>
                    ) : (
-                     <div className="flex flex-wrap items-center gap-4 text-xs text-gray-500 dark:text-gray-400 border-t border-gray-100 dark:border-gray-700 pt-3">
-                        <div className="flex items-center gap-1"><span className="material-icons-outlined text-xs">schedule</span> {course.schedule || 'N/A'}</div>
-                        <div className="flex items-center gap-1 text-green-600 font-medium"><span className="material-icons-outlined text-xs">check_circle</span> Prerequisites Met</div>
+                     <div className="flex flex-wrap items-center gap-y-2 gap-x-4 text-[11px] font-bold text-gray-500 dark:text-gray-400 border-t border-gray-100 dark:border-gray-700 pt-3">
+                        <div className="flex items-center gap-1.5 uppercase tracking-wide">
+                          <span className="material-icons-outlined text-sm text-primary/60">schedule</span> 
+                          {course.schedule || 'N/A'}
+                        </div>
+                        <div className="flex items-center gap-1.5 text-emerald-600 uppercase tracking-wide">
+                          <span className="material-icons-outlined text-sm">check_circle</span> 
+                          Prerequisites Met
+                        </div>
                      </div>
                    )}
                  </div>
@@ -494,17 +618,17 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
               <div className="space-y-2">
                 <div className="flex justify-between text-sm font-medium mb-1">
                   <span>Total Credits</span>
-                  <span className={`${isOverLimit ? 'text-red-500' : 'text-gray-700 dark:text-gray-300'} font-bold`}>{totalCredits}/18 Limit</span>
+                  <span className={`${isOverLimit ? 'text-red-500' : 'text-gray-700 dark:text-gray-300'} font-bold`}>{totalCredits}/{maxCreditsLimit} Limit</span>
                 </div>
                 <div className="h-2 w-full bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
                   <div 
                     className={`h-full ${isOverLimit ? 'bg-red-500' : 'bg-primary'} rounded-full transition-all duration-300`} 
-                    style={{ width: `${Math.min((totalCredits / 18) * 100, 100)}%` }}
+                    style={{ width: `${Math.min((totalCredits / Math.max(maxCreditsLimit, 1)) * 100, 100)}%` }}
                   ></div>
                 </div>
                 {isOverLimit && (
                     <p className="text-xs text-red-500 flex items-center gap-1 mt-1 font-medium">
-                    <span className="material-icons-outlined text-xs">error</span> Limit Exceeded by {totalCredits - 18} Credit{totalCredits - 18 > 1 ? 's' : ''}
+                    <span className="material-icons-outlined text-xs">error</span> Limit Exceeded by {totalCredits - maxCreditsLimit} Credit{totalCredits - maxCreditsLimit > 1 ? 's' : ''}
                     </p>
                 )}
               </div>
@@ -647,9 +771,9 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
                 <>
                   <button 
                   onClick={handleFinalize}
-                  disabled={isOverLimit || isFinalized || selectedRegistry.size === 0}
+                  disabled={isOverLimit || isFinalized || selectedRegistry.size === 0 || !isEnrollmentActive}
                   className={`w-full py-3 px-4 rounded-lg font-bold flex items-center justify-center gap-2 transition-all ${
-                      (isOverLimit || isFinalized || selectedRegistry.size === 0) 
+                      (isOverLimit || isFinalized || selectedRegistry.size === 0 || !isEnrollmentActive) 
                       ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed' 
                       : 'bg-primary text-white hover:bg-primary-hover shadow-lg'
                   }`}
@@ -657,6 +781,7 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
                    <span>{isFinalized ? 'Enrollment Finalized' : 'Finalize Enrollment'}</span>
                    <span className="material-icons-outlined text-sm">{isFinalized ? 'check' : 'lock_open'}</span>
                   </button>
+                  {!isEnrollmentActive && <p className="text-center text-xs text-red-500 mt-2 font-medium">Enrollment is currently closed now</p>}
                   {isOverLimit && <p className="text-center text-xs text-red-500 mt-2 font-medium">Resolve credit limit to proceed</p>}
                 </>
               )}
@@ -669,4 +794,3 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
 };
 
 export default StudentEnrollment;
-
