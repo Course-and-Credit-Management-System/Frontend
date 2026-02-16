@@ -794,4 +794,3 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
 };
 
 export default StudentEnrollment;
-
