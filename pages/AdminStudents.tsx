@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
 import { User } from '../types';
@@ -534,13 +534,14 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
                           </td>
                           <td className="px-6 py-4 text-right">
                             <div className="flex items-center justify-end space-x-2">
-                              <button 
-                                  onClick={(e) => { e.stopPropagation(); handleStudentClick(s.user_id); }}
-                                  className="rounded p-1 text-gray-400 hover:text-primary"
+                              <Link
+                                  to={`/admin/students/${encodeURIComponent(s.user_id || s.id)}`}
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="inline-flex rounded p-1 text-gray-400 hover:text-primary"
                                   title="View"
                               >
                                   <span className="material-icons-outlined text-lg">visibility</span>
-                              </button>
+                              </Link>
                               <button 
                                   onClick={(e) => { e.stopPropagation(); openEditModal(s); }} 
                                   className="rounded p-1 text-gray-400 hover:text-blue-600"
