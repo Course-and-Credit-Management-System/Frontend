@@ -36,7 +36,7 @@ import StudentTrackSelection from "./pages/StudentTrackSelection";
 import StudentMajorSelection from "./pages/StudentMajorSelection";
 import StudentAnnouncements from "./pages/StudentAnnouncements";
 import StudentMajorLocked from "./pages/StudentMajorLocked";
-
+import StudentMessages from "./pages/StudentMessages";
 // ✅ student course details page stays as CourseDetails.tsx (student-facing)
 import CourseDetails from "./pages/CourseDetails";
 
@@ -226,6 +226,8 @@ const App: React.FC = () => {
               </>
             ) : user?.role === "student" ? (
               <>
+
+
                 <Route
                   path="/student/dashboard"
                   element={<StudentDashboard user={user} onLogout={handleLogout} />}
@@ -280,7 +282,10 @@ const App: React.FC = () => {
                   path="/student/announcements"
                   element={<StudentAnnouncements user={user} onLogout={handleLogout} />}
                 />
-
+              <Route
+                path="/student/messages"
+                element={<StudentMessages user={user} onLogout={handleLogout} />}
+              />
                 <Route path="*" element={<Navigate to="/student/dashboard" replace />} />
               </>
             ) : (
