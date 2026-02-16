@@ -10,7 +10,7 @@ import {
 import { AdminChatRequest, AdminChatResponse } from '../types/adminChat';
 import type { CurrentCoursesResponse } from "../types";
 
- const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
+ const API_BASE = (import.meta.env.VITE_API_BASE_URL ?? "").replace(/\/$/, "");
 
 type RequestOptions = {
   method?: string;
@@ -258,6 +258,20 @@ export const api = {
   studentDropRecommendation: () =>
     request<DropRecommendationResponse>("/api/v1/student/courses/drop-recommendation"),
 
+  studentProgressGet: () => request("/api/v1/student/progress"),
+  studentProgressSaveAcademicYear: (payload: { academic_year: string }) =>
+    request("/api/v1/student/progress/academic-year", { method: "POST", body: payload }),
+  studentProgressSaveCurrent: (payload: { current_year: string; current_semester: string }) =>
+    request("/api/v1/student/progress/current", { method: "POST", body: payload }),
+
+  studentMajorState: () => request("/api/v1/student/major/state"),
+  studentMajorOptions: () => request("/api/v1/student/major/options"),
+  studentMajorEligibility: () => request("/api/v1/student/major/eligibility"),
+  studentSelectTrack: (payload: { track: "CS" | "CT" }) =>
+    request("/api/v1/student/major/track", { method: "POST", body: payload }),
+  studentSelectMajor: (payload: { major: string }) =>
+    request("/api/v1/student/major/select", { method: "POST", body: payload }),
+
   currentStudentCourses: () => request<CurrentCoursesResponse>("/api/v1/student/courses/current"),
 
   studentCourseDetails: (code: string) =>
@@ -266,6 +280,41 @@ export const api = {
   // --- Student Alerts ---
   studentAlerts: () => request<any[]>("/api/v1/student/alerts/"),
   studentDeleteAlert: (alertId: string) => request(`/api/v1/student/alerts/${encodeURIComponent(alertId)}`, { method: "DELETE" }),
+
+  // --- Student Announcements ---
+  studentAnnouncements: async () => {
+    try {
+      return await request<any[]>("/api/v1/student/announcements");
+    } catch {
+      try {
+        return await request<any[]>("/api/v1/student/announcements/");
+      } catch {
+        return [];
+      }
+    }
+  },
+  studentAnnouncementsUnreadCount: async () => {
+    try {
+      return await request<{ count: number; total: number }>("/api/v1/student/announcements/unread-count");
+    } catch {
+      try {
+        return await request<{ count: number; total: number }>("/api/v1/student/announcements/unread-count/");
+      } catch {
+        return { count: 0, total: 0 };
+      }
+    }
+  },
+  studentAnnouncementsMarkAllRead: async () => {
+    try {
+      return await request("/api/v1/student/announcements/mark-read", { method: "POST", body: { all: true } });
+    } catch {
+      try {
+        return await request("/api/v1/student/announcements/mark-read/", { method: "POST", body: { all: true } });
+      } catch {
+        return { success: false };
+      }
+    }
+  },
 
   dropCourse: (code: string) =>
     request<{ success: boolean }>(`/api/v1/student/courses/${encodeURIComponent(code)}`, {
@@ -287,6 +336,9 @@ export const api = {
 
   studentDegreeProgress: () =>
     request("/api/v1/student/progress"),
+
+  // --- Student Dashboard ---
+  studentDashboardSummary: () => request("/api/v1/student/dashboard-summary"),
 
   studentAiChat: async (payload: StudentChatRequest): Promise<StudentChatResponse> => {
     const token = localStorage.getItem("access_token");

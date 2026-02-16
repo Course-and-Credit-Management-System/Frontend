@@ -1,6 +1,8 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { User } from '../types';
+import { api } from '../lib/api';
+import { useNavigate } from 'react-router-dom';
 
 interface HeaderProps {
   title: string;
@@ -8,6 +10,28 @@ interface HeaderProps {
 }
 
 const Header: React.FC<HeaderProps> = ({ title, user }) => {
+  const navigate = useNavigate();
+  const [unread, setUnread] = useState<number>(0);
+
+  useEffect(() => {
+    let mounted = true;
+    api.studentAnnouncementsUnreadCount()
+      .then((res) => {
+        if (mounted) setUnread(res?.count ?? 0);
+      })
+      .catch(() => {});
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const openAnnouncements = async () => {
+    try {
+      await api.studentAnnouncementsMarkAllRead();
+      setUnread(0);
+    } catch {}
+    navigate("/student/announcements");
+  };
   return (
     <header className="flex h-16 items-center justify-between border-b border-border-light bg-surface-light px-6 dark:border-border-dark dark:bg-surface-dark transition-colors shrink-0">
       <div className="flex items-center md:hidden">
@@ -33,9 +57,15 @@ const Header: React.FC<HeaderProps> = ({ title, user }) => {
           />
         </div>
         
-        <button className="relative rounded-full p-1 text-gray-400 hover:text-gray-500 dark:hover:text-gray-300">
+        <button onClick={openAnnouncements} className="relative rounded-full p-1 text-gray-400 hover:text-gray-500 dark:hover:text-gray-300">
           <span className="material-icons-outlined">notifications</span>
-          <span className="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-white dark:ring-surface-dark"></span>
+          {unread > 0 ? (
+            <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] flex items-center justify-center ring-2 ring-white dark:ring-surface-dark">
+              {unread}
+            </span>
+          ) : (
+            <span className="absolute top-0 right-0 block h-2 w-2 rounded-full bg-gray-300 ring-2 ring-white dark:ring-surface-dark"></span>
+          )}
         </button>
         
         <button 

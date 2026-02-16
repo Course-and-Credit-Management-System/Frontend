@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { HashRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import Login from "./pages/Login";
+import SimpleLogin from "./pages/SimpleLogin";
 import ResetPassword from "./pages/ResetPassword";
 
 import ForgotPassword from "./pages/ForgotPassword";
@@ -29,6 +30,11 @@ import StudentStatus from "./pages/StudentStatus";
 import StudentCourses from "./pages/StudentCourses";
 import StudentChatPage from "./pages/StudentChatPage";
 import StudentChatTrigger from "./components/StudentChatTrigger";
+import StudentProgressCurrent from "./pages/StudentProgressCurrent";
+import StudentTrackSelection from "./pages/StudentTrackSelection";
+import StudentMajorSelection from "./pages/StudentMajorSelection";
+import StudentAnnouncements from "./pages/StudentAnnouncements";
+import StudentMajorLocked from "./pages/StudentMajorLocked";
 
 // ✅ student course details page stays as CourseDetails.tsx (student-facing)
 import CourseDetails from "./pages/CourseDetails";
@@ -107,6 +113,7 @@ const App: React.FC = () => {
         {/* Public routes - accessible without login */}
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password-token" element={<ResetPasswordToken />} />
+        <Route path="/simple-login" element={<SimpleLogin />} />
 
         {/* ✅ If user must reset password, force all routes to reset page */}
         {user?.must_reset_password ? (
@@ -198,6 +205,22 @@ const App: React.FC = () => {
                   element={<StudentDashboard user={user} onLogout={handleLogout} />}
                 />
                 <Route
+                  path="/student/progress/current"
+                  element={<StudentProgressCurrent user={user} onLogout={handleLogout} />}
+                />
+                <Route
+                  path="/student/major/track"
+                  element={<StudentTrackSelection user={user} onLogout={handleLogout} />}
+                />
+                <Route
+                  path="/student/major/select"
+                  element={<StudentMajorSelection user={user} onLogout={handleLogout} />}
+                />
+                <Route
+                  path="/student/major/locked"
+                  element={<StudentMajorLocked user={user} onLogout={handleLogout} />}
+                />
+                <Route
                   path="/student/enrollment"
                   element={<StudentEnrollment user={user} onLogout={handleLogout} />}
                 />
@@ -226,6 +249,10 @@ const App: React.FC = () => {
                 <Route
                   path="/student/courses/:courseId"
                   element={<CourseDetails user={user} onLogout={handleLogout} />}
+                />
+                <Route
+                  path="/student/announcements"
+                  element={<StudentAnnouncements user={user} onLogout={handleLogout} />}
                 />
 
                 <Route path="*" element={<Navigate to="/student/dashboard" replace />} />
