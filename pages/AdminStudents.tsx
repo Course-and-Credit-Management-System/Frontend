@@ -327,9 +327,9 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
       <div className="flex flex-1 flex-col overflow-hidden">
         <Header title="Students Directory" user={user} />
         <main className="flex-1 overflow-y-auto p-4 md:p-6">
-          {error && (
+          {Error && (
             <div className="mb-6 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900/40 dark:bg-red-900/20 dark:text-red-200">
-              {error}
+              {Error}
             </div>
           )}
 
@@ -902,4 +902,3 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
 };
 
 export default AdminStudents;
-
