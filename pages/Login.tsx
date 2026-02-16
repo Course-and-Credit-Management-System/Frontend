@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, Link } from "react-router-dom";
+
 import ForgotPassword from "./ForgotPassword"; // must be the modal component version (Props: onClose)
 import { Role, User } from "../types";
 import { api } from "../lib/api";
@@ -65,6 +66,9 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
       sessionStorage.setItem("role", userWithFlag.role);
       sessionStorage.setItem("user", JSON.stringify(userWithFlag));
       sessionStorage.setItem("must_reset_password", String(mustReset));
+      if (typeof data?.access_token === "string" && data.access_token.length > 0) {
+        localStorage.setItem("access_token", data.access_token);
+      }
 
       onLogin(userWithFlag);
 
@@ -217,6 +221,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                       Forgot Password?
                     </button>
                   </div>
+                
 
                   <button
                     type="submit"

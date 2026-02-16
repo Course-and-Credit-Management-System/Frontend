@@ -1,20 +1,41 @@
 /// <reference types="vite/client" />
 
-// import { CurrentCoursesResponse } from '../types';
-import type { StudentAlert } from "../types";
+import {
+  DropRecommendationResponse,
+  EnrollmentAssistanceRequest,
+  EnrollmentAssistanceResponse,
+  EnrollmentSetting,
+  EnrollmentSettingStatusPayload,
+  EnrollmentSettingUpsertPayload,
+  StudentEnrollmentSettingCurrent,
+} from '../types';
+import {
+  StudentChatRequest,
+  StudentChatResponse,
+  StudentChatHistoryItem
+} from "../types/studentChat";
 
-const API_BASE = (import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000").replace(/\/$/, "");
-// const API_BASE = (import.meta.env.VITE_API_BASE_URL || "http://localhost:8000").replace(/\/$/, "");
+import { AdminChatRequest, AdminChatResponse } from '../types/adminChat';
+import type { CurrentCoursesResponse } from "../types";
 
-export type CurrentCoursesResponse = {
-  data: any[];     // safest without breaking backend variations
-  meta?: any;
-};
+// Use relative path so requests go through Vite proxy (same-origin = cookies work)
+const API_BASE = (import.meta.env.VITE_API_BASE_URL || "").trim()
+  ? (import.meta.env.VITE_API_BASE_URL || "").replace(/\/$/, "")
+  : "";
 
 type RequestOptions = {
   method?: string;
   body?: any;
 };
+
+export class HttpStatusError extends Error {
+  status: number;
+
+  constructor(status: number, message: string) {
+    super(message);
+    this.status = status;
+  }
+}
 
 // ---- Global auth-failure handling (401/403) ----
 function clearAuthSession() {
@@ -75,12 +96,12 @@ async function request<T = any>(path: string, options: RequestOptions = {}): Pro
     clearAuthSession();
     redirectToLogin();
     const msg = (data as any)?.detail || (data as any)?.message || `Not authorized (${res.status})`;
-    throw new Error(msg);
+    throw new HttpStatusError(res.status, msg);
   }
 
   if (!res.ok) {
     const msg = (data as any)?.detail || (data as any)?.message || `Request failed (${res.status})`;
-    throw new Error(msg);
+    throw new HttpStatusError(res.status, msg);
   }
 
   return data;
@@ -139,17 +160,11 @@ export const api = {
   resetPassword: (payload: { old_password: string; new_password: string }) =>
     request("/api/v1/auth/reset-password", { method: "POST", body: payload }),
 
-  forgotPassword: (email: string) =>
-    request("/api/v1/auth/forgot-password", {
-      method: "POST",
-      body: { email },
-    }),
+  forgotPassword: (payload: { email: string }) =>
+    request("/api/v1/auth/forgot-password", { method: "POST", body: payload }),
 
   resetPasswordWithToken: (payload: { token: string; new_password: string }) =>
-    request("/api/v1/auth/reset-password-with-token", {
-      method: "POST",
-      body: payload,
-    }),
+    request("/api/v1/auth/reset-password-with-token", { method: "POST", body: payload }),
 
   adminStatistics: () => request("/api/v1/admin/statistics"),
   adminMajorDistribution: () => request("/api/v1/admin/major-distribution"),
@@ -210,6 +225,33 @@ export const api = {
         body: payload
   }),
 
+  adminAdvanceSemester: () =>
+    request<{ detail: string }>("/api/v1/admin/semester/advance", {
+      method: "POST",
+    }),
+
+  // --- Admin Enrollment Settings (singleton) ---
+  adminEnrollmentSettingCurrent: () =>
+    request<EnrollmentSetting>("/api/v1/admin/enrollment-settings"),
+
+  adminReplaceEnrollmentSetting: (payload: EnrollmentSettingUpsertPayload) =>
+    request<EnrollmentSetting>("/api/v1/admin/enrollment-settings", {
+      method: "POST",
+      body: payload,
+    }),
+
+  adminUpsertEnrollmentSetting: (payload: EnrollmentSettingUpsertPayload) =>
+    request<EnrollmentSetting>("/api/v1/admin/enrollment-settings", {
+      method: "PUT",
+      body: payload,
+    }),
+
+  adminSetEnrollmentSettingStatus: (payload: EnrollmentSettingStatusPayload) =>
+    request<EnrollmentSetting>("/api/v1/admin/enrollment-settings/status", {
+      method: "PATCH",
+      body: payload,
+    }),
+
   // --- Admin Messages ---
   adminMessages: () => request("/api/v1/admin/messages"),
   adminStudents: () => request("/api/v1/admin/students"),
@@ -240,11 +282,22 @@ export const api = {
     return request<{ data: any[]; meta: any }>(`/api/v1/student/courses?${params.toString()}`);
   },
 
+  studentEnrollmentSettingCurrent: () =>
+    request<StudentEnrollmentSettingCurrent>("/api/v1/student/enrollment/settings/current"),
+
   enrollStudent: (payload: { selected_code: string }) => 
     request<{ success: boolean; message: string; credit_usage: any }>("/api/v1/student/courses/enrollment", {
       method: "POST",
       body: payload
     }),
+
+  studentEnrollmentAssistance: (payload: EnrollmentAssistanceRequest) =>
+    request<EnrollmentAssistanceResponse>("/api/v1/student/courses/enrollment-assistance", {
+      method: "POST",
+      body: payload,
+    }),
+  studentDropRecommendation: () =>
+    request<DropRecommendationResponse>("/api/v1/student/courses/drop-recommendation"),
 
   currentStudentCourses: () => request<CurrentCoursesResponse>("/api/v1/student/courses/current"),
 
@@ -252,12 +305,8 @@ export const api = {
     request<any>(`/api/v1/student/courses/detail/${encodeURIComponent(code)}`),
 
   // --- Student Alerts ---
-  studentAlerts: () => request<StudentAlert[]>("/api/v1/student/alerts/"),
+  studentAlerts: () => request<any[]>("/api/v1/student/alerts/"),
   studentDeleteAlert: (alertId: string) => request(`/api/v1/student/alerts/${encodeURIComponent(alertId)}`, { method: "DELETE" }),
-  
-  // --- Student Alerts ---
-  // studentAlerts: () => request<StudentAlert[]>("/api/v1/student/alerts/"),
-  // studentDeleteAlert: (alertId: string) => request(`/api/v1/student/alerts/${encodeURIComponent(alertId)}`, { method: "DELETE" }),
 
   dropCourse: (code: string) =>
     request<{ success: boolean }>(`/api/v1/student/courses/${encodeURIComponent(code)}`, {
@@ -279,5 +328,117 @@ export const api = {
 
   studentDegreeProgress: () =>
     request("/api/v1/student/progress"),
+
+  studentAiChat: async (payload: StudentChatRequest): Promise<StudentChatResponse> => {
+    const token = localStorage.getItem("access_token");
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+    };
+
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+
+    const response = await fetch(`${API_BASE}/api/v1/ai/ai/student/chat`, {
+      method: "POST",
+      headers,
+      credentials: "include",
+      body: JSON.stringify(payload),
+    });
+
+    const text = await response.text();
+    let data: any;
+    try {
+      data = text ? JSON.parse(text) : null;
+    } catch {
+      data = null;
+    }
+
+    if (!response.ok) {
+      const msg = data?.detail || data?.message || `Request failed (${response.status})`;
+      throw new HttpStatusError(response.status, msg);
+    }
+
+    if (!data || typeof data.answer !== "string") {
+      throw new HttpStatusError(500, "Unexpected response format from AI service.");
+    }
+
+    return data as StudentChatResponse;
+  },
+
+  studentCourseChat: async (payload: {
+    message: string;
+    course_id: string;
+    history: StudentChatHistoryItem[];
+    mode: "auto";
+  }): Promise<StudentChatResponse> => {
+    const token = localStorage.getItem("access_token");
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+    };
+
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+
+    const response = await fetch(`${API_BASE}/api/v1/ai/ai/student/course-chat`, {
+      method: "POST",
+      headers,
+      credentials: "include",
+      body: JSON.stringify(payload),
+    });
+
+    const text = await response.text();
+    let data: any;
+    try {
+      data = text ? JSON.parse(text) : null;
+    } catch {
+      data = null;
+    }
+
+    if (!response.ok) {
+      const msg = data?.detail || data?.message || `Request failed (${response.status})`;
+      throw new HttpStatusError(response.status, msg);
+    }
+
+    return data as StudentChatResponse;
+  },
+
+  adminAiChat: async (payload: AdminChatRequest): Promise<AdminChatResponse> => {
+    const token = localStorage.getItem("access_token");
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+    };
+
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+
+    const response = await fetch(`${API_BASE}/api/v1/ai/ai/admin/chat`, {
+      method: "POST",
+      headers,
+      credentials: "include",
+      body: JSON.stringify(payload),
+    });
+
+    const text = await response.text();
+    let data: any;
+    try {
+      data = text ? JSON.parse(text) : null;
+    } catch {
+      data = null;
+    }
+
+    if (!response.ok) {
+      const msg = data?.detail || data?.message || `Request failed (${response.status})`;
+      throw new HttpStatusError(response.status, msg);
+    }
+
+    if (!data || typeof data.answer !== "string") {
+      throw new HttpStatusError(500, "Unexpected response format from AI service.");
+    }
+
+    return data as AdminChatResponse;
+  },
 };
   

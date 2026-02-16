@@ -536,11 +536,11 @@ const AdminDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
 
         <main className="flex-1 overflow-y-auto">
           {/* Top command bar */}
-          <div className="px-6 pt-6">
-            <div className={cn(surface, "p-5 md:p-6")}>
-              <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                <div>
-                  <div className="flex items-center gap-2">
+          <div className="px-4 md:px-6 pt-6">
+            <div className={cn(surface, "p-4 md:p-6")}>
+              <div className="flex flex-col gap-6 xl:flex-row xl:items-center xl:justify-between">
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
                     <h1 className="text-xl font-extrabold tracking-tight text-gray-900 dark:text-white">
                       Operations Overview
                     </h1>
@@ -552,19 +552,19 @@ const AdminDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                     ) : (
                       <Pill tone="gray">
                         <span className="material-icons-outlined text-[14px]">schedule</span>
-                        {lastUpdated ? `Updated ${timeAgo(lastUpdated)}` : "Not updated yet"}
+                        {lastUpdated ? timeAgo(lastUpdated) : "—"}
                       </Pill>
                     )}
                   </div>
-                  <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                    Key metrics, major distribution, and pending actions requiring admin attention.
+                  <p className="mt-1 text-sm text-gray-500 dark:text-gray-400 truncate">
+                    Academic outcomes and pending actions.
                   </p>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2">
                   <button
                     onClick={() => load("refresh")}
-                    className="inline-flex items-center gap-2 rounded-xl border border-border-light bg-white px-3.5 py-2 text-sm font-semibold text-gray-900 shadow-sm hover:bg-gray-50 dark:border-border-dark dark:bg-slate-900/40 dark:text-white dark:hover:bg-slate-900/60"
+                    className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 rounded-xl border border-border-light bg-white px-3 py-2 text-sm font-bold text-gray-900 shadow-sm hover:bg-gray-50 dark:border-border-dark dark:bg-slate-900/40 dark:text-white dark:hover:bg-slate-900/60"
                   >
                     <span className={cn("material-icons-outlined text-[18px]", refreshing && "animate-spin")}>
                       refresh
@@ -572,30 +572,30 @@ const AdminDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                     Refresh
                   </button>
 
-                  <div className="h-9 w-px bg-border-light dark:bg-border-dark" />
+                  <div className="hidden sm:block h-6 w-px bg-border-light dark:bg-border-dark" />
 
                   <button
                     onClick={() => go("/admin/announcements")}
-                    className="inline-flex items-center gap-2 rounded-xl bg-primary px-3.5 py-2 text-sm font-semibold text-white shadow-sm hover:opacity-95"
+                    className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-3 py-2 text-sm font-bold text-white shadow-sm hover:opacity-95"
                   >
                     <span className="material-icons-outlined text-[18px]">campaign</span>
-                    New Announcement
+                    Announce
                   </button>
 
                   <button
                     onClick={() => go("/admin/courses")}
-                    className="inline-flex items-center gap-2 rounded-xl bg-white px-3.5 py-2 text-sm font-semibold text-gray-900 shadow-sm hover:bg-gray-50 dark:bg-slate-900/40 dark:text-white dark:hover:bg-slate-900/60"
+                    className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 rounded-xl bg-white px-3 py-2 text-sm font-bold text-gray-900 shadow-sm hover:bg-gray-50 dark:bg-slate-900/40 dark:text-white dark:hover:bg-slate-900/60"
                   >
                     <span className="material-icons-outlined text-[18px]">library_add</span>
-                    Add Course
+                    Course
                   </button>
 
                   <button
                     onClick={() => go("/admin/students")}
-                    className="inline-flex items-center gap-2 rounded-xl bg-white px-3.5 py-2 text-sm font-semibold text-gray-900 shadow-sm hover:bg-gray-50 dark:bg-slate-900/40 dark:text-white dark:hover:bg-slate-900/60"
+                    className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 rounded-xl bg-white px-3 py-2 text-sm font-bold text-gray-900 shadow-sm hover:bg-gray-50 dark:bg-slate-900/40 dark:text-white dark:hover:bg-slate-900/60"
                   >
                     <span className="material-icons-outlined text-[18px]">person_add</span>
-                    Add Student
+                    Student
                   </button>
                 </div>
               </div>
@@ -626,31 +626,33 @@ const AdminDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
           </div>
 
           {/* KPI row */}
-          <div className="px-6 pt-6">
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <div className="px-4 md:px-6 pt-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {kpis.map((kpi, idx) => (
-                <div key={idx} className={cn(surface, "p-5 transition-all hover:-translate-y-0.5 hover:shadow-md")}>
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3">
-                      {kpi.icon}
-                      <div>
-                        <div className="text-sm font-semibold text-gray-900 dark:text-white">{kpi.label}</div>
-                        <div className="text-xs text-gray-500 dark:text-gray-400">{kpi.sub}</div>
+                <div key={idx} className={cn(surface, "p-4 transition-all hover:-translate-y-0.5 hover:shadow-md min-w-0")}>
+                  <div className="flex items-start justify-between gap-3 mb-4">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="shrink-0 scale-90 md:scale-100">{kpi.icon}</div>
+                      <div className="min-w-0">
+                        <div className="text-xs md:text-sm font-bold text-gray-900 dark:text-white truncate">{kpi.label}</div>
+                        <div className="text-[10px] text-gray-500 dark:text-gray-400 truncate">{kpi.sub}</div>
                       </div>
                     </div>
-                    <div className="text-xs font-semibold text-gray-500 dark:text-gray-400">{kpi.rightHint}</div>
+                    <div className="hidden xl:block text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-tight shrink-0">
+                      {kpi.rightHint}
+                    </div>
                   </div>
 
-                  <div className="mt-4 flex items-end justify-between">
-                    <div className="text-3xl font-extrabold tracking-tight text-gray-900 dark:text-white">
-                      {loading ? <Skeleton className="h-9 w-24" /> : kpi.value}
+                  <div className="flex items-end justify-between gap-2">
+                    <div className="text-2xl md:text-3xl font-extrabold tracking-tight text-gray-900 dark:text-white truncate">
+                      {loading ? <Skeleton className="h-9 w-20" /> : kpi.value}
                     </div>
 
-                    <div className="flex items-end gap-1 opacity-80">
-                      {[12, 22, 18, 30, 26, 40, 34].map((h, i) => (
+                    <div className="flex items-end gap-1 opacity-40 dark:opacity-20 shrink-0 mb-1">
+                      {[8, 16, 12, 24, 20, 32, 28].map((h, i) => (
                         <div
                           key={i}
-                          className="w-1.5 rounded-sm bg-gray-300 dark:bg-slate-600"
+                          className="w-1 rounded-full bg-primary"
                           style={{ height: `${h}px` }}
                         />
                       ))}
@@ -662,14 +664,14 @@ const AdminDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
           </div>
 
           {/* Main grid */}
-          <div className="px-6 py-6">
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+          <div className="px-4 md:px-6 py-6">
+            <div className="grid grid-cols-1 gap-6 xl:grid-cols-12">
               {/* Analytics (left) */}
-              <section className={cn(surface, "lg:col-span-8 p-6")}>
-                <div className="flex items-start justify-between gap-4">
+              <section className={cn(surface, "xl:col-span-8 p-4 md:p-6")}>
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                   <div>
                     <div className="flex items-center gap-2">
-                      <h2 className="text-lg font-extrabold text-gray-900 dark:text-white">Student Analytics</h2>
+                      <h2 className="text-lg font-extrabold text-gray-900 dark:text-white truncate">Student Analytics</h2>
                       <Pill tone="cyan">
                         <span className="material-icons-outlined text-[14px]">insights</span>
                         Live
@@ -677,28 +679,27 @@ const AdminDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                     </div>
                     <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                       Snapshot of academic outcomes and operational load.
-                      {stats ? ` • Avg GPA: ${stats.averageGPA.toFixed(2)}` : ""}
                     </p>
                   </div>
 
                   <button
                     onClick={() => openPendingModal("all")}
-                    className="inline-flex items-center gap-2 rounded-xl border border-border-light bg-white px-3 py-2 text-sm font-semibold text-gray-900 hover:bg-gray-50 dark:border-border-dark dark:bg-slate-900/40 dark:text-white dark:hover:bg-slate-900/60"
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl border border-border-light bg-white px-3 py-2 text-sm font-bold text-gray-900 hover:bg-gray-50 dark:border-border-dark dark:bg-slate-900/40 dark:text-white dark:hover:bg-slate-900/60"
                   >
                     <span className="material-icons-outlined text-[18px]">visibility</span>
                     View Queue
                   </button>
                 </div>
 
-                <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
-                  <div className="relative overflow-hidden rounded-2xl border border-emerald-100 bg-emerald-50 p-5 dark:border-emerald-900/30 dark:bg-emerald-900/10">
+                <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="relative overflow-hidden rounded-2xl border border-emerald-100 bg-emerald-50 p-4 md:p-5 dark:border-emerald-900/30 dark:bg-emerald-900/10">
                     <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-emerald-200/40 dark:bg-emerald-500/10" />
-                    <div className="relative flex items-start justify-between">
+                    <div className="relative flex items-start justify-between gap-2">
                       <div className="flex items-center gap-3">
                         <IconBadge icon="school" tone="emerald" />
                         <div>
-                          <div className="text-sm font-semibold text-gray-900 dark:text-white">Graduated</div>
-                          <div className="text-xs text-gray-600 dark:text-gray-300">Completed students</div>
+                          <div className="text-sm font-bold text-gray-900 dark:text-white">Graduated</div>
+                          <div className="text-[10px] md:text-xs text-gray-600 dark:text-gray-300">Completed students</div>
                         </div>
                       </div>
                       <Pill tone="green">
@@ -708,25 +709,25 @@ const AdminDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                     </div>
 
                     <div className="relative mt-5 flex items-end justify-between">
-                      <div className="text-4xl font-extrabold tracking-tight text-gray-900 dark:text-white">
+                      <div className="text-3xl md:text-4xl font-extrabold tracking-tight text-gray-900 dark:text-white">
                         {loading ? <Skeleton className="h-10 w-28" /> : formatNumber(stats?.graduatedCount ?? 0)}
                       </div>
-                      <div className="text-xs font-semibold text-emerald-700 dark:text-emerald-300">
+                      <div className="text-xs font-bold text-emerald-700 dark:text-emerald-300">
                         {stats?.totalStudents
-                          ? `${Math.round(((stats.graduatedCount || 0) / (stats.totalStudents || 1)) * 100)}% of students`
+                          ? `${Math.round(((stats.graduatedCount || 0) / (stats.totalStudents || 1)) * 100)}% total`
                           : "—"}
                       </div>
                     </div>
                   </div>
 
-                  <div className="relative overflow-hidden rounded-2xl border border-amber-100 bg-amber-50 p-5 dark:border-amber-900/30 dark:bg-amber-900/10">
+                  <div className="relative overflow-hidden rounded-2xl border border-amber-100 bg-amber-50 p-4 md:p-5 dark:border-amber-900/30 dark:bg-amber-900/10">
                     <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-amber-200/40 dark:bg-amber-500/10" />
-                    <div className="relative flex items-start justify-between">
+                    <div className="relative flex items-start justify-between gap-2">
                       <div className="flex items-center gap-3">
                         <IconBadge icon="history_edu" tone="amber" />
                         <div>
-                          <div className="text-sm font-semibold text-gray-900 dark:text-white">Retake Required</div>
-                          <div className="text-xs text-gray-600 dark:text-gray-300">Pending / conflict / waitlist</div>
+                          <div className="text-sm font-bold text-gray-900 dark:text-white">Retake Required</div>
+                          <div className="text-[10px] md:text-xs text-gray-600 dark:text-gray-300">Enrollment flags</div>
                         </div>
                       </div>
                       <Pill tone="amber">
@@ -736,10 +737,10 @@ const AdminDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                     </div>
 
                     <div className="relative mt-5 flex items-end justify-between">
-                      <div className="text-4xl font-extrabold tracking-tight text-gray-900 dark:text-white">
+                      <div className="text-3xl md:text-4xl font-extrabold tracking-tight text-gray-900 dark:text-white">
                         {loading ? <Skeleton className="h-10 w-28" /> : formatNumber(stats?.retakeRequirement ?? 0)}
                       </div>
-                      <div className="text-xs font-semibold text-amber-700 dark:text-amber-300">Review enrollments</div>
+                      <div className="text-xs font-bold text-amber-700 dark:text-amber-300">Review needed</div>
                     </div>
                   </div>
                 </div>
@@ -817,13 +818,13 @@ const AdminDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
               </section>
 
               {/* Right column */}
-              <aside className="lg:col-span-4 flex flex-col gap-6">
+              <aside className="xl:col-span-4 flex flex-col gap-6">
                 {/* System Status */}
-                <div className={cn(surface, "p-6")}>
-                  <div className="flex items-start justify-between">
+                <div className={cn(surface, "p-5 md:p-6")}>
+                  <div className="flex items-start justify-between gap-2">
                     <div>
                       <h3 className="text-sm font-extrabold text-gray-900 dark:text-white">System Status</h3>
-                      <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Live health derived from API calls</p>
+                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Live health derived from API calls</p>
                     </div>
                     {(() => {
                       const pill =
@@ -845,7 +846,7 @@ const AdminDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                     })()}
                   </div>
 
-                  <div className="mt-5 space-y-3">
+                  <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-1 gap-3">
                     {(() => {
                       const p = healthPill(apiHealth);
                       return (
@@ -865,11 +866,11 @@ const AdminDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                             >
                               dns
                             </span>
-                            <div className="text-sm font-semibold text-gray-900 dark:text-white">API</div>
+                            <div className="text-sm font-bold text-gray-900 dark:text-white">API</div>
                           </div>
                           <div
                             className={cn(
-                              "text-xs font-bold",
+                              "text-[10px] font-extrabold uppercase",
                               p.tone === "green"
                                 ? "text-emerald-600 dark:text-emerald-300"
                                 : p.tone === "amber"
@@ -904,11 +905,11 @@ const AdminDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                             >
                               storage
                             </span>
-                            <div className="text-sm font-semibold text-gray-900 dark:text-white">Database</div>
+                            <div className="text-sm font-bold text-gray-900 dark:text-white">Database</div>
                           </div>
                           <div
                             className={cn(
-                              "text-xs font-bold",
+                              "text-[10px] font-extrabold uppercase",
                               p.tone === "green"
                                 ? "text-emerald-600 dark:text-emerald-300"
                                 : p.tone === "amber"
@@ -923,123 +924,77 @@ const AdminDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                         </div>
                       );
                     })()}
-
-                    {(() => {
-                      const p = sessionPill(sessionState);
-                      return (
-                        <div className="flex items-center justify-between rounded-xl border border-border-light bg-white px-4 py-3 dark:border-border-dark dark:bg-slate-900/30">
-                          <div className="flex items-center gap-2">
-                            <span
-                              className={cn(
-                                "material-icons-outlined text-[18px]",
-                                p.tone === "cyan" ? "text-cyan-500" : p.tone === "rose" ? "text-rose-500" : "text-slate-400"
-                              )}
-                            >
-                              admin_panel_settings
-                            </span>
-                            <div className="text-sm font-semibold text-gray-900 dark:text-white">Admin Session</div>
-                          </div>
-                          <div
-                            className={cn(
-                              "text-xs font-bold",
-                              p.tone === "cyan"
-                                ? "text-cyan-700 dark:text-cyan-300"
-                                : p.tone === "rose"
-                                ? "text-rose-700 dark:text-rose-300"
-                                : "text-slate-500 dark:text-slate-300"
-                            )}
-                          >
-                            {p.label}
-                          </div>
-                        </div>
-                      );
-                    })()}
                   </div>
 
-                  <div className="mt-5 rounded-xl bg-gray-50 p-4 text-xs text-gray-600 dark:bg-slate-800/30 dark:text-gray-300">
-                    Tip: Use <span className="font-bold">Refresh</span> for real-time updates during enrollment periods.
-                    <div className="mt-1 opacity-80">{lastUpdated ? `Last check: ${timeAgo(lastUpdated)}` : "No checks yet."}</div>
+                  <div className="mt-5 rounded-xl bg-gray-50/50 p-4 text-[10px] md:text-xs text-gray-500 dark:bg-slate-800/30 dark:text-gray-400">
+                    <span className="font-bold text-gray-700 dark:text-gray-200">Tip:</span> Use Refresh for real-time updates during enrollment periods.
+                    <div className="mt-1 opacity-80">{lastUpdated ? `Checked ${timeAgo(lastUpdated)}` : "No checks yet."}</div>
                   </div>
                 </div>
 
                 {/* Pending inbox */}
-                <div className={cn(surface, "p-6")}>
+                <div className={cn(surface, "p-5 md:p-6")}>
                   <div className="flex items-start justify-between gap-4">
-                    <div>
+                    <div className="min-w-0">
                       <div className="flex items-center gap-2">
                         <h3 className="text-sm font-extrabold text-gray-900 dark:text-white">Pending Actions</h3>
-                        <Pill tone={totalPending > 0 ? "amber" : "green"}>
-                          <span className="material-icons-outlined text-[14px]">{totalPending > 0 ? "hourglass_top" : "task_alt"}</span>
-                          {loading ? "Loading…" : totalPending > 0 ? `${totalPending} pending` : "All clear"}
-                        </Pill>
+                        {totalPending > 0 && (
+                          <span className="inline-flex rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-extrabold text-amber-700">
+                            {totalPending}
+                          </span>
+                        )}
                       </div>
-                      <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Work queue generated from live collections.</p>
+                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Items requiring immediate review.</p>
                     </div>
 
-                    <button onClick={() => openPendingModal("all")} className="text-sm font-semibold text-primary hover:underline">
+                    <button onClick={() => openPendingModal("all")} className="text-xs font-bold text-primary hover:underline uppercase tracking-wide">
                       View all
                     </button>
                   </div>
 
                   <div className="mt-5 space-y-3">
                     {loading ? (
-                      <>
-                        <Skeleton className="h-16 w-full" />
-                        <Skeleton className="h-16 w-full" />
-                        <Skeleton className="h-16 w-full" />
-                      </>
+                      Array(3).fill(0).map((_, i) => <Skeleton key={i} className="h-16 w-full" />)
                     ) : (
                       workQueue.map((w) => (
                         <div
                           key={w.key}
-                          className="rounded-2xl border border-border-light bg-white p-4 transition-all hover:-translate-y-0.5 hover:shadow-sm dark:border-border-dark dark:bg-slate-900/30"
+                          className="group rounded-2xl border border-border-light bg-white p-3 md:p-4 transition-all hover:border-primary/30 dark:border-border-dark dark:bg-slate-900/40 shadow-sm"
                         >
-                          <div className="flex items-start justify-between gap-3">
-                            <div className="flex items-start gap-3">
-                              <IconBadge icon={w.icon} tone={w.tone === "rose" ? "rose" : w.tone === "amber" ? "amber" : w.tone === "cyan" ? "cyan" : "emerald"} />
-                              <div className="min-w-0">
-                                <div className="flex items-center gap-2">
-                                  <div className="truncate text-sm font-extrabold text-gray-900 dark:text-white">{w.title}</div>
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="flex items-start gap-3 min-w-0 flex-1">
+                              <div className="shrink-0">
+                                <IconBadge icon={w.icon} tone={w.tone === "rose" ? "rose" : w.tone === "amber" ? "amber" : w.tone === "cyan" ? "cyan" : "emerald"} />
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <div className="flex flex-wrap items-center gap-2">
+                                  <div className="truncate text-sm font-bold text-gray-900 dark:text-white">{w.title}</div>
                                   {w.count > 0 ? (
                                     <Pill tone={w.tone === "rose" ? "rose" : w.tone === "amber" ? "amber" : w.tone === "cyan" ? "cyan" : "green"}>{w.count}</Pill>
                                   ) : (
                                     <Pill tone="gray">0</Pill>
                                   )}
                                 </div>
-                                <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">{w.description}</div>
+                                <div className="mt-1 text-[11px] text-gray-500 dark:text-gray-400 line-clamp-1">{w.description}</div>
 
-                                {w.sample ? (
-                                  <div className="mt-2 text-[11px] text-gray-500 dark:text-gray-400">
-                                    Latest:{" "}
-                                    <span className="font-semibold text-gray-700 dark:text-gray-200">
-                                      {(w.sample?.user?.name && w.sample?.user?.email)
-                                        ? `${w.sample.user.name} • ${w.sample.user.email}`
-                                        : w.sample?.major_name || w.sample?.student_id || w.sample?.course_id || w.sample?.user_id || "record"}
-                                    </span>{" "}
-                                    • {timeAgo(w.sample?.updated_at || w.sample?.created_at)}
+                                {w.sample && (
+                                  <div className="mt-2 text-[10px] font-bold text-gray-400 dark:text-gray-500 flex items-center gap-1">
+                                    <span className="material-icons-outlined text-[12px]">history</span>
+                                    {timeAgo(w.sample?.updated_at || w.sample?.created_at)}
                                   </div>
-                                ) : null}
+                                )}
                               </div>
                             </div>
 
-                            <div className="flex flex-col gap-2">
+                            <div className="flex flex-col gap-2 shrink-0">
                               <button
                                 onClick={() => openPendingModal(w.modalTab)}
                                 className={cn(
-                                  "rounded-xl px-3 py-2 text-xs font-extrabold shadow-sm",
-                                  w.count > 0 ? "bg-primary text-white hover:opacity-95" : "bg-gray-100 text-gray-600 dark:bg-slate-700/40 dark:text-slate-200"
+                                  "rounded-lg px-2.5 py-1.5 text-[10px] font-extrabold uppercase tracking-wide shadow-sm transition-all active:scale-95",
+                                  w.count > 0 ? "bg-primary text-white hover:opacity-90" : "bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-slate-800"
                                 )}
                               >
                                 Review
-                              </button>
-
-                              <button
-                                onClick={() => {
-                                  if (w.route) go(w.route);
-                                }}
-                                className="rounded-xl bg-white px-3 py-2 text-xs font-bold text-gray-900 hover:bg-gray-50 dark:bg-slate-900/40 dark:text-white dark:hover:bg-slate-900/60"
-                              >
-                                Details
                               </button>
                             </div>
                           </div>
