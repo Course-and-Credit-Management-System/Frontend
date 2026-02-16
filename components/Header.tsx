@@ -1,7 +1,9 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { User } from '../types';
 import { useUI } from '../context/UIContext';
+import { api } from '../lib/api';
+import { useNavigate } from 'react-router-dom';
 
 interface HeaderProps {
   title: string;
@@ -11,6 +13,28 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({ title, user }) => {
   const { toggleSidebar } = useUI();
 
+  const navigate = useNavigate();
+  const [unread, setUnread] = useState<number>(0);
+
+  useEffect(() => {
+    let mounted = true;
+    api.studentAnnouncementsUnreadCount()
+      .then((res) => {
+        if (mounted) setUnread(res?.count ?? 0);
+      })
+      .catch(() => {});
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const openAnnouncements = async () => {
+    try {
+      await api.studentAnnouncementsMarkAllRead();
+      setUnread(0);
+    } catch {}
+    navigate("/student/announcements");
+  };
   return (
     <header className="flex h-16 items-center justify-between border-b border-border-light bg-surface-light px-4 md:px-6 dark:border-border-dark dark:bg-surface-dark transition-colors shrink-0">
       <div className="flex items-center md:hidden">

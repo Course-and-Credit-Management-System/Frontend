@@ -3,6 +3,7 @@ import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
 import { User, StudentAlert } from '../types';
 import { api } from '../lib/api';
+import { useNavigate } from 'react-router-dom';
 
 interface DashboardProps {
   user: User;
@@ -11,6 +12,11 @@ interface DashboardProps {
 
 const StudentDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   const [alerts, setAlerts] = useState<StudentAlert[]>([]);
+  const [majorState, setMajorState] = useState<{ program_type?: string; selected_track?: string; selected_major?: string; status?: string } | null>(null);
+  const [eligibility, setEligibility] = useState<any | null>(null);
+  const [startLoading, setStartLoading] = useState(false);
+  const [gpa, setGpa] = useState<number | null>(null);
+  const [currentCredits, setCurrentCredits] = useState<number | null>(null);
 
   useEffect(() => {
     // Fetch alerts on mount
@@ -19,6 +25,22 @@ const StudentDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         if (Array.isArray(data)) setAlerts(data);
       })
       .catch((err) => console.error("Failed to fetch alerts", err));
+    api.studentMajorState()
+      .then((st) => setMajorState(st))
+      .catch(() => setMajorState(null));
+    api.studentMajorEligibility()
+      .then((el) => setEligibility(el))
+      .catch(() => setEligibility(null));
+    api.studentDashboardSummary()
+      .then((sum) => {
+        if (sum && typeof sum.gpa === "number") setGpa(sum.gpa);
+      })
+      .catch(() => {});
+    api.currentStudentCourses()
+      .then((resp) => {
+        if (resp && typeof resp.total_credits === "number") setCurrentCredits(resp.total_credits);
+      })
+      .catch(() => {});
   }, []);
 
   const handleDismissAlert = async (id: string) => {
@@ -30,6 +52,16 @@ const StudentDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     }
   };
 
+  const navigate = useNavigate();
+  const startMajorProcess = async () => {
+    setStartLoading(true);
+    try {
+      navigate("/student/progress/current");
+    } finally {
+      setStartLoading(false);
+    }
+  };
+  const isEarlyYears = (eligibility?.current_year_num ?? 99) <= 2;
   return (
     <div className="flex h-screen overflow-hidden bg-background-light dark:bg-background-dark font-poppins relative">
       {/* Toast Container */}
@@ -60,11 +92,11 @@ const StudentDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
 
       <Sidebar user={user} onLogout={onLogout} />
       <div className="flex flex-1 flex-col overflow-hidden">
-        <Header title={`Welcome back, Alex! 👋`} user={user} />
+        <Header title={`Welcome back, ${user.name}! 👋`} user={user} />
         <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 relative">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-8 gap-6">
             <div className="min-w-0">
-              <h2 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white truncate">Welcome back, Alex! 👋</h2>
+              <h2 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white truncate">Welcome back, {user.name}! 👋</h2>
               <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm md:text-base">Here's your academic progress overview for today.</p>
             </div>
             <div className="w-full sm:w-auto bg-surface-light dark:bg-surface-dark px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm flex items-center gap-2 shrink-0">
@@ -87,14 +119,14 @@ const StudentDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
               <div className="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-1.5 mt-2">
                 <div className="bg-green-500 h-1.5 rounded-full" style={{ width: '100%' }}></div>
               </div>
-              <p className="text-[10px] font-bold text-gray-500 dark:text-gray-400 mt-2 uppercase">Full-time • 18 Credits</p>
+              <p className="text-[10px] font-bold text-gray-500 dark:text-gray-400 mt-2 uppercase">Full-time • {currentCredits !== null ? `${currentCredits} Credits` : "- Credits"}</p>
             </div>
 
             <div className="bg-surface-light dark:bg-surface-dark p-5 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm flex flex-col justify-between transition-all hover:shadow-md">
               <div className="flex justify-between items-start mb-4">
                 <div>
                   <p className="text-[10px] font-extrabold text-gray-400 uppercase tracking-widest">Current GPA</p>
-                  <h3 className="text-xl md:text-2xl font-bold mt-1 text-gray-800 dark:text-white">3.85</h3>
+                  <h3 className="text-xl md:text-2xl font-bold mt-1 text-gray-800 dark:text-white">{gpa !== null ? gpa.toFixed(2) : "-"}</h3>
                 </div>
                 <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg text-blue-500">
                   <span className="material-icons-round text-xl">analytics</span>
@@ -110,15 +142,46 @@ const StudentDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                <div className="flex justify-between items-start mb-4">
                 <div>
                   <p className="text-[10px] font-extrabold text-gray-400 uppercase tracking-widest">Next Step</p>
-                  <h3 className="text-xl font-bold mt-1 text-gray-800 dark:text-white">Major Selection</h3>
+                  <h3 className="text-xl font-bold mt-1 text-gray-800 dark:text-white">
+                    {isEarlyYears ? "Major Selection" : (majorState?.selected_major ? `Major: ${majorState.selected_major}` : "Major Selection")}
+                  </h3>
+                  {majorState?.status && !majorState.selected_major && (
+                    <div className="mt-1 text-[11px] font-semibold text-gray-500 dark:text-gray-400">
+                      Status: {majorState.status}
+                    </div>
+                  )}
                 </div>
                 <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg text-purple-500">
                   <span className="material-icons-round text-xl">alt_route</span>
                 </div>
               </div>
-              <button className="text-xs font-bold text-primary flex items-center gap-1 group-hover:underline uppercase tracking-wide">
-                Start Process <span className="material-icons-round text-sm">arrow_forward</span>
-              </button>
+              {isEarlyYears ? (
+                <div className="flex items-center justify-between">
+                  <button onClick={startMajorProcess} disabled={startLoading} className="text-xs font-bold text-primary flex items-center gap-1 group-hover:underline uppercase tracking-wide disabled:opacity-60">
+                    Start Process <span className="material-icons-round text-sm">arrow_forward</span>
+                  </button>
+                  {eligibility && eligibility.reason && (
+                    <span className="text-[11px] text-gray-500 dark:text-gray-400 ml-3">{eligibility.reason}</span>
+                  )}
+                </div>
+              ) : !majorState?.selected_major ? (
+                <div className="flex items-center justify-between">
+                  <button onClick={startMajorProcess} disabled={startLoading} className="text-xs font-semibold text-primary flex items-center gap-1 group-hover:underline disabled:opacity-60">
+                    Start Process <span className="material-icons-round text-sm">arrow_forward</span>
+                  </button>
+                  {eligibility && eligibility.reason && (
+                    <span className="text-[11px] text-gray-500 dark:text-gray-400 ml-3">{eligibility.reason}</span>
+                  )}
+                </div>
+              ) : (
+                <div className="text-xs text-gray-600 dark:text-gray-300">
+                  <span className="font-semibold">{majorState.program_type}</span>
+                  {majorState.selected_track ? ` • Track: ${majorState.selected_track}` : ""}
+                  <div className="mt-2 flex gap-2">
+                    <button onClick={() => navigate("/student/major/select")} className="text-primary font-semibold hover:underline">Change Major</button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
