@@ -106,7 +106,7 @@ const AdminEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
   const confirmReject = async () => {
     if (selectedRequestId) {
       try {
-        await api.adminUpdateEnrollmentStatus(selectedRequestId, { status: "Withdrawn", reason: rejectReason });
+        await api.adminUpdateEnrollmentStatus(selectedRequestId, { status: "Dropped", reason: rejectReason });
         showToast("Mission Complete", 'success');
         setRequests(prev => prev.filter(r => r.id !== selectedRequestId));
       } catch (err: any) {
