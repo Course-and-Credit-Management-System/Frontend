@@ -550,7 +550,7 @@ const CourseWizardModal = React.memo(function CourseWizardModal({
                 >
                   <option value="Core">Core</option>
                   <option value="Elective">Elective</option>
-                  <option value="Prerequisite">Prerequisite</option>
+                  {/* <option value="Prerequisite">Prerequisite</option> */}
                   <option value="Major">Major</option>
                 </select>
               </div>
@@ -1004,7 +1004,7 @@ const AdminCourses: React.FC<CoursesProps> = ({ user, onLogout }) => {
               <div className="flex items-center gap-3">
                 <button
                   className="flex items-center justify-center gap-2 rounded-xl border border-primary bg-white px-4 py-2.5 text-sm font-semibold text-primary hover:bg-gray-50 dark:bg-transparent dark:hover:bg-slate-800 transition-colors"
-                  onClick={() => toast("info", "Excel import", "We can implement this next.")}
+                  onClick={() => toast("info", "Excel import", "To be implemented in the future.")}
                   disabled={mutating}
                 >
                   <span className="material-icons-outlined text-lg">description</span>
