@@ -15,6 +15,7 @@ const StudentCourses: React.FC<CoursesProps> = ({ user, onLogout }) => {
   const [data, setData] = useState<CurrentCoursesResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [downloadingSchedule, setDownloadingSchedule] = useState(false);
   const [showTradeOff, setShowTradeOff] = useState(false);
   const [selectedToDrop, setSelectedToDrop] = useState<string[]>([]);
   const [selectedElective, setSelectedElective] = useState<string | null>(null);
@@ -173,6 +174,26 @@ const StudentCourses: React.FC<CoursesProps> = ({ user, onLogout }) => {
     }
   };
 
+  const handleDownloadSchedule = async () => {
+    try {
+      setDownloadingSchedule(true);
+      const { blob, filename } = await api.studentCurrentCoursesPdf();
+
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = decodeURIComponent(filename || 'current_schedule.pdf');
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (err: any) {
+      alert(err?.message || 'Failed to download schedule. Please try again.');
+    } finally {
+      setDownloadingSchedule(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex h-screen overflow-hidden bg-background-light dark:bg-background-dark font-poppins">
@@ -307,8 +328,16 @@ const StudentCourses: React.FC<CoursesProps> = ({ user, onLogout }) => {
                     <p className="text-sm text-gray-500 dark:text-gray-400">Download a printable PDF version for your records.</p>
                 </div>
             </div>
-            <button className="px-6 py-2.5 bg-primary hover:bg-primary-hover text-white font-medium rounded-lg shadow-sm transition-colors whitespace-nowrap">
-                Download Schedule
+            <button
+              onClick={handleDownloadSchedule}
+              disabled={downloadingSchedule}
+              className={`px-6 py-2.5 text-white font-medium rounded-lg shadow-sm transition-colors whitespace-nowrap ${
+                downloadingSchedule
+                  ? 'bg-gray-400 cursor-not-allowed'
+                  : 'bg-primary hover:bg-primary-hover'
+              }`}
+            >
+                {downloadingSchedule ? 'Downloading...' : 'Download Schedule'}
             </button>
           </div>
         </main>
