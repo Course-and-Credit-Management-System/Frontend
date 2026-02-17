@@ -71,7 +71,7 @@ const StudentStatus: React.FC<StatusProps> = ({ user, onLogout }) => {
                   allCoursesFromHistory.push({
                     title: course.course_title || course.course_name || course.title,
                     code: course.course_code || course.code,
-                    status: course.status || (course.grade === 'F' ? 'Failed' : course.grade === 'W' ? 'Withdrawn' : course.is_retake ? 'Retake' : 'Passed'),
+                    status: course.status || (course.grade === 'F' ? 'Failed' : course.grade === 'W' ? 'Dropped' : course.is_retake ? 'Retake' : 'Passed'),
                     grade: course.grade || 'N/A',
                     academic_year: semester.academic_year || semester.semester,
                     semester: semester.semester || semester.academic_year,
