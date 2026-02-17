@@ -25,7 +25,7 @@ type ToastState = {
 const defaultDraft: EnrollmentSettingsFormDraft = {
   durationType: "days",
   durationValue: "30",
-  maxCredits: "18",
+  maxCredits: "24",
   maxCourses: "6",
   allowWaitlist: false,
   isActive: true,

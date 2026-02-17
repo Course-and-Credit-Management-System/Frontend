@@ -57,7 +57,7 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
   const [dropSelectedCodes, setDropSelectedCodes] = useState<Set<string>>(new Set());
   const [maxCreditsLimit, setMaxCreditsLimit] = useState<number>(() => {
     const stored = Number(localStorage.getItem("max_credits"));
-    return Number.isFinite(stored) && stored > 0 ? stored : 18;
+    return Number.isFinite(stored) && stored > 0 ? stored : 24;
   });
   const [enrollmentSetting, setEnrollmentSetting] = useState<StudentEnrollmentSettingCurrent | null>(() => {
     const raw = localStorage.getItem("student_enrollment_setting_current");
