@@ -78,7 +78,35 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 10;
 
-  // Major options based on year (like AdminGrading)
+  // Majors from API (for Add/Edit dropdowns)
+  const [majorsList, setMajorsList] = useState<{ id: string; major_name: string }[]>([]);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch(`${API_BASE}/admin/majors`, { credentials: 'include' });
+        const data = await res.json().catch(() => []);
+        if (Array.isArray(data) && data.length > 0) {
+          setMajorsList(data.map((m: { id?: string; major_name?: string }) => ({ id: m.id || m.major_name || '', major_name: m.major_name || m.id || '' })));
+        } else {
+          setMajorsList([{ id: 'CS', major_name: 'CS' }, { id: 'CT', major_name: 'CT' }, { id: 'SE', major_name: 'SE' }, { id: 'KE', major_name: 'KE' }, { id: 'HPC', major_name: 'HPC' }, { id: 'CSec', major_name: 'CSec' }, { id: 'CN', major_name: 'CN' }, { id: 'BIS', major_name: 'BIS' }, { id: 'ES', major_name: 'ES' }]);
+        }
+      } catch {
+        setMajorsList([{ id: 'CS', major_name: 'CS' }, { id: 'CT', major_name: 'CT' }, { id: 'SE', major_name: 'SE' }, { id: 'KE', major_name: 'KE' }, { id: 'HPC', major_name: 'HPC' }, { id: 'CSec', major_name: 'CSec' }, { id: 'CN', major_name: 'CN' }, { id: 'BIS', major_name: 'BIS' }, { id: 'ES', major_name: 'ES' }]);
+      }
+    })();
+  }, []);
+
+  // Major options for forms: from API + ensure current value is included
+  const getMajorOptionsForForm = (currentMajor: string) => {
+    const ids = new Set(majorsList.map(m => m.id));
+    if (currentMajor && !ids.has(currentMajor)) {
+      return [{ id: currentMajor, major_name: currentMajor }, ...majorsList];
+    }
+    return majorsList;
+  };
+
+  // Major options based on year (like AdminGrading) - for filter dropdown
   const selectedYear = typeof year === 'number' ? year : 0;
   const showSection = selectedYear >= 1 && selectedYear <= 3;
   const showMajorFilter = selectedYear >= 3 && selectedYear <= 5;
@@ -652,24 +680,9 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
                     onChange={(e) => setFormData(prev => ({ ...prev, major: e.target.value }))}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-slate-700 dark:text-white"
                   >
-                    {formData.year === 3 ? (
-                      <>
-                        <option value="CS">CS</option>
-                        <option value="CT">CT</option>
-                      </>
-                    ) : (
-                      <>
-                        <option value="CS">CS</option>
-                        <option value="CT">CT</option>
-                        <option value="SE">SE</option>
-                        <option value="KE">KE</option>
-                        <option value="HPC">HPC</option>
-                        <option value="CSec">CSec</option>
-                        <option value="CN">CN</option>
-                        <option value="BIS">BIS</option>
-                        <option value="ES">ES</option>
-                      </>
-                    )}
+                    {getMajorOptionsForForm(formData.major).map((m) => (
+                      <option key={m.id} value={m.id}>{m.id} – {m.major_name}</option>
+                    ))}
                   </select>
                 </div>
                 {formData.year >= 1 && formData.year <= 3 && (
@@ -805,24 +818,9 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
                     onChange={(e) => setFormData(prev => ({ ...prev, major: e.target.value }))}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-slate-700 dark:text-white"
                   >
-                    {formData.year === 3 ? (
-                      <>
-                        <option value="CS">CS</option>
-                        <option value="CT">CT</option>
-                      </>
-                    ) : (
-                      <>
-                        <option value="CS">CS</option>
-                        <option value="CT">CT</option>
-                        <option value="SE">SE</option>
-                        <option value="KE">KE</option>
-                        <option value="HPC">HPC</option>
-                        <option value="CSec">CSec</option>
-                        <option value="CN">CN</option>
-                        <option value="BIS">BIS</option>
-                        <option value="ES">ES</option>
-                      </>
-                    )}
+                    {getMajorOptionsForForm(formData.major).map((m) => (
+                      <option key={m.id} value={m.id}>{m.id} – {m.major_name}</option>
+                    ))}
                   </select>
                 </div>
                 {formData.year >= 1 && formData.year <= 3 && (
