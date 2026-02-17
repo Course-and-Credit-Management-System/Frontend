@@ -478,10 +478,12 @@ const CourseWizardModal = React.memo(function CourseWizardModal({
   const pill = (active: boolean) =>
     active ? "bg-primary text-white" : "bg-gray-100 text-gray-600 dark:bg-slate-800 dark:text-gray-300";
 
+  const canOpenStep = (idx: number) => idx === 0 || canNextStep0;
+
   return (
     <div className="fixed inset-0 z-[9997] flex items-center justify-center bg-black/55 p-4">
-      <div className="w-full max-w-3xl rounded-2xl bg-white dark:bg-surface-dark border border-gray-200 dark:border-gray-700 shadow-2xl overflow-hidden">
-        <div className="px-6 py-5 border-b border-gray-100 dark:border-gray-700 flex items-start justify-between gap-4">
+      <div className="w-full max-w-3xl max-h-[92vh] rounded-2xl bg-white dark:bg-surface-dark border border-gray-200 dark:border-gray-700 shadow-2xl overflow-hidden flex flex-col">
+        <div className="px-6 py-5 border-b border-gray-100 dark:border-gray-700 flex items-start justify-between gap-4 shrink-0">
           <div className="min-w-0">
             <div className="text-lg font-extrabold text-gray-900 dark:text-white">{headerTitle}</div>
             <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
@@ -490,9 +492,18 @@ const CourseWizardModal = React.memo(function CourseWizardModal({
 
             <div className="mt-4 flex flex-wrap gap-2">
               {steps.map((s, idx) => (
-                <span key={s} className={["px-3 py-1 rounded-full text-xs font-semibold", pill(idx === step)].join(" ")}>
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => canOpenStep(idx) && setStep(idx)}
+                  disabled={busy || !canOpenStep(idx)}
+                  className={[
+                    "px-3 py-1 rounded-full text-xs font-semibold transition-colors disabled:opacity-50",
+                    pill(idx === step),
+                  ].join(" ")}
+                >
                   {idx + 1}. {s}
-                </span>
+                </button>
               ))}
             </div>
           </div>
@@ -502,7 +513,7 @@ const CourseWizardModal = React.memo(function CourseWizardModal({
           </button>
         </div>
 
-        <div className="p-6">
+        <div className="p-6 overflow-y-auto">
           {/* Step 0 */}
           {step === 0 && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -747,7 +758,7 @@ const CourseWizardModal = React.memo(function CourseWizardModal({
           )}
         </div>
 
-        <div className="px-6 py-4 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between gap-3">
+        <div className="px-6 py-4 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between gap-3 shrink-0">
           <button
             onClick={onClose}
             disabled={busy}
