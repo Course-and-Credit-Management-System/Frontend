@@ -19,6 +19,8 @@ type CourseDetailsData = {
   prerequisites?: string[];
   type?: string;
   department?: string;
+  major?: string;
+  track?: string;
   syllabus?: SyllabusItem[];
 };
 
@@ -713,6 +715,27 @@ const AdminCourseDetails: React.FC<Props> = ({ user, onLogout }) => {
                       </div>
                     </div>
                   )}
+
+                  {course.major && (
+                    <div className="flex items-start gap-3">
+                      <span className="material-icons-outlined text-gray-400 mt-0.5">badge</span>
+                      <div>
+                        <p className="text-sm font-bold text-gray-800 dark:text-white">Major</p>
+                        <p className="text-xs text-gray-500">{course.major}</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {course.track && (
+                    <div className="flex items-start gap-3">
+                      <span className="material-icons-outlined text-gray-400 mt-0.5">timeline</span>
+                      <div>
+                        <p className="text-sm font-bold text-gray-800 dark:text-white">Track</p>
+                        <p className="text-xs text-gray-500">{course.track}</p>
+                      </div>
+                    </div>
+                  )}
+
                 </div>
 
                 <div className="mt-6 pt-6 border-t border-gray-100 dark:border-gray-800">
