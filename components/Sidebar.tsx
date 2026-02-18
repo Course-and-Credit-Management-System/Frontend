@@ -49,33 +49,33 @@ const Sidebar: React.FC<SidebarProps> = ({ user, onLogout }) => {
       {/* Mobile Overlay */}
       {isSidebarOpen && (
         <div 
-          className="fixed inset-0 z-40 bg-black/50 transition-opacity md:hidden"
+          className="fixed inset-0 z-40 bg-slate-900/40 backdrop-blur-sm transition-opacity md:hidden"
           onClick={closeSidebar}
         />
       )}
 
-      <aside className={`fixed inset-y-0 left-0 z-50 w-64 transform overflow-y-auto border-r border-border-light bg-surface-light dark:bg-surface-dark dark:border-border-dark transition-transform duration-300 ease-in-out md:relative md:translate-x-0 ${
+      <aside className={`fixed inset-y-0 left-0 z-50 w-72 transform overflow-y-auto border-r border-slate-100 bg-white dark:bg-slate-950 dark:border-slate-800 transition-transform duration-500 ease-in-out md:relative md:translate-x-0 ${
         isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
-      } flex flex-col flex-shrink-0`}>
-        <div className="flex h-16 items-center justify-between border-b border-border-light dark:border-border-dark px-6">
-          <span className="text-xl font-bold tracking-tight text-primary">
-            Uni<span className="text-gray-700 dark:text-white">{isAdmin ? 'Admin' : 'Course'}</span>
+      } flex flex-col flex-shrink-0 scrollbar-hide`}>
+        <div className="flex h-20 items-center justify-between px-8">
+          <span className="text-2xl font-black tracking-tighter text-teal-600">
+            Uni<span className="text-slate-900 dark:text-white font-black">{isAdmin ? 'Admin' : 'Portal'}</span>
           </span>
           <button 
             onClick={closeSidebar}
-            className="rounded-lg p-1 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-slate-700 md:hidden"
+            className="rounded-xl p-2 text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900 transition-all md:hidden"
           >
             <span className="material-icons-outlined">close</span>
           </button>
         </div>
         
-        <div className="px-4 py-6 flex-1">
-          <nav className="space-y-1">
+        <div className="px-4 py-8 flex-1">
+          <nav className="space-y-1.5">
             {links.map((link, idx) => (
               <React.Fragment key={idx}>
                 {link.section && (
-                  <div className="pt-4 pb-2">
-                    <p className="px-4 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                  <div className="pt-8 pb-3 px-4">
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">
                       {link.section}
                     </p>
                   </div>
@@ -84,19 +84,19 @@ const Sidebar: React.FC<SidebarProps> = ({ user, onLogout }) => {
                   to={link.to}
                   onClick={() => { if (window.innerWidth < 768) closeSidebar(); }}
                   className={({ isActive }) => 
-                    `group flex items-center rounded-lg px-4 py-2.5 transition-colors ${
+                    `group flex items-center rounded-2xl px-4 py-3 transition-all duration-300 ${
                       isActive 
-                        ? 'bg-primary text-white shadow-sm' 
-                        : 'text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-slate-700/50'
+                        ? 'bg-slate-900 text-white shadow-xl shadow-slate-200 dark:bg-teal-600 dark:shadow-teal-900/20' 
+                        : 'text-slate-500 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-900 hover:text-slate-900 dark:hover:text-white'
                     }`
                   }
                 >
-                  <span className={`material-icons-outlined mr-3 ${link.iconColor || (isAdmin ? 'text-gray-500 group-hover:text-primary dark:text-gray-400' : '')}`}>
+                  <span className={`material-icons-outlined text-[22px] mr-4 transition-transform group-hover:scale-110 duration-300 ${link.iconColor || ''}`}>
                     {link.icon}
                   </span>
-                  <span className="font-medium">{link.label}</span>
+                  <span className="text-sm font-bold tracking-tight">{link.label}</span>
                   {link.badge && (
-                    <span className="ml-auto rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-600 dark:bg-red-900/30 dark:text-red-400">
+                    <span className="ml-auto rounded-lg bg-teal-50 px-2 py-0.5 text-[10px] font-black uppercase tracking-widest text-teal-600 dark:bg-teal-950 dark:text-teal-400 border border-teal-100 dark:border-teal-900">
                       {link.badge}
                     </span>
                   )}
@@ -106,21 +106,26 @@ const Sidebar: React.FC<SidebarProps> = ({ user, onLogout }) => {
           </nav>
         </div>
 
-        <div className="border-t border-border-light bg-surface-light p-4 dark:border-border-dark dark:bg-surface-dark mt-auto">
-          <div className="flex items-center mb-4">
-            <img alt={user.name} className="h-9 w-9 rounded-full object-cover border border-gray-200 dark:border-gray-600" src={user.avatar} />
-            <div className="ml-3 overflow-hidden">
-              <p className="text-sm font-medium text-gray-700 dark:text-gray-200 truncate">{user.name}</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{user.department}</p>
+        <div className="p-6 mt-auto">
+          <div className="rounded-[32px] bg-slate-50 dark:bg-slate-900/50 p-5 border border-slate-100 dark:border-slate-800">
+            <div className="flex items-center mb-6 px-1">
+              <div className="relative group">
+                <img alt={user.name} className="h-11 w-11 rounded-2xl object-cover border-2 border-white dark:border-slate-800 shadow-sm transition-transform duration-500 group-hover:scale-105" src={user.avatar} />
+                <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 border-2 border-white dark:border-slate-900 rounded-full" />
+              </div>
+              <div className="ml-4 overflow-hidden">
+                <p className="text-sm font-black text-slate-900 dark:text-white truncate tracking-tight">{user.name}</p>
+                <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest truncate">{user.department}</p>
+              </div>
             </div>
+            <button 
+              onClick={onLogout}
+              className="w-full flex items-center justify-center gap-3 py-3 rounded-xl bg-white dark:bg-slate-950 text-slate-600 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 border border-slate-100 dark:border-slate-800 transition-all text-xs font-black uppercase tracking-widest active:scale-[0.98] shadow-sm hover:shadow-md"
+            >
+              <span className="material-icons-round text-sm">logout</span>
+              <span>Secure Sign Out</span>
+            </button>
           </div>
-          <button 
-            onClick={onLogout}
-            className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 transition-colors text-sm"
-          >
-            <span className="material-icons-round">logout</span>
-            <span>Sign Out</span>
-          </button>
         </div>
       </aside>
     </>

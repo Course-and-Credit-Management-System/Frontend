@@ -145,26 +145,30 @@ const AdminChatPage: React.FC<AdminChatPageProps> = ({ user, onLogout }) => {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[#f5f5f5] font-roboto dark:bg-background-dark">
-      <Sidebar user={user} onLogout={onLogout} />
-      <div className="flex flex-1 flex-col overflow-hidden">
-        <Header title="Admin AI Assistant" user={user} />
-        <main className="flex-1 overflow-hidden p-4 md:p-6 dark:bg-background-dark">
-          <div className="h-full min-h-0">
-            <ChatWindow
-              selectedMode={selectedMode}
-              onModeChange={handleModeChange}
-              onNewChat={handleNewChat}
-              messages={messages}
-              input={input}
-              isPending={isPending}
-              errorMessage={errorMessage}
-              onInputChange={setInput}
-              onSend={handleSend}
-              onSelectPrompt={handleSelectPrompt}
-            />
+    <div className="flex h-screen w-screen overflow-hidden bg-white dark:bg-slate-950 font-poppins relative">
+      <div className="flex flex-1 flex-col overflow-hidden relative">
+        <main className="flex-1 overflow-hidden p-0 dark:bg-slate-950 animate-in fade-in duration-700">
+          <div className="h-full w-full max-w-[1400px] mx-auto flex flex-col px-6 md:px-10 lg:px-12 py-6">
+            <div className="flex-1 min-h-0 bg-slate-50/30 dark:bg-slate-900/20 rounded-[40px] border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden transition-all hover:shadow-md">
+              <ChatWindow
+                selectedMode={selectedMode}
+                onModeChange={handleModeChange}
+                onNewChat={handleNewChat}
+                messages={messages}
+                input={input}
+                isPending={isPending}
+                errorMessage={errorMessage}
+                onInputChange={setInput}
+                onSend={handleSend}
+                onSelectPrompt={handleSelectPrompt}
+              />
+            </div>
           </div>
         </main>
+
+        {/* Global UI Decoration */}
+        <div className="absolute top-0 right-0 w-96 h-96 bg-teal-500/5 blur-[120px] rounded-full pointer-events-none -z-10" />
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-indigo-500/5 blur-[120px] rounded-full pointer-events-none -z-10" />
       </div>
     </div>
   );

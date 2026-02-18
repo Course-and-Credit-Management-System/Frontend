@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
+import { TableSkeletonRows } from '../components/Skeleton';
 import { User, EnrollmentRequest } from '../types';
 import { api } from '../lib/api';
 import { useNavigate } from 'react-router-dom';
@@ -159,164 +160,166 @@ const AdminEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
 
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background-light dark:bg-background-dark relative">
+    <div className="flex h-screen overflow-hidden bg-white dark:bg-slate-950 relative">
       <Sidebar user={user} onLogout={onLogout} />
       
       {/* Toast Notification */}
       {toast.type && (
-        <div className={`fixed top-4 right-4 z-50 flex items-center gap-3 rounded-lg px-6 py-4 shadow-lg transition-all animate-in slide-in-from-top-5 ${
-            toast.type === 'success' ? 'bg-[#eafaf1] text-[#27ae60] border border-[#27ae60]/20' : 'bg-[#fdecea] text-[#e74c3c] border border-[#e74c3c]/20'
+        <div className={`fixed top-8 right-8 z-50 flex items-center gap-4 rounded-2xl px-6 py-4 shadow-xl border transition-all animate-in slide-in-from-right-10 duration-500 ${
+            toast.type === 'success' ? 'bg-emerald-50 text-emerald-700 border-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-900/40' : 'bg-rose-50 text-rose-700 border-rose-100 dark:bg-rose-950/40 dark:text-rose-400 dark:border-rose-900/40'
         }`}>
             <span className="material-icons-outlined text-xl">
                 {toast.type === 'success' ? 'check_circle' : 'error'}
             </span>
-            <p className="font-medium text-sm">{toast.message}</p>
+            <p className="font-bold text-sm tracking-tight">{toast.message}</p>
         </div>
       )}
 
       <div className="flex flex-1 flex-col overflow-hidden">
         <Header title="Enrollment Management" user={user} />
-        <main className="flex-1 overflow-y-auto p-6 relative">
-          <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-3">
-             <div className="group relative overflow-hidden rounded-xl bg-surface-light p-6 shadow-sm transition-all hover:shadow-md dark:bg-surface-dark">
-              <div className="absolute right-0 top-0 -mt-4 -mr-4 h-24 w-24 rounded-full bg-teal-50 transition-all group-hover:scale-110 dark:bg-teal-900/10"></div>
-              <div className="relative z-10 flex items-start justify-between">
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-800 dark:text-white">Manual Enrollment</h3>
-                  <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Register a student to a course directly.</p>
-                </div>
-                <div className="rounded-lg bg-teal-100 p-3 text-primary dark:bg-teal-900/30">
-                  <span className="material-icons-outlined">how_to_reg</span>
+        <main className="flex-1 overflow-y-auto p-8 animate-in fade-in duration-700 slide-in-from-bottom-4 scrollbar-hide">
+          <div className="mb-10 grid grid-cols-1 gap-8 md:grid-cols-3">
+             <div className="group relative overflow-hidden rounded-3xl bg-slate-50/50 dark:bg-slate-900/30 p-8 border border-slate-200/60 dark:border-slate-800/60 transition-all hover:bg-white dark:hover:bg-slate-900 hover:shadow-lg hover:-translate-y-1">
+              <div className="absolute right-0 top-0 -mt-4 -mr-4 h-24 w-24 rounded-full bg-teal-500/5 transition-all group-hover:scale-150 group-hover:bg-teal-500/10" />
+              <div className="relative z-10 flex items-start justify-between mb-8">
+                <div className="rounded-2xl bg-teal-100/50 p-4 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400 transform group-hover:rotate-12 transition-transform duration-500">
+                  <span className="material-icons-outlined text-2xl">how_to_reg</span>
                 </div>
               </div>
-              <div className="relative z-10 mt-6">
+              <div className="relative z-10">
+                <h3 className="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">Manual Enrollment</h3>
+                <p className="mt-2 text-sm text-slate-500 dark:text-slate-400 leading-relaxed font-medium">Direct student-to-course registration.</p>
                 <button 
                   onClick={() => window.location.hash = "#/admin/enrollment/manual"}
-                  className="inline-flex items-center text-sm font-medium text-primary hover:text-primary-hover"
+                  className="mt-6 inline-flex items-center text-sm font-bold text-teal-600 hover:text-teal-700 dark:text-teal-400 group/btn"
                 >
-                  Open Form <span className="material-icons-outlined ml-1 text-sm">arrow_forward</span>
+                  Launch Form 
+                  <span className="material-icons-outlined ml-2 text-sm transform group-hover/btn:translate-x-1 transition-transform">arrow_forward</span>
                 </button>
               </div>
             </div>
 
-            <div className="group relative overflow-hidden rounded-xl bg-surface-light p-6 shadow-sm transition-all hover:shadow-md dark:bg-surface-dark">
-              <div className="absolute right-0 top-0 -mt-4 -mr-4 h-24 w-24 rounded-full bg-orange-50 transition-all group-hover:scale-110 dark:bg-orange-900/10"></div>
-              <div className="relative z-10 flex items-start justify-between">
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-800 dark:text-white">Conflict Resolver</h3>
-                  <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">AI-powered schedule conflict resolution.</p>
-                </div>
-                <div className="rounded-lg bg-orange-100 p-3 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400">
-                  <span className="material-icons-outlined">psychology</span>
+            <div className="group relative overflow-hidden rounded-3xl bg-slate-50/50 dark:bg-slate-900/30 p-8 border border-slate-200/60 dark:border-slate-800/60 transition-all hover:bg-white dark:hover:bg-slate-900 hover:shadow-lg hover:-translate-y-1">
+              <div className="absolute right-0 top-0 -mt-4 -mr-4 h-24 w-24 rounded-full bg-orange-500/5 transition-all group-hover:scale-150 group-hover:bg-orange-500/10" />
+              <div className="relative z-10 flex items-start justify-between mb-8">
+                <div className="rounded-2xl bg-orange-100/50 p-4 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400 transform group-hover:rotate-12 transition-transform duration-500">
+                  <span className="material-icons-outlined text-2xl">psychology</span>
                 </div>
               </div>
-              <div className="relative z-10 mt-6">
-                <button className="inline-flex items-center text-sm font-medium text-orange-600 hover:text-orange-700 dark:text-orange-400">
-                  Review Issues <span className="material-icons-outlined ml-1 text-sm">arrow_forward</span>
+              <div className="relative z-10">
+                <h3 className="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">Conflict Resolver</h3>
+                <p className="mt-2 text-sm text-slate-500 dark:text-slate-400 leading-relaxed font-medium">AI-driven schedule optimization.</p>
+                <button className="mt-6 inline-flex items-center text-sm font-bold text-orange-600 hover:text-orange-700 dark:text-orange-400 group/btn">
+                  Audit Conflicts 
+                  <span className="material-icons-outlined ml-2 text-sm transform group-hover/btn:translate-x-1 transition-transform">arrow_forward</span>
                 </button>
               </div>
             </div>
 
-            <div className="group relative overflow-hidden rounded-xl bg-surface-light p-6 shadow-sm transition-all hover:shadow-md dark:bg-surface-dark">
-              <div className="absolute right-0 top-0 -mt-4 -mr-4 h-24 w-24 rounded-full bg-purple-50 transition-all group-hover:scale-110 dark:bg-purple-900/10"></div>
-              <div className="relative z-10 flex items-start justify-between">
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-800 dark:text-white">Enrollment Settings</h3>
-                  <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Configure periods, limits, and prerequisites.</p>
-                </div>
-                <div className="rounded-lg bg-purple-100 p-3 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400">
-                  <span className="material-icons-outlined">tune</span>
+            <div className="group relative overflow-hidden rounded-3xl bg-slate-50/50 dark:bg-slate-900/30 p-8 border border-slate-200/60 dark:border-slate-800/60 transition-all hover:bg-white dark:hover:bg-slate-900 hover:shadow-lg hover:-translate-y-1">
+              <div className="absolute right-0 top-0 -mt-4 -mr-4 h-24 w-24 rounded-full bg-indigo-500/5 transition-all group-hover:scale-150 group-hover:bg-indigo-500/10" />
+              <div className="relative z-10 flex items-start justify-between mb-8">
+                <div className="rounded-2xl bg-indigo-100/50 p-4 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400 transform group-hover:rotate-12 transition-transform duration-500">
+                  <span className="material-icons-outlined text-2xl">tune</span>
                 </div>
               </div>
-              <div className="relative z-10 mt-6">
+              <div className="relative z-10">
+                <h3 className="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">Enrollment Settings</h3>
+                <p className="mt-2 text-sm text-slate-500 dark:text-slate-400 leading-relaxed font-medium">Periods, limits, and prerequisites.</p>
                 <button
                   onClick={() => navigate('/admin/enrollment-settings')}
-                  className="inline-flex items-center text-sm font-medium text-purple-600 hover:text-purple-700 dark:text-purple-400"
+                  className="mt-6 inline-flex items-center text-sm font-bold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 group/btn"
                 >
-                  Configure <span className="material-icons-outlined ml-1 text-sm">arrow_forward</span>
+                  Global Config 
+                  <span className="material-icons-outlined ml-2 text-sm transform group-hover/btn:translate-x-1 transition-transform">arrow_forward</span>
                 </button>
               </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-            <div className="rounded-xl bg-surface-light shadow-sm dark:bg-surface-dark lg:col-span-8 overflow-hidden">
-               <div className="flex items-center justify-between border-b border-border-light px-6 py-4 dark:border-border-dark">
-                <h3 className="font-semibold text-gray-800 dark:text-white">Recent Enrollment Requests</h3>
-                <div className="flex items-center gap-2">
-                  <button onClick={() => setSortConfig({ key: 'status', direction: 'asc' })} className="button-secondary text-xs flex items-center gap-1">
-                     <span className="material-icons-outlined text-sm">sort</span> Sort by Status
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
+            <div className="rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm lg:col-span-8 overflow-hidden">
+               <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 px-8 py-6">
+                <div className="space-y-1">
+                  <h3 className="text-lg font-extrabold text-slate-900 dark:text-white tracking-tight">Recent Requests</h3>
+                  <p className="text-xs font-medium text-slate-400 dark:text-slate-500">Live feed of student submissions</p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <button 
+                    onClick={() => handleSort('status')} 
+                    className="flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all"
+                  >
+                     <span className="material-icons-outlined text-sm">sort</span> Sort
                   </button>
-                  <button className="text-sm text-primary hover:underline">View All</button>
                 </div>
               </div>
-              <div className="overflow-x-auto max-h-[500px] border-b border-border-light dark:border-border-dark scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-slate-700 scrollbar-track-transparent">
-                <table className="w-full text-left text-sm text-gray-500 dark:text-gray-400">
-                   <thead className="bg-gray-50 text-xs uppercase text-gray-700 dark:bg-slate-800 dark:text-gray-300 sticky top-0 z-10 shadow-sm">
+              <div className="overflow-x-auto max-h-[600px] scrollbar-hide">
+                <table className="w-full text-left text-sm">
+                   <thead className="bg-slate-50/50 dark:bg-slate-950/50 text-[10px] uppercase font-bold tracking-widest text-slate-400 dark:text-slate-500 sticky top-0 z-10 border-b border-slate-100 dark:border-slate-800">
                     <tr>
-                      <th className="px-6 py-3 cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-700" onClick={() => handleSort('studentName')}>
-                        <div className="flex items-center">Student Name {sortConfig?.key === 'studentName' && <span className="material-icons-outlined text-sm ml-1">{sortConfig.direction === 'asc' ? 'arrow_upward' : 'arrow_downward'}</span>}</div>
+                      <th className="px-8 py-4 cursor-pointer hover:text-slate-900 dark:hover:text-white transition-colors" onClick={() => handleSort('studentName')}>
+                        <div className="flex items-center">Student {sortConfig?.key === 'studentName' && <span className="material-icons-outlined text-xs ml-1">{sortConfig.direction === 'asc' ? 'north' : 'south'}</span>}</div>
                       </th>
-                      <th className="px-6 py-3 cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-700" onClick={() => handleSort('courseName')}>
-                        <div className="flex items-center">Course {sortConfig?.key === 'courseName' && <span className="material-icons-outlined text-sm ml-1">{sortConfig.direction === 'asc' ? 'arrow_upward' : 'arrow_downward'}</span>}</div>
+                      <th className="px-8 py-4 cursor-pointer hover:text-slate-900 dark:hover:text-white transition-colors" onClick={() => handleSort('courseName')}>
+                        <div className="flex items-center">Course {sortConfig?.key === 'courseName' && <span className="material-icons-outlined text-xs ml-1">{sortConfig.direction === 'asc' ? 'north' : 'south'}</span>}</div>
                       </th>
-                      <th className="px-6 py-3 cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-700" onClick={() => handleSort('status')}>
-                        <div className="flex items-center">Status {sortConfig?.key === 'status' && <span className="material-icons-outlined text-sm ml-1">{sortConfig.direction === 'asc' ? 'arrow_upward' : 'arrow_downward'}</span>}</div>
+                      <th className="px-8 py-4 cursor-pointer hover:text-slate-900 dark:hover:text-white transition-colors" onClick={() => handleSort('status')}>
+                        <div className="flex items-center">Status {sortConfig?.key === 'status' && <span className="material-icons-outlined text-xs ml-1">{sortConfig.direction === 'asc' ? 'north' : 'south'}</span>}</div>
                       </th>
-                      <th className="px-6 py-3 text-right">Action</th>
+                      <th className="px-8 py-4 text-right">Action</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-border-light dark:divide-border-dark">
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
                     {loading ? (
-                      <tr><td colSpan={4} className="px-6 py-4 text-center text-gray-500">Loading...</td></tr>
+                      <TableSkeletonRows rows={6} cols={4} />
                     ) : error ? (
-                      <tr><td colSpan={4} className="px-6 py-4 text-center text-red-500">{error}</td></tr>
+                      <tr><td colSpan={4} className="px-8 py-12 text-center text-rose-500 font-bold">{error}</td></tr>
                     ) : sortedRequests.length === 0 ? (
-                      <tr><td colSpan={4} className="px-6 py-4 text-center text-gray-500">No enrollment requests found.</td></tr>
+                      <tr><td colSpan={4} className="px-8 py-12 text-center text-slate-400 italic">No pending requests found.</td></tr>
                     ) : (
                       sortedRequests.map((req, i) => (
-                      <tr key={i} className="hover:bg-gray-50 dark:hover:bg-slate-800/50">
-                         <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">
-                          <div className="flex items-center">
+                      <tr key={i} className="group hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors">
+                         <td className="px-8 py-5">
+                          <div className="flex items-center gap-4">
                             {req.studentAvatar ? (
                               <img 
                                 src={req.studentAvatar} 
                                 alt={req.studentName}
-                                className="h-8 w-8 rounded-full object-cover mr-3"
+                                className="h-10 w-10 rounded-full border-2 border-white dark:border-slate-800 shadow-sm object-cover"
                               />
                             ) : (
-                              <div className={`h-8 w-8 rounded-full flex items-center justify-center font-bold text-xs mr-3 ${
-                                req.status === 'Enrolled' ? 'bg-blue-100 text-blue-600' :
-                                'bg-purple-100 text-purple-600'
+                              <div className={`h-10 w-10 rounded-full flex items-center justify-center font-bold text-xs border-2 border-white dark:border-slate-800 shadow-sm ${
+                                req.status === 'Enrolled' ? 'bg-teal-100 text-teal-700 dark:bg-teal-900/40 dark:text-teal-400' :
+                                'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
                               }`}>{req.studentInitials}</div>
                             )}
-                            {req.studentName}
+                            <div className="font-bold text-slate-900 dark:text-white group-hover:text-teal-600 transition-colors">{req.studentName}</div>
                           </div>
                         </td>
-                        <td className="px-6 py-4">{req.courseName}</td>
-                        <td className="px-6 py-4">
+                        <td className="px-8 py-5 text-slate-600 dark:text-slate-400 font-medium">{req.courseName}</td>
+                        <td className="px-8 py-5">
                            <div className="flex items-center">
-                            <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                              req.status === 'Enrolled' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
-                              'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
+                            <span className={`inline-flex rounded-lg px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider border ${
+                              req.status === 'Enrolled' ? 'bg-emerald-50 text-emerald-700 border-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800' :
+                              'bg-amber-50 text-amber-700 border-amber-100 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800'
                             }`}>
                               {req.status}
                             </span>
                           </div>
                         </td>
-                        <td className="px-6 py-4 text-right">
+                        <td className="px-8 py-5 text-right">
                           {req.status === 'Pending' ? (
-                            <div className="flex justify-end space-x-2">
-                              <button onClick={() => approveRequest(req.id)} className="text-green-600 hover:text-green-800 dark:text-green-400" title="Approve">
-                                <span className="material-icons-outlined text-base">check</span>
+                            <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <button onClick={() => approveRequest(req.id)} className="p-2 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 transition-all" title="Approve">
+                                <span className="material-icons-outlined text-lg">check</span>
                               </button>
-                              <button onClick={() => openRejectModal(req.id)} className="text-red-600 hover:text-red-800 dark:text-red-400" title="Reject">
-                                <span className="material-icons-outlined text-base">close</span>
+                              <button onClick={() => openRejectModal(req.id)} className="p-2 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 dark:bg-rose-900/20 dark:text-rose-400 transition-all" title="Reject">
+                                <span className="material-icons-outlined text-lg">close</span>
                               </button>
                             </div>
                           ) : (
-                            <button className="text-gray-400 hover:text-primary dark:hover:text-primary">
-                              <span className="material-icons-outlined text-base">more_vert</span>
+                            <button className="p-2 rounded-lg text-slate-300 hover:text-slate-600 dark:hover:text-slate-400 transition-all">
+                              <span className="material-icons-outlined text-lg">more_horiz</span>
                             </button>
                           )}
                         </td>
@@ -327,17 +330,17 @@ const AdminEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
               </div>
             </div>
 
-            <div className="flex flex-col gap-6 lg:col-span-4">
-              <div className="rounded-[8px] bg-surface-light p-6 shadow-[0_2px_6px_rgba(0,0,0,0.1)] dark:bg-surface-dark">
-                <h3 className="font-semibold text-[#333333] dark:text-white">Advance Semester</h3>
-                <p className="mt-2 text-sm text-[#666666] dark:text-gray-400">
-                  Select target semester to advance.
+            <div className="flex flex-col gap-8 lg:col-span-4">
+              <div className="rounded-3xl bg-slate-50/50 dark:bg-slate-900/30 p-8 border border-slate-200/60 dark:border-slate-800/60 shadow-sm">
+                <h3 className="text-lg font-extrabold text-slate-900 dark:text-white tracking-tight">Advance Semester</h3>
+                <p className="mt-2 text-sm text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
+                  Switch the institutional active period.
                 </p>
 
-                <div className="mt-4 grid grid-cols-1 gap-3">
+                <div className="mt-8 space-y-4">
                   {([
-                    { key: 'fall' as SemesterKey, title: 'Fall', subtitle: 'First Sem', icon: 'looks_one' },
-                    { key: 'summer' as SemesterKey, title: 'Summer', subtitle: 'Second Sem', icon: 'looks_two' },
+                    { key: 'fall' as SemesterKey, title: 'Fall Semester', subtitle: 'Academic Period 1', icon: 'wb_sunny' },
+                    { key: 'summer' as SemesterKey, title: 'Summer Semester', subtitle: 'Academic Period 2', icon: 'dark_mode' },
                   ]).map((item) => {
                     const isActive = currentSemester === item.key;
                     const isLoading = advanceLoading === item.key;
@@ -346,29 +349,30 @@ const AdminEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
                         key={item.key}
                         onClick={() => handleAdvanceSemester(item.key)}
                         disabled={isLoading || isActive || advanceLoading !== null}
-                        className={`rounded-[6px] border p-4 text-left transition-all ${
+                        className={`w-full rounded-2xl border p-5 text-left transition-all relative group ${
                           isActive
-                            ? 'border-[#077d8a] bg-[#eafaf1] dark:border-teal-500 dark:bg-teal-900/25'
-                            : 'border-[#cccccc] bg-white hover:border-[#077d8a] hover:bg-[#f5f5f5] dark:border-gray-700 dark:bg-slate-800 dark:hover:border-teal-500 dark:hover:bg-slate-700'
-                        } disabled:cursor-not-allowed disabled:opacity-70`}
+                            ? 'border-teal-500 bg-white dark:bg-slate-900 shadow-md'
+                            : 'border-slate-200 dark:border-slate-800 bg-transparent hover:border-slate-300 dark:hover:border-slate-700'
+                        } disabled:cursor-not-allowed`}
                       >
+                        {isActive && (
+                          <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-teal-500" />
+                        )}
                         <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <span className={`material-icons-outlined ${isActive ? 'text-[#077d8a] dark:text-teal-300' : 'text-[#666666] dark:text-gray-300'}`}>
+                          <div className="flex items-center gap-4">
+                            <span className={`material-icons-outlined ${isActive ? 'text-teal-600 dark:text-teal-400' : 'text-slate-400 dark:text-slate-600'}`}>
                               {item.icon}
                             </span>
                             <div>
-                              <p className="text-sm font-semibold text-[#333333] dark:text-gray-100">{item.title}</p>
-                              <p className="text-xs text-[#666666] dark:text-gray-400">{item.subtitle}</p>
+                              <p className={`text-sm font-bold ${isActive ? 'text-slate-900 dark:text-white' : 'text-slate-600 dark:text-slate-400'}`}>{item.title}</p>
+                              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{item.subtitle}</p>
                             </div>
                           </div>
-                          <span
-                            className={`text-xs font-semibold ${
-                              isActive ? 'text-[#27ae60] dark:text-green-300' : 'text-[#666666] dark:text-gray-300'
-                            }`}
-                          >
-                            {isActive ? 'Current' : isLoading ? 'Processing...' : 'Switch'}
-                          </span>
+                          <div className={`px-2 py-1 rounded-md text-[9px] font-extrabold uppercase tracking-widest ${
+                            isActive ? 'bg-teal-50 text-teal-700 dark:bg-teal-900/40 dark:text-teal-400' : 'bg-slate-100 text-slate-500 dark:bg-slate-800'
+                          }`}>
+                            {isActive ? 'Active' : isLoading ? '...' : 'Switch'}
+                          </div>
                         </div>
                       </button>
                     );
@@ -377,15 +381,15 @@ const AdminEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
 
                 {advanceDetail && (
                   <div
-                    className={`mt-4 rounded-[6px] px-4 py-3 text-sm ${
+                    className={`mt-6 rounded-2xl px-5 py-4 text-xs font-bold leading-relaxed animate-in fade-in slide-in-from-top-2 ${
                       advanceState === 'success'
-                        ? 'bg-[#eafaf1] text-[#27ae60] border border-[#27ae60]/20'
+                        ? 'bg-emerald-50 text-emerald-700 border border-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-900/40'
                         : advanceState === 'error'
-                        ? 'bg-[#fdecea] text-[#e74c3c] border border-[#e74c3c]/20'
-                        : 'bg-[#e6f2fa] text-[#0d4a8f] border border-[#0d4a8f]/20'
+                        ? 'bg-rose-50 text-rose-700 border border-rose-100 dark:bg-rose-950/40 dark:text-rose-400 dark:border-rose-900/40'
+                        : 'bg-indigo-50 text-indigo-700 border border-indigo-100 dark:bg-indigo-950/40 dark:text-indigo-400 dark:border-indigo-900/40'
                     }`}
                   >
-                    {advanceDetail}
+                    <span className="mr-2">ℹ️</span> {advanceDetail}
                   </div>
                 )}
               </div>
@@ -394,41 +398,44 @@ const AdminEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
           
           {/* Reject Modal */}
           {isRejectModalOpen && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-              <div className="w-full max-w-md bg-white dark:bg-gray-800 rounded-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-                <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
-                  <h3 className="font-bold text-lg text-gray-800 dark:text-white">Reject Request</h3>
-                  <button onClick={() => setIsRejectModalOpen(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 backdrop-blur-md p-4 animate-in fade-in duration-300">
+              <div className="w-full max-w-lg bg-white dark:bg-slate-900 rounded-[32px] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 border border-slate-200 dark:border-slate-800">
+                <div className="px-10 py-8 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
+                  <div className="space-y-1">
+                    <h3 className="font-extrabold text-2xl text-slate-900 dark:text-white tracking-tight">Decline Request</h3>
+                    <p className="text-xs font-medium text-slate-400">Provide administrative feedback</p>
+                  </div>
+                  <button onClick={() => setIsRejectModalOpen(false)} className="h-10 w-10 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
                     <span className="material-icons-outlined">close</span>
                   </button>
                 </div>
-                <div className="p-6">
-                  <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
-                    Are you sure you want to reject this enrollment request? Please provide a reason for the student.
+                <div className="p-10">
+                  <p className="text-sm text-slate-500 dark:text-slate-400 mb-8 leading-relaxed">
+                    Rejecting this enrollment will notify the student immediately. Please specify the reason for this decision below.
                   </p>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">Reason for Rejection</label>
+                  <div className="space-y-3">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Rejection Reason</label>
                     <textarea 
                       value={rejectReason}
                       onChange={(e) => setRejectReason(e.target.value)}
-                      placeholder="e.g. Prerequisites not met, Class full..."
-                      className="w-full h-24 p-3 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500/20 focus:border-red-500 bg-white dark:bg-gray-900 resize-none outline-none transition-all"
+                      placeholder="e.g. Prerequisites not met, Course capacity reached..."
+                      className="w-full h-32 p-5 text-sm font-medium border border-slate-200 dark:border-slate-800 rounded-2xl focus:ring-4 focus:ring-rose-500/10 focus:border-rose-500/50 bg-slate-50 dark:bg-slate-950/50 dark:text-white resize-none outline-none transition-all placeholder:text-slate-300 dark:placeholder:text-slate-700"
                     ></textarea>
                   </div>
                 </div>
-                <div className="px-6 py-4 bg-gray-50 dark:bg-gray-800/50 flex justify-end gap-3">
+                <div className="px-10 py-8 bg-slate-50/50 dark:bg-slate-950/50 flex justify-end gap-4 border-t border-slate-100 dark:border-slate-800">
                    <button 
                      onClick={() => setIsRejectModalOpen(false)}
-                     className="px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none"
+                     className="px-6 py-3 text-sm font-bold text-slate-600 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-all shadow-sm"
                    >
                      Cancel
                    </button>
                    <button 
                      onClick={confirmReject}
                      disabled={!rejectReason.trim()}
-                     className="px-4 py-2 text-sm font-bold text-white bg-red-600 rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm transition-all flex items-center gap-2"
+                     className="px-8 py-3 text-sm font-bold text-white bg-slate-900 dark:bg-slate-800 rounded-2xl hover:bg-slate-800 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed shadow-lg transition-all flex items-center gap-3"
                    >
-                     <span>Reject Enrollment</span>
+                     <span>Decline Enrollment</span>
                      <span className="material-icons-outlined text-sm">gavel</span>
                    </button>
                 </div>

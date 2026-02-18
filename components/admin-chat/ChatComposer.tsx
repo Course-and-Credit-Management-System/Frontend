@@ -16,8 +16,8 @@ const ChatComposer: React.FC<ChatComposerProps> = ({
   const canSend = !disabled && value.trim().length > 0;
 
   return (
-    <div className="sticky bottom-0 border-t border-[#cccccc] bg-white p-2 md:p-3 dark:border-gray-700 dark:bg-slate-900/70">
-      <div className="flex items-end gap-2">
+    <div className="relative group">
+      <div className="flex flex-col gap-3 p-4 bg-white dark:bg-slate-900 rounded-[32px] border border-slate-200 dark:border-slate-800 shadow-lg focus-within:ring-4 focus-within:ring-teal-500/10 focus-within:border-teal-500/50 transition-all">
         <textarea
           value={value}
           onChange={(event) => onChange(event.target.value)}
@@ -32,23 +32,36 @@ const ChatComposer: React.FC<ChatComposerProps> = ({
             }
           }}
           rows={1}
-          className="min-h-[44px] md:min-h-[56px] w-full resize-none rounded-[12px] border border-[#cccccc] bg-[#f9f9f9] px-3 py-2.5 text-sm font-medium text-[#333333] focus:border-[#1f6f5f] focus:outline-none focus:ring-2 focus:ring-[#1f6f5f]/20 disabled:bg-[#f5f5f5] transition-all dark:border-gray-700 dark:bg-slate-800 dark:text-gray-100 dark:placeholder:text-gray-400 dark:disabled:bg-slate-800/70 dark:focus:border-teal-400 dark:focus:ring-teal-500/25"
-          placeholder="Ask anything about courses, administration, and system management..."
+          className="w-full min-h-[60px] max-h-[300px] resize-none bg-transparent px-2 py-2 text-base font-medium text-slate-900 dark:text-white outline-none placeholder:text-slate-400 leading-relaxed scrollbar-hide"
+          placeholder="Inquire about curriculum metrics, administrative logs, or faculty updates..."
           aria-label="Chat message input"
           disabled={disabled}
         />
-        <button
-          type="button"
-          onClick={onSend}
-          disabled={!canSend}
-          className="flex h-[44px] md:h-[48px] items-center justify-center rounded-xl bg-[#1f6f5f] px-4 py-2 text-sm font-bold uppercase tracking-widest text-white hover:bg-[#185a4e] disabled:cursor-not-allowed disabled:bg-[#cccccc] shadow-md transition-all active:scale-95 dark:bg-[#247b6a] dark:hover:bg-[#1f6a5b] dark:disabled:bg-gray-600"
-          aria-label="Send message"
-        >
-          <span className="hidden md:inline">Send</span>
-          <span className="material-icons-outlined md:hidden">send</span>
-        </button>
+        <div className="flex items-center justify-between px-2 pb-1">
+          <div className="flex items-center gap-4">
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest hidden md:block">
+              {value.length > 0 ? `${value.length} characters` : 'AI Synthesis Active'}
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={onSend}
+            disabled={!canSend}
+            className={`flex items-center justify-center gap-3 h-10 px-6 rounded-2xl font-black text-[11px] uppercase tracking-widest transition-all active:scale-[0.98] ${
+              canSend 
+                ? "bg-slate-900 dark:bg-teal-600 text-white shadow-md hover:bg-slate-800 dark:hover:bg-teal-700" 
+                : "bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed"
+            }`}
+            aria-label="Send message"
+          >
+            <span className="hidden md:inline">Execute</span>
+            <span className="material-icons-outlined text-lg">arrow_upward</span>
+          </button>
+        </div>
       </div>
-      <p className="mt-1.5 hidden md:block text-[10px] font-bold text-[#999999] uppercase tracking-wider px-1 dark:text-gray-400">Press Enter to send, Shift + Enter for a new line.</p>
+      <p className="absolute -bottom-8 left-6 hidden md:block text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] opacity-0 group-focus-within:opacity-100 transition-opacity">
+        CMD + Enter to dispatch • Shift + Enter for multiline
+      </p>
     </div>
   );
 };

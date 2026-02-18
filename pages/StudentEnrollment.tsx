@@ -321,200 +321,195 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background-light dark:bg-background-dark font-sans">
+    <div className="flex h-screen overflow-hidden bg-white dark:bg-slate-950 font-poppins relative">
       <Sidebar user={user} onLogout={onLogout} />
-      <div className="flex flex-1 flex-col overflow-hidden">
-        <Header title="Course Enrollment" user={user} />
-        <main className="flex-1 flex overflow-hidden">
-          <div className="flex-1 overflow-y-auto p-6 lg:p-8">
-             <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
-              <div>
-                <h2 className="text-2xl font-bold mb-1">Course Enrollment</h2>
-                <p className="text-gray-500 dark:text-gray-400 text-sm font-medium">Select your courses for {user.student_profile?.year ? `${user.student_profile.year} semester` : 'Upcoming Semester'}.</p>
+      <div className="flex flex-1 flex-col overflow-hidden relative">
+        <Header title="Institutional Enrollment" user={user} />
+        <main className="flex-1 flex overflow-hidden animate-in fade-in duration-700 slide-in-from-bottom-4 scrollbar-hide">
+          <div className="flex-1 overflow-y-auto p-10 lg:p-16 scrollbar-hide">
+             <div className="flex flex-col xl:flex-row xl:items-end justify-between mb-12 gap-8">
+              <div className="space-y-2">
+                <h2 className="text-4xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">Course Selection</h2>
+                <p className="text-lg font-medium text-slate-400 dark:text-slate-500">Academic Period: {user.student_profile?.year ? `Year ${user.student_profile.year}` : 'Upcoming Cycle'}</p>
               </div>
-              <div className="flex items-center gap-4 bg-surface-light dark:bg-surface-dark px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
-                <div className="text-center">
-                  <span className="block text-xs text-gray-500 uppercase font-bold tracking-wider">Credits</span>
-                  <span className="text-lg font-bold text-primary">{credits}<span className="text-gray-400 text-sm font-normal">/{maxCreditsLimit}</span></span>
+              <div className="flex items-center gap-8 bg-slate-50/50 dark:bg-slate-900/50 px-8 py-5 rounded-[32px] border border-slate-100 dark:border-slate-800 shadow-sm transition-all hover:shadow-md">
+                <div className="space-y-1">
+                  <span className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Credit Utilization</span>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-3xl font-black text-teal-600 tabular-nums">{credits}</span>
+                    <span className="text-[10px] font-black text-slate-300 dark:text-slate-600 uppercase">Limit: {maxCreditsLimit}</span>
+                  </div>
                 </div>
-                <div className="h-8 w-px bg-gray-200 dark:bg-gray-700"></div>
-                <div className="text-center">
-                  <span className="block text-xs text-gray-500 uppercase font-bold tracking-wider">GPA</span>
-                  <span className="text-lg font-bold text-green-500">3.4</span>
+                <div className="h-10 w-px bg-slate-200 dark:bg-slate-800"></div>
+                <div className="space-y-1 text-right">
+                  <span className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Academic Index</span>
+                  <span className="text-3xl font-black text-slate-900 dark:text-white tabular-nums tracking-tighter">3.40</span>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white p-4 rounded-[8px] border border-[#cccccc] shadow-[0_2px_6px_rgba(0,0,0,0.1)] mb-6 dark:bg-surface-dark dark:border-gray-700">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-                <div>
-                  <p className="text-sm text-[#666666] dark:text-gray-300">Enrollment Status</p>
-                  <span
-                    className={`inline-flex mt-1 rounded-full px-3 py-1 text-xs font-semibold ${
-                      isEnrollmentActive
-                        ? "bg-[#eafaf1] text-[#27ae60] dark:bg-green-900/25 dark:text-green-300"
-                        : "bg-[#fdecea] text-[#e74c3c] dark:bg-red-900/25 dark:text-red-300"
-                    }`}
-                  >
-                    {isEnrollmentActive ? "Open" : "Closed"}
-                  </span>
+            <div className="bg-slate-50/30 dark:bg-slate-900/30 p-10 rounded-[40px] border border-slate-100 dark:border-slate-800 shadow-sm mb-12 transition-all hover:bg-white dark:hover:bg-slate-900 hover:shadow-md">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
+                <div className="space-y-3">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Enrollment State</p>
+                  <div className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border ${
+                    isEnrollmentActive
+                      ? "bg-emerald-50 text-emerald-700 border-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400"
+                      : "bg-rose-50 text-rose-700 border-rose-100 dark:bg-rose-900/20 dark:text-rose-400"
+                  }`}>
+                    <span className={`w-1.5 h-1.5 rounded-full ${isEnrollmentActive ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`} />
+                    {isEnrollmentActive ? "Operational" : "Locked"}
+                  </div>
                 </div>
-                <div>
-                  <p className="text-sm text-[#666666] dark:text-gray-300">Open Time</p>
-                  <p className="text-sm font-semibold text-[#333333] dark:text-gray-100">{formatLocalDateTime(enrollmentSetting?.enrollment_open_at)}</p>
+                <div className="space-y-1">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">System Launch</p>
+                  <p className="text-sm font-bold text-slate-900 dark:text-white">{formatLocalDateTime(enrollmentSetting?.enrollment_open_at)}</p>
                 </div>
-                <div>
-                  <p className="text-sm text-[#666666] dark:text-gray-300">Close Time</p>
-                  <p className="text-sm font-semibold text-[#333333] dark:text-gray-100">{formatLocalDateTime(enrollmentSetting?.enrollment_close_at)}</p>
+                <div className="space-y-1">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">System Termination</p>
+                  <p className="text-sm font-bold text-slate-900 dark:text-white">{formatLocalDateTime(enrollmentSetting?.enrollment_close_at)}</p>
                 </div>
-                <div>
-                  <p className="text-sm text-[#666666] dark:text-gray-300">Remaining Time</p>
-                  <p className="text-sm font-semibold text-[#333333] dark:text-gray-100">{formatRemainingTime(enrollmentSetting?.enrollment_close_at)}</p>
+                <div className="space-y-1 text-right">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Time Buffer</p>
+                  <p className="text-sm font-black text-teal-600 tabular-nums">{formatRemainingTime(enrollmentSetting?.enrollment_close_at)}</p>
                 </div>
               </div>
-              {settingLoading && <p className="mt-3 text-sm text-[#666666] dark:text-gray-300">Loading enrollment setting...</p>}
-              {settingError && <p className="mt-3 text-sm text-[#e74c3c] dark:text-red-300">{settingError}</p>}
+              {settingError && <p className="mt-6 text-xs font-bold text-rose-500 italic">Sync Error: {settingError}</p>}
             </div>
 
-            <div className="bg-surface-light dark:bg-surface-dark p-4 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm mb-6 flex flex-col md:flex-row gap-4 items-center justify-between">
-              <div className="relative flex-1 w-full md:w-auto">
-                <span className="material-icons-outlined absolute left-3 top-2.5 text-gray-400 text-sm">search</span>
+            <div className="bg-white dark:bg-slate-900 p-8 rounded-[32px] border border-slate-100 dark:border-slate-800 shadow-sm mb-12 flex flex-col md:flex-row gap-8 items-center justify-between transition-all hover:shadow-md">
+              <div className="relative flex-1 w-full group">
+                <span className="material-icons-outlined absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-teal-500 transition-colors text-xl">search</span>
                 <input 
                     type="text"
-                    placeholder="Search courses..."
+                    placeholder="Filter institutional courses..."
                     value={searchQuery}
                     onChange={e => setSearchQuery(e.target.value)}
-                    className="w-full pl-9 pr-4 py-2 text-sm rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all font-sans"
+                    className="w-full pl-14 pr-6 py-4 text-base font-bold rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/50 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all dark:text-white placeholder:text-slate-300"
                 />
               </div>
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="text-xs font-bold text-gray-500 uppercase tracking-wider mr-2">Sort By:</span>
-                <button 
-                    onClick={() => toggleFilter('track:cs')}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all ${activeFilters.has('track:cs') ? 'bg-primary text-white border-primary' : 'bg-transparent text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:border-primary'}`}
-                >
-                  CS
-                </button>
-                <button 
-                    onClick={() => toggleFilter('track:ct')}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all ${activeFilters.has('track:ct') ? 'bg-primary text-white border-primary' : 'bg-transparent text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:border-primary'}`}
-                >
-                  CT
-                </button>
-                <button 
-                    onClick={() => toggleFilter('major')}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all ${activeFilters.has('major') ? 'bg-primary text-white border-primary' : 'bg-transparent text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:border-primary'}`}
-                >
-                  Major
-                </button>
-                <button 
-                    onClick={() => toggleFilter('enrollable')}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all ${isEnrollableFilterActive ? 'bg-primary text-white border-primary' : 'bg-transparent text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:border-primary'}`}
-                >
-                  Enrollable
-                </button>
+              <div className="flex flex-wrap items-center gap-3">
+                <span className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] mr-2">Sort Protocol:</span>
+                {[
+                  { id: 'track:cs', label: 'CS' },
+                  { id: 'track:ct', label: 'CT' },
+                  { id: 'major', label: 'MAJOR' },
+                  { id: 'enrollable', label: 'AVAILABLE' }
+                ].map(f => (
+                  <button 
+                    key={f.id}
+                    onClick={() => toggleFilter(f.id as CourseFilterKey)}
+                    className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all active:scale-95 ${
+                      activeFilters.has(f.id as CourseFilterKey) || (f.id === 'enrollable' && isEnrollableFilterActive)
+                        ? "bg-slate-900 text-white border-slate-900 dark:bg-teal-600 dark:border-teal-600 shadow-lg" 
+                        : "bg-transparent text-slate-400 dark:text-slate-500 border-slate-100 dark:border-slate-800 hover:border-teal-500/30"
+                    }`}
+                  >
+                    {f.label}
+                  </button>
+                ))}
               </div>
             </div>
 
-            <section className="bg-white dark:bg-surface-dark p-4 rounded-[6px] border border-[#d8e3e8] dark:border-gray-700 shadow-[0_2px_6px_rgba(0,0,0,0.08)] mb-6">
-              <div className="flex flex-col lg:flex-row gap-3 lg:items-center lg:justify-between mb-4">
+            <section className="bg-slate-50/50 dark:bg-slate-900/30 p-10 rounded-[40px] border border-slate-100 dark:border-slate-800 shadow-sm mb-12 transition-all hover:bg-white dark:hover:bg-slate-900 hover:shadow-md group">
+              <div className="flex items-center gap-6 mb-10">
+                <div className="h-14 w-14 rounded-3xl bg-teal-50 dark:bg-teal-900/20 flex items-center justify-center text-teal-600 dark:text-teal-400 border border-teal-100/50 dark:border-teal-800/50 group-hover:scale-110 transition-transform duration-500">
+                  <span className="material-icons-outlined text-3xl">smart_toy</span>
+                </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-[#1f6f5f]">AI Enrollment Assistant</h3>
-                  <p className="text-sm text-[#666666] dark:text-gray-300">Describe your goal and get smart course suggestions based on your enrollment constraints.</p>
+                  <h3 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Neural Enrollment Assistant</h3>
+                  <p className="text-sm font-medium text-slate-400 dark:text-slate-500">Optimize your academic matrix via descriptive intelligence dispatches.</p>
                 </div>
               </div>
 
               <form
-                className="flex flex-col md:flex-row gap-3"
+                className="flex flex-col md:flex-row gap-4"
                 onSubmit={(e) => {
                   e.preventDefault();
                   handleAiAssist();
                 }}
               >
-                <div className="relative flex-1">
-                  <span className="material-icons-outlined absolute left-3 top-2.5 text-[#1f6f5f] text-sm">smart_toy</span>
+                <div className="relative flex-1 group/input">
+                  <span className="material-icons-outlined absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within/input:text-teal-500 transition-colors text-xl">psychology</span>
                   <input
                     type="text"
                     value={aiMessage}
                     onChange={(e) => setAiMessage(e.target.value)}
-                    placeholder={`Try: I need 2 electives that keep me under ${maxCreditsLimit} credits and avoid schedule conflicts.`}
-                    className="w-full pl-9 pr-4 py-2.5 text-sm rounded-[6px] border border-[#b8ced6] bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-[#1f6f5f]/20 focus:border-[#1f6f5f] transition-all"
+                    placeholder={`Try: Optimize for 2 electives while maintaining sub-${maxCreditsLimit} volume...`}
+                    className="w-full pl-14 pr-6 py-4 text-base font-medium rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950 focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500/50 outline-none transition-all dark:text-white shadow-sm"
                   />
                 </div>
                 <button
                   type="submit"
                   disabled={aiLoading || !aiMessage.trim()}
-                  className={`px-4 py-2.5 rounded-[6px] text-sm font-semibold text-white transition-colors ${
+                  className={`px-10 py-4 rounded-2xl text-xs font-black uppercase tracking-[0.2em] text-white transition-all active:scale-[0.98] shadow-lg ${
                     aiLoading || !aiMessage.trim()
-                      ? 'bg-[#9bbab3] cursor-not-allowed'
-                      : 'bg-[#1f6f5f] hover:bg-[#185a4e]'
+                      ? 'bg-slate-200 dark:bg-slate-800 text-slate-400 cursor-not-allowed'
+                      : 'bg-slate-900 dark:bg-teal-600 hover:bg-slate-800 dark:hover:bg-teal-700 shadow-slate-500/20'
                   }`}
                 >
-                  {aiLoading ? 'Processing...' : 'Ask AI'}
+                  {aiLoading ? 'SYNTHESIZING...' : 'EXECUTE'}
                 </button>
               </form>
 
               {aiError && (
-                <div className="mt-3 bg-[#fdecea] text-[#e74c3c] px-3 py-2 rounded-[6px] text-sm border border-[#f6c9c4]">
-                  {aiError}
+                <div className="mt-6 bg-rose-50 text-rose-700 p-4 rounded-2xl text-xs font-bold border border-rose-100 animate-in fade-in slide-in-from-top-2">
+                  Neural Error: {aiError}
                 </div>
               )}
 
               {aiLoading && (
-                <div className="mt-4 grid grid-cols-1 xl:grid-cols-2 gap-3">
-                  {[1, 2, 3, 4].map((item) => (
-                    <div key={item} className="animate-pulse border border-[#d8e3e8] dark:border-gray-700 rounded-[6px] p-4 bg-[#f9fbfc] dark:bg-gray-800">
-                      <div className="h-4 w-2/5 bg-gray-200 dark:bg-gray-700 rounded mb-3"></div>
-                      <div className="h-3 w-4/5 bg-gray-200 dark:bg-gray-700 rounded mb-2"></div>
-                      <div className="h-3 w-3/5 bg-gray-200 dark:bg-gray-700 rounded mb-4"></div>
-                      <div className="h-8 w-24 bg-gray-200 dark:bg-gray-700 rounded-[6px]"></div>
+                <div className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {[1, 2].map((item) => (
+                    <div key={item} className="animate-pulse border border-slate-100 dark:border-slate-800 rounded-[32px] p-8 bg-white dark:bg-slate-900/50">
+                      <div className="h-4 w-2/5 bg-slate-100 dark:bg-slate-800 rounded-full mb-6"></div>
+                      <div className="space-y-3">
+                        <div className="h-2 w-full bg-slate-50 dark:bg-slate-800 rounded-full"></div>
+                        <div className="h-2 w-3/4 bg-slate-50 dark:bg-slate-800 rounded-full"></div>
+                      </div>
                     </div>
                   ))}
                 </div>
               )}
 
               {!aiLoading && hasAskedAi && !aiError && aiResults.length === 0 && (
-                <div className="mt-4 bg-[#fff4e5] text-[#8a6d1f] px-3 py-2 rounded-[6px] border border-[#ffe1a8] text-sm">
-                  No course suggestions were returned for this request. Try rephrasing with credits, type, or schedule preferences.
+                <div className="mt-10 bg-amber-50 text-amber-700 p-6 rounded-[24px] border border-amber-100 text-sm font-medium italic text-center">
+                  Negative response from intelligence matrix. Rephrase your inquiry with specific credit or type constraints.
                 </div>
               )}
 
               {!aiLoading && aiResults.length > 0 && (
-                <div className="mt-4 grid grid-cols-1 xl:grid-cols-2 gap-3">
+                <div className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-6">
                   {aiResults.map((course) => {
                     const selected = selectedRegistry.has(course.code);
                     const isLocked = course.enrollable === false;
                     return (
-                      <div key={`${course.code}-${course.title}`} className="border border-[#d8e3e8] dark:border-gray-700 rounded-[6px] p-4 bg-[#fbfdfd] dark:bg-gray-800">
-                        <div className="flex justify-between gap-3 mb-2">
-                          <div>
-                            <h4 className="font-semibold text-[#333333] dark:text-gray-100">{course.title}</h4>
-                            <p className="text-xs text-[#666666] dark:text-gray-400">{course.code} • {course.credits} Credits • {course.type}</p>
+                      <div key={`${course.code}-${course.title}`} className="group/card bg-white dark:bg-slate-900 rounded-[32px] p-8 border border-slate-100 dark:border-slate-800 shadow-sm transition-all hover:shadow-xl hover:-translate-y-1">
+                        <div className="flex justify-between gap-4 mb-6">
+                          <div className="min-w-0">
+                            <h4 className="font-black text-slate-900 dark:text-white tracking-tight truncate">{course.title}</h4>
+                            <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-1">{course.code} • {course.credits} CU • {course.type}</p>
                           </div>
-                          <span className={`text-[10px] px-2 py-1 rounded-full font-bold uppercase ${isLocked ? 'bg-red-100 text-red-700' : 'bg-[#eaf6f3] text-[#1f6f5f]'}`}>
-                            {isLocked ? 'Blocked' : 'Suggested'}
+                          <span className={`h-fit text-[8px] px-3 py-1 rounded-full font-black uppercase tracking-widest border ${isLocked ? 'bg-rose-50 text-rose-600 border-rose-100' : 'bg-teal-50 text-teal-600 border-teal-100'}`}>
+                            {isLocked ? 'Inaccessible' : 'Neural Match'}
                           </span>
                         </div>
-                        <p className="text-sm text-[#666666] dark:text-gray-300 mb-2 line-clamp-2">{course.desc}</p>
-                        {course.reason && <p className="text-xs text-[#1f6f5f] dark:text-green-300 mb-2">{course.reason}</p>}
-                        {(course.message || course.error) && (
-                          <p className={`text-xs mb-3 ${course.error ? 'text-[#e74c3c]' : 'text-[#666666] dark:text-gray-300'}`}>
-                            {course.error || course.message}
-                          </p>
-                        )}
+                        <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-6 line-clamp-2 leading-relaxed italic">"{course.desc}"</p>
+                        {course.reason && <p className="text-[10px] font-black text-teal-600 dark:text-teal-400 uppercase tracking-tighter mb-6">Guidance: {course.reason}</p>}
+                        
                         <button
                           type="button"
                           onClick={() => applyAiSuggestion(course)}
                           disabled={isLocked}
-                          className={`px-3 py-2 rounded-[6px] text-xs font-semibold transition-colors ${
+                          className={`w-full py-3 rounded-2xl text-[9px] font-black uppercase tracking-widest transition-all active:scale-[0.98] ${
                             isLocked
-                              ? 'bg-gray-200 dark:bg-gray-700 text-gray-500 cursor-not-allowed'
+                              ? 'bg-slate-50 dark:bg-slate-800 text-slate-300 cursor-not-allowed'
                               : selected
-                                ? 'bg-red-50 text-red-600 border border-red-200'
-                                : 'bg-[#1f6f5f] text-white hover:bg-[#185a4e]'
+                                ? 'bg-rose-50 text-rose-600 border border-rose-100 hover:bg-rose-100'
+                                : 'bg-slate-900 dark:bg-teal-600 text-white hover:bg-slate-800 dark:hover:bg-teal-700 shadow-lg shadow-teal-500/10'
                           }`}
                         >
-                          {selected ? 'Remove' : 'Add to Selection'}
+                          {selected ? 'PURGE FROM MATRIX' : 'ADD TO SELECTION'}
                         </button>
                       </div>
                     );
@@ -523,76 +518,78 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
               )}
             </section>
 
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {enrollmentClosedForEnrollableSort && (
-                <div className="xl:col-span-2 rounded-[6px] border border-[#f6c9c4] bg-[#fdecea] px-4 py-3 text-sm text-[#e74c3c]">
-                  Enrollment is currently closed now.
+                <div className="md:col-span-2 rounded-[32px] border border-rose-100 bg-rose-50/50 p-8 text-sm font-bold text-rose-700 text-center animate-in fade-in duration-500">
+                  <span className="material-icons-outlined text-2xl mb-2 block text-rose-500">lock_clock</span>
+                  Access window terminated. Synchronization with enrollment nexus is currently offline.
                 </div>
               )}
                {displayCourses.map((course) => (
                  <div 
                    key={course.code} 
                    onClick={() => navigate(`/student/enrollment/view/${course.code}`)} 
-                   className={`group relative bg-surface-light dark:bg-surface-dark rounded-xl p-4 md:p-5 border transition-all shadow-sm cursor-pointer ${
-                   course.status === 'selected' ? 'border-2 border-primary ring-1 ring-primary/20 shadow-md' : 
-                   course.status === 'locked' ? 'border-gray-200 dark:border-gray-700 opacity-60' : 'border-gray-200 dark:border-gray-700 hover:border-primary'
+                   className={`group relative bg-white dark:bg-slate-900 rounded-[32px] p-8 border transition-all shadow-sm cursor-pointer hover:shadow-2xl hover:-translate-y-1 ${
+                   course.status === 'selected' ? 'border-teal-500 ring-4 ring-teal-500/5 shadow-xl' : 
+                   course.status === 'locked' ? 'border-slate-50 opacity-40 grayscale' : 'border-slate-100 dark:border-slate-800 hover:border-teal-500/30'
                  }`}>
-                   {course.status === 'selected' && (showValidation || isFinalized) && <div className="absolute -top-3 right-4 bg-primary text-white text-[10px] font-bold px-2 py-1 rounded shadow-sm z-10">Selected</div>}
+                   {course.status === 'selected' && (showValidation || isFinalized) && (
+                     <div className="absolute top-4 right-4 bg-teal-600 text-white text-[8px] font-black uppercase tracking-widest px-3 py-1 rounded-lg shadow-lg z-10 animate-in zoom-in-95">Selected</div>
+                   )}
                    
-                   {/* Hover Tooltip for Locked/Error Courses */}
                    {course.status === 'locked' && (course.message || course.error) && (
-                     <div className="absolute z-30 top-2 right-2 w-60 md:w-64 p-3 bg-gray-900/90 text-white text-[11px] rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none backdrop-blur-sm">
-                       <div className="flex items-start gap-2">
-                         <span className="material-icons-outlined text-sm text-yellow-400">info</span>
-                         <span className="leading-relaxed">{course.message || course.error}</span>
+                     <div className="absolute z-30 top-4 right-4 w-64 p-4 bg-slate-900/95 text-white text-[10px] font-bold rounded-2xl shadow-2xl opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none backdrop-blur-md border border-white/10 translate-y-2 group-hover:translate-y-0">
+                       <div className="flex items-start gap-3">
+                         <span className="material-icons-outlined text-base text-amber-400">info</span>
+                         <span className="leading-relaxed uppercase tracking-tighter opacity-80">{course.message || course.error}</span>
                        </div>
                      </div>
                    )}
 
-                   <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-3">
-                     <div className="flex gap-3 min-w-0 flex-1">
-                       <div className={`h-10 w-10 rounded-xl flex items-center justify-center font-extrabold text-xs uppercase shrink-0 bg-${course.color || 'blue'}-100 text-${course.color || 'blue'}-600`}>
+                   <div className="flex flex-col gap-6 mb-6">
+                     <div className="flex justify-between items-start">
+                       <div className={`h-12 w-12 rounded-[18px] flex items-center justify-center font-black text-xs uppercase shadow-sm border ${
+                         course.status === 'selected' ? 'bg-teal-50 text-teal-600 border-teal-100' : 'bg-slate-50 dark:bg-slate-800 text-slate-400 border-slate-100 dark:border-slate-700'
+                       }`}>
                          {course.code.split('-')[0]}
                        </div>
-                       <div className="min-w-0 flex-1">
-                         <div className="flex flex-wrap items-center gap-2 mb-0.5">
-                            <h4 className={`font-bold text-base md:text-lg truncate ${course.status === 'selected' ? 'text-primary' : 'text-gray-900 dark:text-white'}`}>{course.title}</h4>
-                            <span className="bg-gray-100 dark:bg-gray-800 text-[10px] px-1.5 py-0.5 rounded font-extrabold uppercase tracking-wider text-gray-500 shrink-0">{course.type}</span>
-                         </div>
-                         <p className="text-[11px] text-gray-500 font-bold uppercase tracking-tight truncate">{course.code} • {course.credits} Credits</p>
-                       </div>
+                       <button 
+                         onClick={(e) => {
+                           e.stopPropagation();
+                           toggleCourse(course);
+                         }}
+                         className={`h-10 px-6 rounded-2xl border text-[9px] font-black uppercase tracking-widest transition-all active:scale-[0.98] ${
+                         course.status === 'selected' ? 'bg-rose-50 text-rose-600 border-rose-100 hover:bg-rose-100 shadow-sm' :
+                         course.status === 'locked' ? 'border-slate-100 text-slate-300 cursor-not-allowed bg-slate-50/50' : 'bg-slate-900 dark:bg-teal-600 text-white border-transparent hover:bg-slate-800 dark:hover:bg-teal-700 shadow-lg'
+                       }`}>
+                          {course.status === 'selected' ? 'PURGE' : course.status === 'locked' ? 'RESTRICTED' : 'ENROLL'}
+                       </button>
                      </div>
-                     <button 
-                       onClick={(e) => {
-                         e.stopPropagation();
-                         toggleCourse(course);
-                       }}
-                       className={`w-full sm:w-auto px-4 py-2 rounded-xl border font-bold text-xs flex items-center justify-center gap-2 transition-all active:scale-95 shrink-0 ${
-                       course.status === 'selected' ? 'bg-rose-50 text-rose-600 border-rose-200 hover:bg-rose-100' :
-                       course.status === 'locked' ? 'border-gray-200 text-gray-300 cursor-not-allowed bg-gray-50/50' : 'bg-primary text-white border-primary hover:bg-opacity-90 shadow-sm'
-                     }`}>
-                        <span className="material-icons-outlined text-sm">
-                          {course.status === 'selected' ? 'remove' : course.status === 'locked' ? 'lock' : 'add_circle_outline'}
-                        </span>
-                        <span>
-                          {course.status === 'selected' ? 'Remove' : course.status === 'locked' ? 'Locked' : 'Enroll'}
-                        </span>
-                     </button>
+                     
+                     <div className="min-w-0">
+                        <div className="flex items-center gap-3 mb-1">
+                           <h4 className={`text-xl font-black truncate tracking-tight ${course.status === 'selected' ? 'text-teal-600' : 'text-slate-900 dark:text-white group-hover:text-teal-600 transition-colors'}`}>{course.title}</h4>
+                           <span className="bg-slate-50 dark:bg-slate-800 text-[8px] px-2 py-0.5 rounded-md font-black uppercase tracking-widest text-slate-400 border border-slate-100 dark:border-slate-700 shrink-0">{course.type}</span>
+                        </div>
+                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em]">{course.code} • {course.credits} CU</p>
+                     </div>
                    </div>
-                   <p className="text-sm text-gray-600 dark:text-gray-300 mb-4 line-clamp-2 leading-relaxed">{course.desc}</p>
+                   
+                   <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-8 line-clamp-2 leading-relaxed">{course.desc}</p>
+                   
                    {course.error ? (
-                     <div className="flex items-center gap-2 text-[11px] font-bold text-rose-500 bg-rose-50 dark:bg-rose-900/20 py-1.5 px-3 rounded-lg w-fit">
-                       <span className="material-icons-outlined text-sm">error</span> {course.error}
+                     <div className="flex items-center gap-3 text-[10px] font-black uppercase tracking-tighter text-rose-500 bg-rose-50/50 dark:bg-rose-900/20 py-2 px-4 rounded-xl w-fit border border-rose-100 dark:border-rose-900/40">
+                       <span className="material-icons-outlined text-base">error_outline</span> {course.error}
                      </div>
                    ) : (
-                     <div className="flex flex-wrap items-center gap-y-2 gap-x-4 text-[11px] font-bold text-gray-500 dark:text-gray-400 border-t border-gray-100 dark:border-gray-700 pt-3">
-                        <div className="flex items-center gap-1.5 uppercase tracking-wide">
-                          <span className="material-icons-outlined text-sm text-primary/60">schedule</span> 
-                          {course.schedule || 'N/A'}
+                     <div className="flex flex-wrap items-center gap-y-3 gap-x-6 text-[9px] font-black text-slate-400 dark:text-slate-500 border-t border-slate-50 dark:border-slate-800/50 pt-6 uppercase tracking-widest">
+                        <div className="flex items-center gap-2 group/meta hover:text-slate-600 transition-colors">
+                          <span className="material-icons-outlined text-base opacity-40 group-hover/meta:text-teal-500">schedule</span> 
+                          {course.schedule || 'SYNCHRONIZING'}
                         </div>
-                        <div className="flex items-center gap-1.5 text-emerald-600 uppercase tracking-wide">
-                          <span className="material-icons-outlined text-sm">check_circle</span> 
-                          Prerequisites Met
+                        <div className="flex items-center gap-2 text-emerald-600/80">
+                          <span className="material-icons-outlined text-base">verified</span> 
+                          Nominal Requirements
                         </div>
                      </div>
                    )}
@@ -601,35 +598,27 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
             </div>
 
             {totalPages > 1 && (
-              <div className="flex justify-center items-center gap-4 mt-8 pb-4">
+              <div className="flex justify-center items-center gap-8 mt-16 pb-8">
                 <button
                   onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                   disabled={currentPage === 1}
-                  className={`flex items-center gap-1 px-4 py-2 rounded-md font-medium transition-colors ${
-                    currentPage === 1 
-                      ? 'text-gray-300 dark:text-gray-600 cursor-not-allowed' 
-                      : 'text-primary hover:bg-blue-50 dark:hover:bg-blue-900/20'
-                  }`}
+                  className="flex items-center gap-3 px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-teal-600 hover:bg-teal-50 transition-all disabled:opacity-20 disabled:hover:bg-transparent"
                 >
-                  <span className="material-icons-outlined text-sm">chevron_left</span>
+                  <span className="material-icons-outlined text-base">west</span>
                   Previous
                 </button>
                 
-                <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                  Page <span className="text-primary font-bold">{currentPage}</span> of {totalPages}
-                </span>
+                <div className="px-6 py-2 rounded-full bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 text-[10px] font-black text-slate-400 uppercase tracking-widest shadow-inner">
+                  Context <span className="text-slate-900 dark:text-white mx-2">{currentPage} / {totalPages}</span> Matrix
+                </div>
 
                 <button
                   onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                   disabled={currentPage === totalPages}
-                  className={`flex items-center gap-1 px-4 py-2 rounded-md font-medium transition-colors ${
-                    currentPage === totalPages 
-                      ? 'text-gray-300 dark:text-gray-600 cursor-not-allowed' 
-                      : 'text-primary hover:bg-blue-50 dark:hover:bg-blue-900/20'
-                  }`}
+                  className="flex items-center gap-3 px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-teal-600 hover:bg-teal-50 transition-all disabled:opacity-20 disabled:hover:bg-transparent"
                 >
                   Next
-                  <span className="material-icons-outlined text-sm">chevron_right</span>
+                  <span className="material-icons-outlined text-base">east</span>
                 </button>
               </div>
             )}
@@ -638,105 +627,96 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
           {/* Validation Sidebar Overlay */}
           {showValidation && (
             <div 
-              className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 transition-opacity"
+              className="fixed inset-0 bg-slate-950/40 backdrop-blur-md z-40 transition-opacity duration-500 animate-in fade-in"
               onClick={() => setShowValidation(false)}
             />
           )}
 
-          <aside className={`fixed inset-y-0 right-0 w-96 bg-surface-light dark:bg-surface-dark border-l border-gray-200 dark:border-gray-700 flex flex-col shadow-2xl z-50 transition-transform duration-300 ease-in-out ${showValidation ? 'translate-x-0' : 'translate-x-full'}`}>
-            <div className="p-5 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-              <div>
-                <h3 className="font-bold text-lg mb-1">Enrollment Validation</h3>
-                <p className="text-xs text-gray-500 font-medium">Checking requirements in real-time</p>
+          <aside className={`fixed inset-y-0 right-0 w-[420px] bg-white dark:bg-slate-900 border-l border-slate-100 dark:border-slate-800 flex flex-col shadow-[0_0_80px_rgba(0,0,0,0.1)] z-50 transition-all duration-700 ease-[cubic-bezier(0.2,0.8,0.2,1)] ${showValidation ? 'translate-x-0' : 'translate-x-full'}`}>
+            <div className="p-8 border-b border-slate-50 dark:border-slate-800 flex justify-between items-center bg-slate-50/30 dark:bg-slate-950/20">
+              <div className="space-y-1">
+                <h3 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">Validation Logic</h3>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Real-time constraint analysis</p>
               </div>
-              <button onClick={() => setShowValidation(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+              <button onClick={() => setShowValidation(false)} className="h-10 w-10 rounded-full flex items-center justify-center text-slate-400 hover:bg-white dark:hover:bg-slate-800 hover:text-rose-500 transition-all shadow-sm">
                 <span className="material-icons-outlined">close</span>
               </button>
             </div>
-            <div className="flex-1 overflow-y-auto p-5 space-y-6">
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm font-medium mb-1">
-                  <span>Total Credits</span>
-                  <span className={`${isOverLimit ? 'text-red-500' : 'text-gray-700 dark:text-gray-300'} font-bold`}>{totalCredits}/{maxCreditsLimit} Limit</span>
+            
+            <div className="flex-1 overflow-y-auto p-8 space-y-10 scrollbar-hide">
+              <div className="space-y-4">
+                <div className="flex justify-between items-end mb-2">
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Projected Credit Mass</span>
+                  <span className={`text-sm font-black tabular-nums ${isOverLimit ? 'text-rose-500' : 'text-teal-600'}`}>{totalCredits} / {maxCreditsLimit}</span>
                 </div>
-                <div className="h-2 w-full bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                <div className="h-1.5 w-full bg-slate-50 dark:bg-slate-800 rounded-full overflow-hidden shadow-inner border border-slate-100 dark:border-slate-800">
                   <div 
-                    className={`h-full ${isOverLimit ? 'bg-red-500' : 'bg-primary'} rounded-full transition-all duration-300`} 
+                    className={`h-full transition-all duration-1000 ease-out ${isOverLimit ? 'bg-rose-500' : 'bg-teal-500 shadow-[0_0_10px_rgba(20,184,166,0.4)]'}`} 
                     style={{ width: `${Math.min((totalCredits / Math.max(maxCreditsLimit, 1)) * 100, 100)}%` }}
                   ></div>
                 </div>
                 {isOverLimit && (
-                    <p className="text-xs text-red-500 flex items-center gap-1 mt-1 font-medium">
-                    <span className="material-icons-outlined text-xs">error</span> Limit Exceeded by {totalCredits - maxCreditsLimit} Credit{totalCredits - maxCreditsLimit > 1 ? 's' : ''}
-                    </p>
+                    <div className="flex items-start gap-3 p-4 rounded-2xl bg-rose-50 dark:bg-rose-900/20 border border-rose-100 dark:border-rose-900/40 animate-in slide-in-from-top-2">
+                      <span className="material-icons-outlined text-rose-500 text-base mt-0.5">error_outline</span>
+                      <p className="text-[11px] text-rose-700 dark:text-rose-300 font-bold leading-relaxed uppercase tracking-tighter">
+                        Policy violation: Credit ceiling exceeded by {totalCredits - maxCreditsLimit} units.
+                      </p>
+                    </div>
                 )}
               </div>
 
               {!hasPrereqError ? (
-                <div className="p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg flex items-center gap-3">
-                    <span className="material-icons-outlined text-green-600 dark:text-green-400">check_circle</span>
-                    <div>
-                    <p className="text-sm font-bold text-green-800 dark:text-green-300">Prerequisites Met</p>
-                    <p className="text-xs text-green-700 dark:text-green-400 font-medium">All selected courses are valid.</p>
+                <div className="p-5 bg-emerald-50/50 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-900/40 rounded-[24px] flex items-start gap-4">
+                    <div className="h-8 w-8 rounded-xl bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0">
+                      <span className="material-icons-outlined text-base">verified</span>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-xs font-black text-emerald-900 dark:text-emerald-200 uppercase tracking-widest">Protocol Nominal</p>
+                      <p className="text-[11px] text-emerald-700/70 dark:text-emerald-400/70 font-medium leading-relaxed">All selected course nodes satisfy institutional prerequisites.</p>
                     </div>
                 </div>
               ) : (
-                <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg flex items-center gap-3">
-                    <span className="material-icons-outlined text-red-600 dark:text-red-400">error</span>
-                    <div>
-                    <p className="text-sm font-bold text-red-800 dark:text-red-300">Prerequisite Error</p>
-                    <p className="text-xs text-red-700 dark:text-red-400 font-medium">Some selected courses satisfy requirements.</p>
+                <div className="p-5 bg-rose-50/50 dark:bg-rose-900/10 border border-rose-100 dark:border-rose-900/40 rounded-[24px] flex items-start gap-4">
+                    <div className="h-8 w-8 rounded-xl bg-rose-100 dark:bg-rose-900/40 flex items-center justify-center text-rose-600 dark:text-rose-400 shrink-0">
+                      <span className="material-icons-outlined text-base">report_problem</span>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-xs font-black text-rose-900 dark:text-rose-200 uppercase tracking-widest">Dependency Error</p>
+                      <p className="text-[11px] text-rose-700/70 dark:text-rose-400/70 font-medium leading-relaxed">Critical requirement missing for one or more selection nodes.</p>
                     </div>
                 </div>
               )}
 
               {isOverLimit && (
-                <div className="bg-gradient-to-br from-[#eaf6f3] to-[#f4fbf9] dark:from-[#1f6f5f]/20 dark:to-[#1f6f5f]/10 border border-[#b7d8d0] dark:border-[#1f6f5f]/40 rounded-[6px] p-4">
-                  <div className="flex items-center justify-between gap-2 mb-3">
-                    <div className="flex items-center gap-2">
-                      <span className="material-icons-outlined text-[#1f6f5f]">smart_toy</span>
-                      <h4 className="font-bold text-[#1f6f5f]">AI Drop Selection</h4>
+                <div className="bg-slate-50/50 dark:bg-slate-950/50 border border-slate-100 dark:border-slate-800 rounded-[32px] p-6 space-y-6 animate-in fade-in duration-700">
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                      <div className="h-8 w-8 rounded-xl bg-teal-500 flex items-center justify-center text-white shadow-lg shadow-teal-500/20">
+                        <span className="material-icons-outlined text-sm">auto_awesome</span>
+                      </div>
+                      <h4 className="text-[10px] font-black text-slate-900 dark:text-white uppercase tracking-[0.2em]">Neural Drop Optimization</h4>
                     </div>
                     <button
                       onClick={fetchDropRecommendation}
                       disabled={dropLoading}
-                      className={`text-xs px-2.5 py-1 rounded-[6px] border ${
-                        dropLoading
-                          ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
-                          : 'bg-white text-[#1f6f5f] border-[#1f6f5f]/30 hover:bg-[#eaf6f3]'
-                      }`}
+                      className="h-8 w-8 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 flex items-center justify-center text-slate-400 hover:text-teal-600 transition-all shadow-sm active:scale-90"
                     >
-                      Refresh
+                      <span className={`material-icons-outlined text-base ${dropLoading ? 'animate-spin' : ''}`}>sync</span>
                     </button>
                   </div>
-                  <p className="text-xs text-[#35574f] dark:text-green-200 mb-3">
-                    {dropRecommendation?.message || "AI prioritizes retakes, then electives, then core courses if needed."}
-                  </p>
-                  {dropLoading && (
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2 text-xs text-[#1f6f5f]">
-                        <span className="h-2 w-2 rounded-full bg-[#1f6f5f] animate-pulse"></span>
-                        AI is thinking and selecting the best courses to drop...
-                      </div>
-                      {[1, 2].map((item) => (
-                        <div key={item} className="animate-pulse bg-white/80 dark:bg-gray-800 border border-[#cfe4df] dark:border-gray-700 rounded-[6px] p-3">
-                          <div className="h-3 w-2/5 bg-gray-200 dark:bg-gray-700 rounded mb-2"></div>
-                          <div className="h-2.5 w-4/5 bg-gray-200 dark:bg-gray-700 rounded"></div>
-                        </div>
-                      ))}
+                  
+                  {dropLoading ? (
+                    <div className="space-y-4 py-4">
+                      <div className="h-2 bg-slate-100 dark:bg-slate-800 rounded-full w-full animate-pulse"></div>
+                      <div className="h-2 bg-slate-100 dark:bg-slate-800 rounded-full w-2/3 animate-pulse"></div>
                     </div>
-                  )}
-                  {!dropLoading && dropError && (
-                    <div className="bg-[#fdecea] text-[#e74c3c] border border-[#f6c9c4] rounded-[6px] px-3 py-2 text-xs">
-                      {dropError}
-                    </div>
-                  )}
-                  {!dropLoading && !dropError && dropRecommendation && (
-                    <div>
-                      <div className="text-xs text-[#666666] dark:text-gray-300 mb-3">
-                        Current: {dropRecommendation.current_total_credits} | Limit: {dropRecommendation.credit_limit} | Need to drop: {dropRecommendation.credits_to_drop}
-                      </div>
-                      <div className="space-y-2 mb-3">
+                  ) : dropError ? (
+                    <p className="text-[10px] font-bold text-rose-500 italic px-2">Neural Link Interrupted: {dropError}</p>
+                  ) : dropRecommendation && (
+                    <div className="space-y-6">
+                      <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400 leading-relaxed italic px-2">"{dropRecommendation.message}"</p>
+                      
+                      <div className="space-y-2">
                         {selectedCourses.map((course) => {
                           const checked = dropSelectedCodes.has(course.code);
                           const isRecommended = recommendedDropCodes.has(course.code);
@@ -746,83 +726,75 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
                           return (
                             <label
                               key={course.code}
-                              className={`block rounded-[6px] border p-3 cursor-pointer transition-colors ${
+                              className={`block rounded-2xl border p-4 cursor-pointer transition-all duration-300 ${
                                 checked
-                                  ? 'border-[#1f6f5f] bg-[#edf8f5] dark:bg-[#1f6f5f]/20'
-                                  : 'border-[#cfe4df] dark:border-gray-700 bg-white dark:bg-gray-800'
+                                  ? 'border-rose-500 bg-rose-50/30 dark:bg-rose-950/20 shadow-inner'
+                                  : 'border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-teal-500/30 shadow-sm'
                               }`}
                             >
-                              <div className="flex items-start gap-2">
-                                <input
-                                  type="checkbox"
-                                  className="mt-0.5 h-4 w-4 accent-[#1f6f5f]"
-                                  checked={checked}
-                                  onChange={() => toggleDropSelection(course.code)}
-                                />
-                                <div className="flex-1">
-                                  <div className="flex items-center justify-between gap-2">
-                                    <p className="text-sm font-semibold text-[#333333] dark:text-gray-100">{course.title}</p>
+                              <div className="flex items-start gap-4">
+                                <div className={`mt-1 h-5 w-5 rounded-lg border-2 flex items-center justify-center transition-all ${checked ? 'border-rose-500 bg-rose-500' : 'border-slate-200 dark:border-slate-700'}`}>
+                                  {checked && <span className="material-icons-outlined text-white text-xs">close</span>}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center justify-between gap-3 mb-1">
+                                    <p className="text-xs font-black text-slate-900 dark:text-white tracking-tight truncate">{course.title}</p>
                                     {isRecommended && (
-                                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#dff1ec] text-[#1f6f5f] font-bold uppercase">
-                                        Recommended
-                                      </span>
+                                      <span className="text-[7px] px-2 py-0.5 rounded-md bg-teal-500 text-white font-black uppercase tracking-widest shadow-sm shadow-teal-500/20">GUIDANCE Match</span>
                                     )}
                                   </div>
-                                  <p className="text-xs text-[#666666] dark:text-gray-400">{course.code} • {course.type} • {course.credits} Credits</p>
-                                  {reason && <p className="text-xs text-[#1f6f5f] dark:text-green-300 mt-1">{reason}</p>}
+                                  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{course.code} • {course.credits} CU</p>
+                                  {reason && <p className="text-[9px] font-bold text-teal-600 dark:text-teal-400 uppercase tracking-tighter mt-2 border-t border-slate-50 dark:border-slate-800 pt-2">{reason}</p>}
                                 </div>
                               </div>
                             </label>
                           );
                         })}
                       </div>
-                      {dropRecommendation.elective && (
-                        <p className="text-xs text-[#1f6f5f] dark:text-green-300 mb-3">
-                          Elective priority: {dropRecommendation.elective.code} - {dropRecommendation.elective.title}
-                        </p>
-                      )}
+                      
                       <button
                         onClick={applySelectedDrops}
                         disabled={dropSelectedCodes.size === 0}
-                        className={`w-full py-2 rounded-[6px] text-sm font-semibold transition-colors ${
+                        className={`w-full py-4 rounded-2xl text-[9px] font-black uppercase tracking-widest transition-all active:scale-[0.98] shadow-lg ${
                           dropSelectedCodes.size === 0
-                            ? 'bg-gray-200 dark:bg-gray-700 text-gray-500 cursor-not-allowed'
-                            : 'bg-[#1f6f5f] text-white hover:bg-[#185a4e]'
+                            ? 'bg-slate-100 text-slate-300 cursor-not-allowed shadow-none'
+                            : 'bg-rose-600 text-white hover:bg-rose-700 shadow-rose-500/20'
                         }`}
                       >
-                        Apply Selected Drops ({dropSelectedCodes.size})
+                        Execute Batch Deletion ({dropSelectedCodes.size})
                       </button>
                     </div>
                   )}
                 </div>
               )}
             </div>
-            <div className="p-5 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+            
+            <div className="p-8 border-t border-slate-50 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-950/20">
               {successMessage ? (
-                <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg text-center animate-in fade-in slide-in-from-bottom-4 duration-500">
-                  <div className="flex justify-center mb-2">
-                    <span className="material-icons-outlined text-green-600 text-3xl">check_circle</span>
+                <div className="p-8 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-900/40 rounded-[32px] text-center animate-in zoom-in-95 duration-500 shadow-lg shadow-emerald-500/5">
+                  <div className="h-12 w-12 rounded-2xl bg-white dark:bg-slate-950 flex items-center justify-center text-emerald-600 mx-auto mb-4 shadow-sm">
+                    <span className="material-icons-outlined text-2xl">verified</span>
                   </div>
-                  <h4 className="font-bold text-green-800 dark:text-green-300 mb-1">Enrollment Successful!</h4>
-                  <p className="text-sm text-green-700 dark:text-green-400">{successMessage}</p>
+                  <h4 className="text-xl font-black text-emerald-900 dark:text-emerald-200 tracking-tight mb-1">Protocol Success</h4>
+                  <p className="text-xs font-medium text-emerald-700/70 dark:text-emerald-400/70 uppercase tracking-tighter">{successMessage}</p>
                 </div>
               ) : (
-                <>
+                <div className="space-y-4">
                   <button 
-                  onClick={handleFinalize}
-                  disabled={isOverLimit || isFinalized || selectedRegistry.size === 0 || !isEnrollmentActive}
-                  className={`w-full py-3 px-4 rounded-lg font-bold flex items-center justify-center gap-2 transition-all ${
-                      (isOverLimit || isFinalized || selectedRegistry.size === 0 || !isEnrollmentActive) 
-                      ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed' 
-                      : 'bg-primary text-white hover:bg-primary-hover shadow-lg'
-                  }`}
+                    onClick={handleFinalize}
+                    disabled={isOverLimit || isFinalized || selectedRegistry.size === 0 || !isEnrollmentActive}
+                    className={`w-full py-5 rounded-[24px] text-xs font-black uppercase tracking-[0.2em] flex items-center justify-center gap-4 transition-all active:scale-[0.98] shadow-2xl ${
+                        (isOverLimit || isFinalized || selectedRegistry.size === 0 || !isEnrollmentActive) 
+                        ? 'bg-slate-100 dark:bg-slate-800 text-slate-300 dark:text-slate-600 cursor-not-allowed shadow-none' 
+                        : 'bg-slate-900 dark:bg-teal-600 text-white hover:bg-slate-800 dark:hover:bg-teal-700 shadow-slate-500/20'
+                    }`}
                   >
-                   <span>{isFinalized ? 'Enrollment Finalized' : 'Finalize Enrollment'}</span>
-                   <span className="material-icons-outlined text-sm">{isFinalized ? 'check' : 'lock_open'}</span>
+                   <span>{isFinalized ? 'TRANSACTION SECURED' : 'COMMIT ENROLLMENT'}</span>
+                   <span className="material-icons-outlined text-lg">{isFinalized ? 'verified_user' : 'lock_open'}</span>
                   </button>
-                  {!isEnrollmentActive && <p className="text-center text-xs text-red-500 mt-2 font-medium">Enrollment is currently closed now</p>}
-                  {isOverLimit && <p className="text-center text-xs text-red-500 mt-2 font-medium">Resolve credit limit to proceed</p>}
-                </>
+                  {!isEnrollmentActive && <p className="text-center text-[9px] font-black text-rose-500 uppercase tracking-widest animate-pulse">Enrollment window inactive</p>}
+                  {isOverLimit && <p className="text-center text-[9px] font-black text-rose-500 uppercase tracking-widest animate-pulse">Constraint Violation: Credit Ceiling</p>}
+                </div>
               )}
             </div>
           </aside>
