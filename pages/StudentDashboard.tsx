@@ -17,12 +17,15 @@ const StudentDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   const [startLoading, setStartLoading] = useState(false);
   const [gpa, setGpa] = useState<number | null>(null);
   const [currentCredits, setCurrentCredits] = useState<number | null>(null);
-  const [degreeAudit, setDegreeAudit] = useState<null | {
+  type DegreeAuditResponse = {
     core_credits: { earned: number; required: number };
     elective_credits: { earned: number; required: number };
     major_specific: { earned: number; required: number };
-  }>(null);
+    progress_bars?: Array<{ label: string; percentage: number; completed: number; total: number }>;
+  };
+  const [degreeAudit, setDegreeAudit] = useState<DegreeAuditResponse | null>(null);
   const [recent, setRecent] = useState<Array<{ title: string; sub?: string; when: Date; icon: string; color: string }>>([]);
+  const [maxCredits, setMaxCredits] = useState<number | null>(null);
 
   useEffect(() => {
     // Fetch alerts on mount
@@ -74,6 +77,20 @@ const StudentDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         if (resp && typeof resp.total_credits === "number") setCurrentCredits(resp.total_credits);
       })
       .catch(() => {});
+    api.studentEnrollmentSettingCurrent()
+      .then((setting) => {
+        if (setting && typeof setting.max_credits === "number") {
+          setMaxCredits(setting.max_credits);
+          try { localStorage.setItem("max_credits", String(setting.max_credits)); } catch {}
+        } else {
+          const cached = Number(localStorage.getItem("max_credits") || "");
+          if (!Number.isNaN(cached) && cached > 0) setMaxCredits(cached);
+        }
+      })
+      .catch(() => {
+        const cached = Number(localStorage.getItem("max_credits") || "");
+        if (!Number.isNaN(cached) && cached > 0) setMaxCredits(cached);
+      });
   }, []); 
 
   const handleDismissAlert = async (id: string) => {
@@ -156,7 +173,19 @@ const StudentDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
               </div>
               <div className="relative z-10">
                 <div className="w-full bg-slate-50 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden">
-                  <div className="bg-emerald-500 h-full rounded-full transition-all duration-1000 w-full" />
+                  <div
+                    className="bg-emerald-500 h-full rounded-full transition-all duration-700"
+                    style={{
+                      width: (() => {
+                        const cached = Number(localStorage.getItem("max_credits") || "");
+                        const fallback = !Number.isNaN(cached) && cached > 0 ? cached : 24;
+                        const maxC = (maxCredits ?? fallback);
+                        const cur = currentCredits ?? 0;
+                        const pct = maxC > 0 ? Math.max(0, Math.min(100, (cur / maxC) * 100)) : 0;
+                        return `${pct}%`;
+                      })(),
+                    }}
+                  />
                 </div>
                 <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 mt-4 uppercase tracking-widest flex items-center gap-2">
                   <span className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
@@ -392,26 +421,38 @@ const StudentDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                       </div>
                     </div>
                     <div className="space-y-8">
-                      {[
-                        {
-                          label: 'Core Requirements',
-                          earned: degreeAudit?.core_credits.earned ?? 0,
-                          required: degreeAudit?.core_credits.required ?? 0,
-                          color: 'bg-primary',
-                        },
-                        {
-                          label: 'Major Electives',
-                          earned: degreeAudit?.elective_credits.earned ?? 0,
-                          required: degreeAudit?.elective_credits.required ?? 0,
-                          color: 'bg-primary',
-                        },
-                        {
-                          label: 'General Education',
-                          earned: degreeAudit?.major_specific.earned ?? 0,
-                          required: degreeAudit?.major_specific.required ?? 0,
-                          color: 'bg-green-500',
-                        },
-                      ].map((item, i) => (
+                      {(degreeAudit?.progress_bars
+                        ? degreeAudit.progress_bars.map(pb => ({
+                            label: pb.label === 'Core' ? 'Core Requirements'
+                              : pb.label === 'Elective' ? 'Electives'
+                              : pb.label === 'Major' ? 'Major'
+                              : 'Overall',
+                            earned: pb.completed,
+                            required: pb.total,
+                            percent: pb.percentage,
+                            color: pb.label === 'Overall' ? 'bg-indigo-500' : (pb.label === 'Core' ? 'bg-primary' : pb.label === 'Major' ? 'bg-primary' : 'bg-green-500'),
+                          }))
+                        : [
+                            {
+                              label: 'Core Requirements',
+                              earned: degreeAudit?.core_credits.earned ?? 0,
+                              required: degreeAudit?.core_credits.required ?? 0,
+                              color: 'bg-primary',
+                            },
+                            {
+                              label: 'Major Electives',
+                              earned: degreeAudit?.elective_credits.earned ?? 0,
+                              required: degreeAudit?.elective_credits.required ?? 0,
+                              color: 'bg-primary',
+                            },
+                            {
+                              label: 'General Education',
+                              earned: degreeAudit?.major_specific.earned ?? 0,
+                              required: degreeAudit?.major_specific.required ?? 0,
+                              color: 'bg-green-500',
+                            },
+                          ]
+                      ).map((item: any, i: number) => (
                         <div key={i}>
                           <div className="flex justify-between text-xs md:text-sm mb-1.5">
                             <span className="font-bold text-gray-600 dark:text-gray-400">{item.label}</span>
@@ -424,7 +465,9 @@ const StudentDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                               className={`${item.color} h-2 rounded-full transition-all duration-500`}
                               style={{
                                 width: (() => {
-                                  const pct = item.required > 0 ? Math.min(100, Math.max(0, (item.earned / item.required) * 100)) : 0;
+                                  const pct = typeof item.percent === 'number'
+                                    ? item.percent
+                                    : (item.required > 0 ? Math.min(100, Math.max(0, (item.earned / item.required) * 100)) : 0);
                                   return `${pct}%`;
                                 })(),
                               }}

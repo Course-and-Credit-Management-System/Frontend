@@ -38,7 +38,6 @@ const Sidebar: React.FC<SidebarProps> = ({ user, onLogout }) => {
     { to: '/student/courses', icon: 'class', label: 'My Courses', section: 'Academics' },
     { to: '/student/enrollment', icon: 'app_registration', label: 'Course Enrollment' },
     { to: '/student/results', icon: 'assignment_turned_in', label: 'Review Results' },
-    { to: '/student/status', icon: 'school', label: 'Academic Status' },
     { to: '/student/messages', icon: 'mail', label: 'Messages' },
   ];
 

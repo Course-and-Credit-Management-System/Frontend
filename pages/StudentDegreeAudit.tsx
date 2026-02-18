@@ -9,6 +9,7 @@ type Audit = {
   core_credits: { earned: number; required: number };
   elective_credits: { earned: number; required: number };
   major_specific: { earned: number; required: number };
+  progress_bars?: Array<{ label: string; percentage: number; completed: number; total: number }>;
 };
 
 interface Props {
@@ -158,6 +159,30 @@ const StudentDegreeAudit: React.FC<Props> = ({ user, onLogout }) => {
                     </div>
                   </div>
                 </div>
+                {audit?.progress_bars && audit.progress_bars.length > 0 && (
+                  <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {audit.progress_bars.map((pb, idx) => (
+                      <div key={idx}>
+                        <div className="flex justify-between text-xs md:text-sm mb-1.5">
+                          <span className="font-bold text-gray-600 dark:text-gray-400">
+                            {pb.label === 'Core' ? 'Core (courses)' :
+                             pb.label === 'Elective' ? 'Elective (courses)' :
+                             pb.label === 'Major' ? 'Major (courses)' : 'Overall (courses)'}
+                          </span>
+                          <span className="font-bold text-gray-900 dark:text-white">
+                            {pb.completed}/{pb.total}
+                          </span>
+                        </div>
+                        <div className="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-2">
+                          <div
+                            className={`${pb.label === 'Overall' ? 'bg-indigo-500' : 'bg-primary'} h-2 rounded-full transition-all duration-500`}
+                            style={{ width: `${Math.max(0, Math.min(100, pb.percentage))}%` }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           )}

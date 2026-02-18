@@ -66,9 +66,6 @@ const Header: React.FC<HeaderProps> = ({ title, user }) => {
           />
         </div>
         
-<<<<<<< HEAD
-        <div className="flex items-center gap-1 md:gap-2">
-=======
         <div className="flex items-center gap-2 md:gap-3">
           <button onClick={openAnnouncements} className="relative rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-700 dark:hover:text-gray-300">
             <span className="material-icons-outlined">notifications</span>
@@ -80,42 +77,12 @@ const Header: React.FC<HeaderProps> = ({ title, user }) => {
               <span className="absolute top-1.5 right-1.5 block h-2 w-2 rounded-full bg-gray-300 ring-2 ring-white dark:ring-surface-dark"></span>
             )}
           </button>
-
->>>>>>> 7f1f988885b1e0e602eb19469c006818bd7a2de2
-          {/* ✅ Hide notifications for admin */}
-          {user.role !== 'admin' && (
-            <button
-              onClick={openAnnouncements}
-<<<<<<< HEAD
-              onClick={openAnnouncements} className="relative rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-700 dark:hover:text-gray-300"
-=======
-              className="relative rounded-xl p-2.5 text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900 dark:hover:text-slate-200 active:scale-[0.98] transition-all group"
->>>>>>> 7f1f988885b1e0e602eb19469c006818bd7a2de2
-            >
-              <span className="material-icons-outlined text-[22px] group-hover:scale-110 transition-transform">notifications</span>
-
-              {/* show dot only when unread > 0 */}
-              {unread > 0 && (
-<<<<<<< HEAD
-                {unread > 0 ? (
-              <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] flex items-center justify-center ring-2 ring-white dark:ring-surface-dark">
-                {unread}
-              </span>
-            ) : (
-              <span className="absolute top-1.5 right-1.5 block h-2 w-2 rounded-full bg-gray-300 ring-2 ring-white dark:ring-surface-dark"></span>
-=======
-                <span className="absolute top-2.5 right-2.5 block h-2 w-2 rounded-full bg-teal-500 ring-4 ring-white dark:ring-slate-950 animate-pulse"></span>
->>>>>>> 7f1f988885b1e0e602eb19469c006818bd7a2de2
-              )}
-              )}
-          </button>
-          )}
+          
           
           <button 
             onClick={() => document.documentElement.classList.toggle('dark')}
             className="rounded-xl p-2.5 text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900 dark:hover:text-slate-200 active:scale-[0.98] transition-all group"
           >
-            <span className="material-icons-outlined text-[22px] group-hover:rotate-12 transition-transform">dark_mode</span>
           </button>
         </div>
 
