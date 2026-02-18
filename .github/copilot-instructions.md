@@ -3,7 +3,7 @@
 Follow these standards for all code generation and project assistance.
 
 ## Business Rules
-- **Credit Limit**: Enforce the 18-credit ceiling unless an admin override is detected.
+- **Credit Limit**: Enforce the 24-credit ceiling unless an admin override is detected.
 - **Priority**: Always prioritize `is_retake: true` enrollments over new course selections.
 - **Authentication**: Ensure `must_reset_password` checks are handled at the route level.
 

@@ -369,6 +369,18 @@ function safeStr(v: any, fallback = "—") {
   return s ? s : fallback;
 }
 
+// FIX: normalize semester text so filtering always matches
+function canonPeriod(v: any) {
+    return String(v ?? "")
+      .replace(/\u00A0/g, " ")        // convert invisible NBSP → normal space
+      .toLowerCase()
+      .replace(/[•·∙]/g, ".")         // normalize bullet variants
+      .replace(/\s*\.\s*/g, ".")      // normalize dot spacing
+      .replace(/\s+/g, " ")           // collapse double spaces
+      .trim();
+  }
+
+
 function currencyId() {
   return Math.random().toString(16).slice(2) + Date.now().toString(16);
 }
@@ -958,7 +970,9 @@ const AdminCourses: React.FC<CoursesProps> = ({ user, onLogout }) => {
         !q || c.course_code.toLowerCase().includes(q) || c.title.toLowerCase().includes(q) || (c.instructor ?? "").toLowerCase().includes(q);
       const matchesDept = !deptFilter || c.department === deptFilter;
       const matchesType = !typeFilter || String(c.type) === typeFilter;
-      const matchesSemester = !semesterFilter || (c.semester || []).includes(semesterFilter);
+      const matchesSemester =
+        !semesterFilter ||
+        (c.semester || []).some((s) => canonPeriod(s) === canonPeriod(semesterFilter));
       return matchesSearch && matchesDept && matchesType && matchesSemester;
     });
   }, [courses, search, deptFilter, typeFilter, semesterFilter]);
@@ -1179,7 +1193,7 @@ const AdminCourses: React.FC<CoursesProps> = ({ user, onLogout }) => {
                   <select
                     className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-4 py-3 text-xs font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-teal-500/20 transition-all cursor-pointer"
                     value={semesterFilter}
-                    onChange={(e) => setSemesterFilter(e.target.value)}
+                    onChange={(e) => setSemesterFilter(e.target.value.trim())}
                   >
                     <option value="">All Periods</option>
                     {semesterOptions.map((s) => (

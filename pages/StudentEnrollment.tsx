@@ -55,6 +55,7 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
   const [dropError, setDropError] = useState<string | null>(null);
   const [dropRecommendation, setDropRecommendation] = useState<DropRecommendationResponse | null>(null);
   const [dropSelectedCodes, setDropSelectedCodes] = useState<Set<string>>(new Set());
+  const [majorState, setMajorState] = useState<any | null>(null);
   const [maxCreditsLimit, setMaxCreditsLimit] = useState<number>(() => {
     const stored = Number(localStorage.getItem("max_credits"));
     return Number.isFinite(stored) && stored > 0 ? stored : 24;
@@ -134,6 +135,12 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
     return () => clearInterval(timer);
   }, []);
 
+  useEffect(() => {
+    api.studentMajorState()
+      .then((state) => setMajorState(state))
+      .catch(() => setMajorState(null));
+  }, []);
+
   const toggleCourse = (course: AvailableCourse) => {
     // Prevent toggling if locked or enrolled (assuming enrolled shouldn't be toggled here usually, but adherence to status 'locked' is key)
     if (course.status === 'locked' || !isEnrollmentActive) return;
@@ -204,10 +211,122 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
   const isOverLimit = totalCredits > maxCreditsLimit;
   const hasPrereqError = Array.from(selectedRegistry.values()).some(c => !!c.error);
   const selectedCourses = Array.from(selectedRegistry.values());
+  const selectedHasMajorCourse = selectedCourses.some(
+    (course) => String(course.type || "").trim().toLowerCase() === "major"
+  );
+  const normalizeTrack = (value: unknown): "CS" | "CT" | null => {
+    const text = String(value || "").trim().toUpperCase();
+    if (!text) return null;
+    if (/\bCS\b/.test(text) || text.includes("COMPUTER SCIENCE")) return "CS";
+    if (/\bCT\b/.test(text) || text.includes("COMPUTER TECHNOLOGY")) return "CT";
+    return null;
+  };
+  const pickTrackFromCourse = (course: any): "CS" | "CT" | null => {
+    const candidates = [
+      course?.track,
+      course?.major_track,
+      course?.majorTrack,
+      course?.selected_track,
+      course?.selectedTrack,
+      course?.type,
+      course?.desc,
+      course?.message,
+      course?.reason,
+    ];
+    for (const candidate of candidates) {
+      const parsed = normalizeTrack(candidate);
+      if (parsed) return parsed;
+    }
+    return null;
+  };
+  const normalizeMajor = (value: unknown): string | null => {
+    const text = String(value || "").trim();
+    return text ? text : null;
+  };
+  const selectedTrackSet = new Set<"CS" | "CT">(
+    selectedCourses
+      .map((course: any) => pickTrackFromCourse(course))
+      .filter((track): track is "CS" | "CT" => !!track)
+  );
+  const selectedMajorSet = new Set<string>(
+    selectedCourses
+      .map((course: any) => normalizeMajor(course?.major))
+      .filter((major): major is string => !!major)
+  );
+  const selectedTrackFromCourses = selectedTrackSet.size === 1 ? Array.from(selectedTrackSet)[0] : null;
+  const selectedMajorFromCourses = selectedMajorSet.size === 1 ? Array.from(selectedMajorSet)[0] : null;
   const recommendedDropCodes = new Set([
     ...(dropRecommendation?.elective?.code ? [dropRecommendation.elective.code] : []),
     ...((dropRecommendation?.others || []).map((course) => course.code)),
   ]);
+  const newFlagValues = [
+    user.student_profile?.new,
+    user.student_profile?.is_new,
+    user.student_profile?.isNew,
+    majorState?.new,
+    majorState?.is_new,
+    majorState?.isNew,
+    (user as any)?.students_progress?.new,
+    (user as any)?.students_progress?.is_new,
+    (user as any)?.students_progress?.isNew,
+  ];
+  const hasExplicitNewFlag = newFlagValues.some((value) => {
+    if (value === true) return true;
+    if (typeof value === "string") return value.trim().toLowerCase() === "true";
+    return false;
+  });
+  const isNewStudentByText = [
+    majorState?.status,
+    user.student_profile?.registration_type,
+    user.student_profile?.student_type,
+    user.student_profile?.admission_status,
+    user.student_profile?.status,
+    user.student_profile?.current_year,
+    majorState?.current_year,
+    (user as any)?.students_progress?.current_year,
+  ].some((value) => /\bnew\b/i.test(String(value || "")));
+  const isNewStudent = hasExplicitNewFlag || isNewStudentByText;
+  const parseYearNumber = (value: unknown): number | null => {
+    if (typeof value === "number" && Number.isFinite(value)) return value;
+    if (typeof value === "string") {
+      const trimmed = value.trim().toLowerCase();
+      if (!trimmed) return null;
+      if (trimmed.includes("first")) return 1;
+      if (trimmed.includes("second")) return 2;
+      if (trimmed.includes("third")) return 3;
+      if (trimmed.includes("fourth")) return 4;
+      if (trimmed.includes("fifth")) return 5;
+      const m = trimmed.match(/\d+/);
+      if (m) return Number(m[0]);
+    }
+    return null;
+  };
+  const studentYearNum =
+    parseYearNumber(majorState?.current_year_num) ??
+    parseYearNumber(user.student_profile?.year) ??
+    parseYearNumber(user.student_profile?.current_year_num) ??
+    parseYearNumber(user.student_profile?.current_year) ??
+    parseYearNumber(user.student_profile?.registration_type) ??
+    parseYearNumber(user.student_profile?.student_type) ??
+    parseYearNumber(user.student_profile?.admission_status) ??
+    parseYearNumber(user.student_profile?.status) ??
+    parseYearNumber(majorState?.status);
+  const isFirstOrSecondYear = studentYearNum === 1 || studentYearNum === 2;
+  const shouldForceMajorSelection =
+    isNewStudent &&
+    isFirstOrSecondYear &&
+    selectedHasMajorCourse;
+  const isOldStudent = !isNewStudent;
+  const hasRecordedTrack = !!(majorState?.selected_track || majorState?.profile_major_track);
+  const hasRecordedMajor = !!(majorState?.selected_major || majorState?.profile_major_id);
+  const shouldForceOldStudentSpecialSelection =
+    isOldStudent &&
+    selectedHasMajorCourse &&
+    ((selectedTrackSet.size > 0 && !hasRecordedTrack) || (selectedMajorSet.size > 0 && !hasRecordedMajor));
+  const shouldRouteToSpecialMajorFlow = shouldForceMajorSelection || shouldForceOldStudentSpecialSelection;
+  const isPrimaryActionDisabled = shouldRouteToSpecialMajorFlow
+    ? (!isEnrollmentActive || selectedRegistry.size === 0)
+    : (isOverLimit || isFinalized || selectedRegistry.size === 0 || !isEnrollmentActive);
 
   const fetchDropRecommendation = async () => {
     setDropLoading(true);
@@ -266,6 +385,28 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
 
   const handleFinalize = async () => {
     if (!isEnrollmentActive) return;
+    if (shouldForceMajorSelection) {
+      navigate("/student/special-major/access");
+      return;
+    }
+    if (shouldForceOldStudentSpecialSelection) {
+      if (selectedTrackFromCourses) {
+        try {
+          await api.specialMajorSelectTrack({ track: selectedTrackFromCourses });
+        } catch {
+          // Keep going and let special-major page retry with fallback payload shapes.
+        }
+      }
+      navigate("/student/special-major/access", {
+        state: {
+          old_student_flow: true,
+          pending_track: selectedTrackFromCourses,
+          pending_major: selectedMajorFromCourses,
+          return_to: "/student/enrollment",
+        },
+      });
+      return;
+    }
     try {
       // 1. Prepare Payload
       const selectedCodes = Array.from(selectedRegistry.keys()).join(',');
@@ -782,17 +923,19 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
                 <div className="space-y-4">
                   <button 
                     onClick={handleFinalize}
-                    disabled={isOverLimit || isFinalized || selectedRegistry.size === 0 || !isEnrollmentActive}
+                    disabled={isPrimaryActionDisabled}
                     className={`w-full py-5 rounded-[24px] text-xs font-black uppercase tracking-[0.2em] flex items-center justify-center gap-4 transition-all active:scale-[0.98] shadow-2xl ${
-                        (isOverLimit || isFinalized || selectedRegistry.size === 0 || !isEnrollmentActive) 
+                        isPrimaryActionDisabled
                         ? 'bg-slate-100 dark:bg-slate-800 text-slate-300 dark:text-slate-600 cursor-not-allowed shadow-none' 
                         : 'bg-slate-900 dark:bg-teal-600 text-white hover:bg-slate-800 dark:hover:bg-teal-700 shadow-slate-500/20'
                     }`}
                   >
-                   <span>{isFinalized ? 'TRANSACTION SECURED' : 'COMMIT ENROLLMENT'}</span>
-                   <span className="material-icons-outlined text-lg">{isFinalized ? 'verified_user' : 'lock_open'}</span>
+                   <span>{shouldRouteToSpecialMajorFlow ? 'SELECT TRACK/MAJOR' : (isFinalized ? 'TRANSACTION SECURED' : 'COMMIT ENROLLMENT')}</span>
+                   <span className="material-icons-outlined text-lg">{shouldRouteToSpecialMajorFlow ? 'school' : (isFinalized ? 'verified_user' : 'lock_open')}</span>
                   </button>
                   {!isEnrollmentActive && <p className="text-center text-[9px] font-black text-rose-500 uppercase tracking-widest animate-pulse">Enrollment window inactive</p>}
+                  {shouldForceMajorSelection && <p className="text-center text-[9px] font-black text-amber-500 uppercase tracking-widest animate-pulse">Major selection required before enrollment commit</p>}
+                  {shouldForceOldStudentSpecialSelection && <p className="text-center text-[9px] font-black text-amber-500 uppercase tracking-widest animate-pulse">Track/major sync required for old student flow</p>}
                   {isOverLimit && <p className="text-center text-[9px] font-black text-rose-500 uppercase tracking-widest animate-pulse">Constraint Violation: Credit Ceiling</p>}
                 </div>
               )}
