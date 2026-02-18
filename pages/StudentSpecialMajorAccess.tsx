@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
 import { User } from "../types";
@@ -24,6 +24,17 @@ const majorsForTrack = (track: "CS" | "CT"): MajorMeta[] => {
 
 const StudentSpecialMajorAccess: React.FC<{ user: User; onLogout: () => void }> = ({ user, onLogout }) => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const flowState = (location.state || {}) as {
+    old_student_flow?: boolean;
+    pending_track?: "CS" | "CT" | null;
+    pending_major?: string | null;
+    return_to?: string;
+  };
+  const isOldStudentFlow = !!flowState.old_student_flow;
+  const pendingTrack = flowState.pending_track || null;
+  const pendingMajor = (flowState.pending_major || "").trim();
+  const returnTo = flowState.return_to || "/student/enrollment";
   const [programType, setProgramType] = useState<"4-year" | "5-year">("4-year");
   const [track, setTrack] = useState<"CS" | "CT" | null>(null);
   const [selectedMajor, setSelectedMajor] = useState<string>("");
@@ -40,6 +51,10 @@ const StudentSpecialMajorAccess: React.FC<{ user: User; onLogout: () => void }> 
         if (cancelled) return;
         setProgramType((elig.program_type as "4-year" | "5-year") || "4-year");
         if (!elig.eligible) {
+          if (isOldStudentFlow && elig.already_selected) {
+            navigate(returnTo, { replace: true });
+            return;
+          }
           try {
             await api.specialMajorPopulateFromProfile();
           } catch {}
@@ -50,17 +65,39 @@ const StudentSpecialMajorAccess: React.FC<{ user: User; onLogout: () => void }> 
           return;
         }
         setEligible(true);
-        const opts = await api.specialMajorOptions();
-        const effTrack = (opts.track as "CS" | "CT" | null) || null;
+        const toMajorList = (codes: string[]): MajorMeta[] =>
+          codes.map((c) => {
+            const m = ALL_MAJORS.find((x) => x.code === c);
+            if (m) return m;
+            return { code: c, title: c, desc: "Major option", rec: "" };
+          });
+
+        let opts = await api.specialMajorOptions();
+        let effTrack = (opts.track as "CS" | "CT" | null) || null;
+        let codes: string[] = (opts.majors as string[]) || [];
+
+        if (isOldStudentFlow && pendingTrack && !effTrack) {
+          try {
+            await api.specialMajorSelectTrack({ track: pendingTrack });
+            opts = await api.specialMajorOptions();
+            effTrack = (opts.track as "CS" | "CT" | null) || pendingTrack;
+            codes = (opts.majors as string[]) || [];
+          } catch {}
+        }
+
         setTrack(effTrack);
-        const codes: string[] = (opts.majors as string[]) || [];
-        const list: MajorMeta[] = codes.map((c) => {
-          const m = ALL_MAJORS.find((x) => x.code === c);
-          if (m) return m;
-          // fallback minimal meta if backend returns a code not in ALL_MAJORS
-          return { code: c, title: c, desc: "Major option", rec: "" };
-        });
+        const list = toMajorList(codes);
         setMajors(list);
+
+        if (isOldStudentFlow && pendingMajor) {
+          if (list.some((m) => m.code === pendingMajor)) {
+            try {
+              await api.specialMajorSelect({ major: pendingMajor });
+              navigate(returnTo, { replace: true });
+              return;
+            } catch {}
+          }
+        }
       } catch (e: any) {
         setError(e?.message || "Failed to initialize");
       }
@@ -86,7 +123,7 @@ const StudentSpecialMajorAccess: React.FC<{ user: User; onLogout: () => void }> 
       await api.specialMajorSelect({ major: code });
       setSelectedMajor(code);
       alert("Special Major selected and permanently locked.");
-      navigate("/student/dashboard", { replace: true });
+      navigate(isOldStudentFlow ? returnTo : "/student/dashboard", { replace: true });
     } catch (e: any) {
       setError(e?.message || "Failed to select");
     } finally {
@@ -102,7 +139,7 @@ const StudentSpecialMajorAccess: React.FC<{ user: User; onLogout: () => void }> 
         <main className="flex-1 overflow-y-auto p-6 lg:p-8">
           <div className="max-w-5xl mx-auto">
             <div className="flex items-center justify-between mb-4">
-              <h1 className="text-xl font-bold text-[#0d1a1c] dark:text-white">Select a Special Major</h1>
+              <h1 className="text-xl font-bold text-[#0d1a1c] dark:text-white">{isOldStudentFlow ? "Select Track/Major" : "Select a Special Major"}</h1>
               <span className="text-xs px-2 py-1 rounded bg-primary/10 text-primary">{programType}</span>
             </div>
             <p className="text-sm text-gray-700 dark:text-gray-300 mb-3">

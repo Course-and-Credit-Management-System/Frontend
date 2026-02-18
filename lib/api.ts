@@ -352,6 +352,23 @@ export const api = {
   // --- Special Major Access (standalone flow) ---
   specialMajorEligibility: () => request("/api/v1/student/special-major/eligibility"),
   specialMajorOptions: () => request("/api/v1/student/special-major/options"),
+  specialMajorSelectTrack: async (payload: { track: "CS" | "CT" }) => {
+    try {
+      return await request("/api/v1/student/special-major/track", { method: "POST", body: payload });
+    } catch {
+      try {
+        return await request("/api/v1/student/special-major/track", {
+          method: "POST",
+          body: { selected_track: payload.track },
+        });
+      } catch {
+        return request("/api/v1/student/special-major/track", {
+          method: "POST",
+          body: { track_code: payload.track },
+        });
+      }
+    }
+  },
   specialMajorSelect: (payload: { major: string }) =>
     request("/api/v1/student/special-major/select", { method: "POST", body: payload }),
   specialMajorPopulateFromProfile: () =>
