@@ -144,34 +144,21 @@ const StudentResults: React.FC<ResultsProps> = ({ user, onLogout }) => {
     if (!academicData?.academic_summary?.semesters) return [];
     const years = new Set<string>();
     academicData.academic_summary.semesters.forEach(sem => {
-      // Extract just the year level from academic_year
+      // The backend now sends proper format like "First Year", "Second Year", etc.
       const academicYearStr = sem.academic_year;
       
-      // Try multiple patterns to match different formats
-      if (academicYearStr.includes("1st Year") || academicYearStr.includes("First Year")) {
+      // Direct mapping for the new format
+      if (academicYearStr.includes("First Year")) {
         years.add("First Year");
-      } else if (academicYearStr.includes("2nd Year") || academicYearStr.includes("Second Year")) {
+      } else if (academicYearStr.includes("Second Year")) {
         years.add("Second Year");
-      } else if (academicYearStr.includes("3rd Year") || academicYearStr.includes("Third Year")) {
+      } else if (academicYearStr.includes("Third Year")) {
         years.add("Third Year");
-      } else if (academicYearStr.includes("4th Year") || academicYearStr.includes("Fourth Year")) {
+      } else if (academicYearStr.includes("Fourth Year")) {
         years.add("Fourth Year");
       } else {
-        // Try to extract year from patterns like "1st Year, First Sem" or similar
-        const yearMatch = academicYearStr.match(/^(\d+)(?:st|nd|rd|th)\s+Year/i);
-        if (yearMatch) {
-          const yearNum = yearMatch[1];
-          const yearNames: {[key: string]: string} = {
-            "1": "First Year",
-            "2": "Second Year", 
-            "3": "Third Year",
-            "4": "Fourth Year"
-          };
-          years.add(yearNames[yearNum] || academicYearStr);
-        } else {
-          // If none of the expected patterns match, add the full string for debugging
-          years.add(academicYearStr);
-        }
+        // Fallback for any other format
+        years.add(academicYearStr);
       }
     });
     return Array.from(years).sort();
@@ -184,15 +171,15 @@ const StudentResults: React.FC<ResultsProps> = ({ user, onLogout }) => {
     return academicData.academic_summary.semesters.filter(sem => {
       const academicYearStr = sem.academic_year;
       
-      // Match by year level using multiple patterns
+      // Direct match for the new format
       if (yearLevel === "First Year") {
-        return academicYearStr.includes("1st Year") || academicYearStr.includes("First Year");
+        return academicYearStr.includes("First Year");
       } else if (yearLevel === "Second Year") {
-        return academicYearStr.includes("2nd Year") || academicYearStr.includes("Second Year");
+        return academicYearStr.includes("Second Year");
       } else if (yearLevel === "Third Year") {
-        return academicYearStr.includes("3rd Year") || academicYearStr.includes("Third Year");
+        return academicYearStr.includes("Third Year");
       } else if (yearLevel === "Fourth Year") {
-        return academicYearStr.includes("4th Year") || academicYearStr.includes("Fourth Year");
+        return academicYearStr.includes("Fourth Year");
       }
       
       // Fallback to exact match for any other cases
@@ -212,7 +199,7 @@ const StudentResults: React.FC<ResultsProps> = ({ user, onLogout }) => {
       setDownloading(true);
       setDownloadMenuOpen(false);
       
-      const [year, semester] = semesterKey.split(' - ');
+      const [year, semester] = semesterKey.split(', ');
       const blob = await fetchPdf('/api/v1/student/results/certificate/pdf', {
         type: 'semester',
         academic_year: year,
@@ -281,40 +268,26 @@ const StudentResults: React.FC<ResultsProps> = ({ user, onLogout }) => {
     // Check if CGPA is 0.0
     if (academicData.academic_summary.cgpa === 0.0) return true;
     
-    // Check for any failed or retake courses
+    // Count failed subjects
+    let failedCount = 0;
     for (const semester of academicData.academic_summary.semesters) {
       for (const course of semester.results) {
         if (course.status === 'Failed' || course.status === 'Retake' || course.grade === 'F') {
-          return true;
+          failedCount++;
         }
       }
     }
+    
+    // Disable only if failed in MORE than 3 subjects (not 3 or less)
+    if (failedCount > 3) return true;
     
     return false;
   };
 
   // Format semester display name
   const formatSemesterDisplay = (academicYear: string, semester: string) => {
-    // Convert "1st Year, First Sem(new)" to "First Year, First Semester"
-    if (academicYear.includes("1st Year") && semester.includes("First Sem")) {
-      return "First Year, First Semester";
-    } else if (academicYear.includes("1st Year") && semester.includes("Second Sem")) {
-      return "First Year, Second Semester";
-    } else if (academicYear.includes("2nd Year") && semester.includes("First Sem")) {
-      return "Second Year, First Semester";
-    } else if (academicYear.includes("2nd Year") && semester.includes("Second Sem")) {
-      return "Second Year, Second Semester";
-    } else if (academicYear.includes("3rd Year") && semester.includes("First Sem")) {
-      return "Third Year, First Semester";
-    } else if (academicYear.includes("3rd Year") && semester.includes("Second Sem")) {
-      return "Third Year, Second Semester";
-    } else if (academicYear.includes("4th Year") && semester.includes("First Sem")) {
-      return "Fourth Year, First Semester";
-    } else if (academicYear.includes("4th Year") && semester.includes("Second Sem")) {
-      return "Fourth Year, Second Semester";
-    }
-    // Fallback to original format if no pattern matches
-    return `${academicYear} - ${semester}`;
+    // The backend now sends proper format, so just return as is
+    return `${academicYear}, ${semester}`;
   };
 
   // Filter courses based on search query
@@ -391,7 +364,7 @@ const StudentResults: React.FC<ResultsProps> = ({ user, onLogout }) => {
                       {academicData?.academic_summary?.semesters?.map((sem) => (
                         <button
                           key={`${sem.academic_year}-${sem.semester}`}
-                          onClick={() => handleDownloadSemester(`${sem.academic_year} - ${sem.semester}`)}
+                          onClick={() => handleDownloadSemester(`${sem.academic_year}, ${sem.semester}`)}
                           className="w-full flex items-center justify-between p-4 bg-gray-50 dark:bg-slate-800/50 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition-colors group"
                         >
                           <div>

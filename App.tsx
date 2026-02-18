@@ -36,7 +36,7 @@ import StudentTrackSelection from "./pages/StudentTrackSelection";
 import StudentMajorSelection from "./pages/StudentMajorSelection";
 import StudentAnnouncements from "./pages/StudentAnnouncements";
 import StudentMajorLocked from "./pages/StudentMajorLocked";
-import StudentSpecialMajorAccess from "./pages/StudentSpecialMajorAccess";
+import StudentMessages from "./pages/StudentMessages";import StudentSpecialMajorAccess from "./pages/StudentSpecialMajorAccess";
 import StudentSpecialMajorError from "./pages/StudentSpecialMajorError";
 import StudentDegreeAudit from "./pages/StudentDegreeAudit";
 
@@ -229,6 +229,8 @@ const App: React.FC = () => {
               </>
             ) : user?.role === "student" ? (
               <>
+
+
                 <Route
                   path="/student/dashboard"
                   element={<StudentDashboard user={user} onLogout={handleLogout} />}
@@ -291,7 +293,10 @@ const App: React.FC = () => {
                   path="/student/announcements"
                   element={<StudentAnnouncements user={user} onLogout={handleLogout} />}
                 />
-                <Route
+              <Route
+                path="/student/messages"
+                element={<StudentMessages user={user} onLogout={handleLogout} />}
+              />                <Route
                   path="/student/degree-audit"
                   element={<StudentDegreeAudit user={user} onLogout={handleLogout} />}
                 />

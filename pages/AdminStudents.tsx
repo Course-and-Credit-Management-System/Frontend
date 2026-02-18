@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
@@ -43,8 +43,9 @@ const API_BASE = (import.meta.env.VITE_API_BASE_URL || "").trim()
 
 const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
   const navigate = useNavigate();
-
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  // State for students data
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(false);
   const [importing, setImporting] = useState(false);
@@ -77,7 +78,35 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 10;
 
-  // Major options based on year (like AdminGrading)
+  // Majors from API (for Add/Edit dropdowns)
+  const [majorsList, setMajorsList] = useState<{ id: string; major_name: string }[]>([]);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch(`${API_BASE}/admin/majors`, { credentials: 'include' });
+        const data = await res.json().catch(() => []);
+        if (Array.isArray(data) && data.length > 0) {
+          setMajorsList(data.map((m: { id?: string; major_name?: string }) => ({ id: m.id || m.major_name || '', major_name: m.major_name || m.id || '' })));
+        } else {
+          setMajorsList([{ id: 'CS', major_name: 'CS' }, { id: 'CT', major_name: 'CT' }, { id: 'SE', major_name: 'SE' }, { id: 'KE', major_name: 'KE' }, { id: 'HPC', major_name: 'HPC' }, { id: 'CSec', major_name: 'CSec' }, { id: 'CN', major_name: 'CN' }, { id: 'BIS', major_name: 'BIS' }, { id: 'ES', major_name: 'ES' }]);
+        }
+      } catch {
+        setMajorsList([{ id: 'CS', major_name: 'CS' }, { id: 'CT', major_name: 'CT' }, { id: 'SE', major_name: 'SE' }, { id: 'KE', major_name: 'KE' }, { id: 'HPC', major_name: 'HPC' }, { id: 'CSec', major_name: 'CSec' }, { id: 'CN', major_name: 'CN' }, { id: 'BIS', major_name: 'BIS' }, { id: 'ES', major_name: 'ES' }]);
+      }
+    })();
+  }, []);
+
+  // Major options for forms: from API + ensure current value is included
+  const getMajorOptionsForForm = (currentMajor: string) => {
+    const ids = new Set(majorsList.map(m => m.id));
+    if (currentMajor && !ids.has(currentMajor)) {
+      return [{ id: currentMajor, major_name: currentMajor }, ...majorsList];
+    }
+    return majorsList;
+  };
+
+  // Major options based on year (like AdminGrading) - for filter dropdown
   const selectedYear = typeof year === 'number' ? year : 0;
   const showSection = selectedYear >= 1 && selectedYear <= 3;
   const showMajorFilter = selectedYear >= 3 && selectedYear <= 5;
@@ -243,16 +272,14 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
     }
   };
 
+  // Handle delete student
   const handleDeleteStudent = async (student: Student) => {
-    const userId = student.user_id;
-    const name = student.name ?? 'this student';
-
-    if (!confirm(`Are you sure you want to delete ${name} (${userId})?`)) {
+    if (!confirm(`Are you sure you want to delete ${student.name} (${student.user_id})?`)) {
       return;
     }
 
     try {
-      const res = await fetch(`${API_BASE}/admin/students/${encodeURIComponent(userId)}/delete`, {
+      const res = await fetch(`${API_BASE}/admin/students/${encodeURIComponent(student.user_id)}/delete`, {
         method: 'POST',
         credentials: 'include',
       });
@@ -263,9 +290,7 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
       } else {
         const errData = await res.json().catch(() => ({}));
         const detail = errData?.detail ?? (res.status ? `HTTP ${res.status}` : 'Unknown error');
-        const errText = Array.isArray(detail)
-          ? detail.map((x: { msg?: string }) => x?.msg ?? JSON.stringify(x)).join('; ')
-          : String(detail);
+        const errText = Array.isArray(detail) ? detail.map((x: { msg?: string }) => x?.msg ?? JSON.stringify(x)).join('; ') : String(detail);
         setMessage({ type: 'error', text: `Failed to delete: ${errText}` });
       }
     } catch (err) {
@@ -273,6 +298,7 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
     }
   };
 
+  // Open edit modal
   const openEditModal = (student: Student) => {
     setEditingStudent(student);
     setFormData({
@@ -287,7 +313,6 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
       total_credits: student.total_credits,
     });
   };
-
 
   // Reset form
   const resetForm = () => {
@@ -320,28 +345,23 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
     navigate(`/admin/students/${studentId}`);
   };
 
-
   return (
     <div className="flex h-screen overflow-hidden bg-background-light dark:bg-background-dark">
       <Sidebar user={user} onLogout={onLogout} />
       <div className="flex flex-1 flex-col overflow-hidden">
         <Header title="Students Directory" user={user} />
-        <main className="flex-1 overflow-y-auto p-4 md:p-6">
-          {error && (
-            <div className="mb-6 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900/40 dark:bg-red-900/20 dark:text-red-200">
-              {error}
-            </div>
-          )}
-
-          <div className="mb-6 flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-            <div className="flex flex-1 flex-col gap-4 sm:flex-row sm:items-center">
-              <div className="relative w-full sm:w-64">
+        <main className="flex-1 overflow-y-auto p-6">
+          {/* Filters Row */}
+          <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div className="flex flex-1 flex-wrap items-center gap-3">
+              {/* Search */}
+              <div className="relative">
                 <span className="absolute inset-y-0 left-0 flex items-center pl-3">
-                  <span className="material-icons-outlined text-gray-400 text-[18px]">search</span>
+                  <span className="material-icons-outlined text-gray-400">search</span>
                 </span>
-                <input
-                  className="w-full rounded-xl border border-border-light bg-surface-light py-2.5 pl-10 pr-4 text-sm font-bold focus:border-primary outline-none dark:border-border-dark dark:bg-surface-dark dark:text-gray-200 transition-all focus:ring-2 focus:ring-primary/20"
-                  placeholder="Search students..."
+                <input 
+                  className="w-full md:w-64 rounded-lg border border-border-light bg-surface-light py-2 pl-10 pr-4 text-sm focus:border-primary outline-none dark:border-border-dark dark:bg-surface-dark dark:text-gray-200" 
+                  placeholder="Search by name, ID..." 
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -404,20 +424,17 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
 
               {/* Major Filter (shown for years 3-5) */}
               {showMajorFilter && (
-                <select
+                <select 
                   value={major}
                   onChange={(e) => setMajor(e.target.value)}
-                  className="flex-1 sm:flex-none rounded-xl border border-border-light bg-surface-light py-2.5 pl-3 pr-8 text-sm font-bold outline-none dark:border-border-dark dark:bg-surface-dark transition-all focus:ring-2 focus:ring-primary/20 dark:text-gray-200"
+                  className="rounded-lg border border-border-light bg-surface-light py-2 pl-3 pr-8 text-sm outline-none dark:border-border-dark dark:bg-surface-dark dark:text-gray-200"
                 >
                   <option value="">All Majors</option>
                   {majorOptions.map((m) => (
-                    <option key={m} value={m}>
-                      {m}
-                    </option>
+                    <option key={m} value={m}>{m}</option>
                   ))}
                 </select>
               )}
-
 
               {/* Status Filter */}
               <select 
@@ -432,7 +449,6 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
                 <option value="Graduated">Graduated</option>
               </select>
             </div>
-
 
             {/* Action Buttons */}
             <div className="flex items-center gap-3">
@@ -453,13 +469,12 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
               </button>
               <button 
                 onClick={() => {
-                  setEditingStudent(null);
                   resetForm();
                   setShowAddModal(true);
                 }}
-                className="flex-1 sm:flex-none flex items-center justify-center rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-white hover:bg-opacity-90 transition-all shadow-md shadow-primary/20"
+                className="flex items-center rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-hover"
               >
-                <span className="material-icons-outlined mr-2 text-[18px]">add</span>
+                <span className="material-icons-outlined mr-2 text-base">add</span>
                 Add Student
               </button>
             </div>
@@ -473,8 +488,8 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
           )}
 
           {/* Students Table */}
-          <div className="rounded-2xl border border-border-light bg-surface-light shadow-sm dark:border-border-dark dark:bg-surface-dark overflow-hidden">
-            <div className="overflow-x-auto">
+          <div className="rounded-xl bg-surface-light shadow-sm dark:bg-surface-dark overflow-hidden">
+             <div className="overflow-x-auto">
                 <table className="w-full text-left text-sm text-gray-500 dark:text-gray-400">
                   <thead className="bg-gray-50 text-xs uppercase text-gray-700 dark:bg-slate-800 dark:text-gray-300">
                     <tr>
@@ -500,7 +515,7 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
                     ) : (
                       students.map((s) => (
                         <tr 
-                          key={s.user_id} 
+                          key={s.id} 
                           onClick={() => handleStudentClick(s.user_id)}
                           className="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer"
                         >
@@ -665,24 +680,9 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
                     onChange={(e) => setFormData(prev => ({ ...prev, major: e.target.value }))}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-slate-700 dark:text-white"
                   >
-                    {formData.year === 3 ? (
-                      <>
-                        <option value="CS">CS</option>
-                        <option value="CT">CT</option>
-                      </>
-                    ) : (
-                      <>
-                        <option value="CS">CS</option>
-                        <option value="CT">CT</option>
-                        <option value="SE">SE</option>
-                        <option value="KE">KE</option>
-                        <option value="HPC">HPC</option>
-                        <option value="CSec">CSec</option>
-                        <option value="CN">CN</option>
-                        <option value="BIS">BIS</option>
-                        <option value="ES">ES</option>
-                      </>
-                    )}
+                    {getMajorOptionsForForm(formData.major).map((m) => (
+                      <option key={m.id} value={m.id}>{m.id} – {m.major_name}</option>
+                    ))}
                   </select>
                 </div>
                 {formData.year >= 1 && formData.year <= 3 && (
@@ -818,24 +818,9 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
                     onChange={(e) => setFormData(prev => ({ ...prev, major: e.target.value }))}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-slate-700 dark:text-white"
                   >
-                    {formData.year === 3 ? (
-                      <>
-                        <option value="CS">CS</option>
-                        <option value="CT">CT</option>
-                      </>
-                    ) : (
-                      <>
-                        <option value="CS">CS</option>
-                        <option value="CT">CT</option>
-                        <option value="SE">SE</option>
-                        <option value="KE">KE</option>
-                        <option value="HPC">HPC</option>
-                        <option value="CSec">CSec</option>
-                        <option value="CN">CN</option>
-                        <option value="BIS">BIS</option>
-                        <option value="ES">ES</option>
-                      </>
-                    )}
+                    {getMajorOptionsForForm(formData.major).map((m) => (
+                      <option key={m.id} value={m.id}>{m.id} – {m.major_name}</option>
+                    ))}
                   </select>
                 </div>
                 {formData.year >= 1 && formData.year <= 3 && (
@@ -902,4 +887,3 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
 };
 
 export default AdminStudents;
-

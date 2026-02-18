@@ -25,7 +25,7 @@ type AdminMajorDistributionItem = {
 type PendingDoc = Record<string, any>;
 
 type AdminPendingActionsResponse = {
-  majorChanges?: PendingDoc[] | { count: number };
+  majorChanges?: PendingDoc[] | { count: number }; // still supported by backend, but hidden in UI
   scheduleConflicts?: PendingDoc[] | { count: number };
 
   // ✅ new backend shape
@@ -144,17 +144,14 @@ function StatusBadge({
   kind,
   status,
 }: {
-  kind: "Major Change" | "Schedule Conflict" | "Password Reset";
+  kind: "Schedule Pending" | "Password Reset";
   status: string;
 }) {
-  const tone =
-    kind === "Schedule Conflict" ? "rose" : kind === "Major Change" ? "amber" : "cyan";
+  const tone = kind === "Schedule Pending" ? "rose" : "cyan";
 
   const cls =
     tone === "rose"
       ? "bg-rose-100 text-rose-700 dark:bg-rose-900/35 dark:text-rose-200"
-      : tone === "amber"
-      ? "bg-amber-100 text-amber-700 dark:bg-amber-900/35 dark:text-amber-200"
       : "bg-cyan-100 text-cyan-700 dark:bg-cyan-900/35 dark:text-cyan-200";
 
   return (
@@ -258,7 +255,7 @@ const AdminDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
 
   // Pending modal
   const [pendingModalOpen, setPendingModalOpen] = useState(false);
-  const [pendingModalTab, setPendingModalTab] = useState<"major" | "conflict" | "reset" | "all">("all");
+  const [pendingModalTab, setPendingModalTab] = useState<"pending" | "reset" | "all">("all");
   const [pendingSearch, setPendingSearch] = useState("");
 
   const load = async (mode: "initial" | "refresh" = "initial") => {
@@ -307,9 +304,8 @@ const AdminDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Counts
-  const pendingMajorChanges = getCount(pending?.majorChanges);
-  const pendingScheduleConflicts = getCount(pending?.scheduleConflicts);
+  // Counts (Major Change intentionally ignored in UI)
+  const pendingSchedulePending = getCount(pending?.scheduleConflicts);
 
   // ✅ backend now uses mustResetPasswords + mustResetPasswordCount
   const mustResetPasswordCount =
@@ -317,7 +313,7 @@ const AdminDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
       ? pending.mustResetPasswordCount
       : getCount(pending?.mustResetPasswords);
 
-  const totalPending = pendingMajorChanges + pendingScheduleConflicts + (mustResetPasswordCount || 0);
+  const totalPending = pendingSchedulePending + (mustResetPasswordCount || 0);
 
   const majorWidget = useMemo(() => {
     const list = (majors || []).filter((x) => x && typeof x.count === "number" && x.count > 0);
@@ -369,7 +365,7 @@ const AdminDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
       {
         label: "Retake Required",
         value: stats ? formatCompact(stats.retakeRequirement) : "—",
-        sub: "Pending / conflict / waitlist",
+        sub: "Pending retake requirement",
         icon: <IconBadge icon="history_edu" tone="amber" />,
         rightHint: "Needs attention",
       },
@@ -389,10 +385,10 @@ const AdminDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
       title: string;
       description: string;
       count: number;
-      tone: "amber" | "rose" | "cyan" | "green";
+      tone: "rose" | "green";
       icon: string;
       route?: string;
-      modalTab: "major" | "conflict" | "reset";
+      modalTab: "pending" | "reset";
       sample?: PendingDoc;
     }> = [
       {
@@ -407,31 +403,20 @@ const AdminDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         sample: Array.isArray(pending?.mustResetPasswords) ? pending?.mustResetPasswords?.[0] : undefined,
       },
       {
-        key: "majorChanges",
-        title: "Major Change Requests",
-        description: "Students requesting major transitions/pending approvals.",
-        count: pendingMajorChanges,
-        tone: "amber",
-        icon: "swap_horiz",
-        route: "/admin/students",
-        modalTab: "major",
-        sample: Array.isArray(pending?.majorChanges) ? pending?.majorChanges?.[0] : undefined,
-      },
-      {
-        key: "scheduleConflicts",
-        title: "Schedule Conflicts",
-        description: "Enrollments flagged as Conflict and require review.",
-        count: pendingScheduleConflicts,
+        key: "schedulePending",
+        title: "Schedule Pending",
+        description: "Enrollments pending review (previously conflicts).",
+        count: pendingSchedulePending,
         tone: "rose",
         icon: "error_outline",
         route: "/admin/enrollment",
-        modalTab: "conflict",
+        modalTab: "pending",
         sample: Array.isArray(pending?.scheduleConflicts) ? pending?.scheduleConflicts?.[0] : undefined,
       },
     ];
 
     return items.sort((a, b) => b.count - a.count);
-  }, [pending, pendingMajorChanges, pendingScheduleConflicts, mustResetPasswordCount]);
+  }, [pending, pendingSchedulePending, mustResetPasswordCount]);
 
   const surface =
     "rounded-2xl bg-surface-light shadow-sm border border-border-light dark:bg-surface-dark dark:border-border-dark";
@@ -449,27 +434,23 @@ const AdminDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     return { tone: "gray" as const, label: "Unknown" };
   };
 
-  // ✅ Pending modal data (fixed: mustResetPasswords)
+  // ✅ Pending modal data (Major Change removed from UI)
   const pendingDocs = useMemo(() => {
-    const major = Array.isArray(pending?.majorChanges) ? pending?.majorChanges : [];
     const conflict = Array.isArray(pending?.scheduleConflicts) ? pending?.scheduleConflicts : [];
     const reset = Array.isArray(pending?.mustResetPasswords) ? pending?.mustResetPasswords : [];
 
-    const all: Array<{ kind: "Major Change" | "Schedule Conflict" | "Password Reset"; doc: PendingDoc }> = [
-      ...major.map((doc) => ({ kind: "Major Change" as const, doc })),
-      ...conflict.map((doc) => ({ kind: "Schedule Conflict" as const, doc })),
+    const all: Array<{ kind: "Schedule Pending" | "Password Reset"; doc: PendingDoc }> = [
+      ...conflict.map((doc) => ({ kind: "Schedule Pending" as const, doc })),
       ...reset.map((doc) => ({ kind: "Password Reset" as const, doc })),
     ];
 
-    return { major, conflict, reset, all };
+    return { conflict, reset, all };
   }, [pending]);
 
   const modalList = useMemo(() => {
     const base =
-      pendingModalTab === "major"
-        ? pendingDocs.major.map((doc) => ({ kind: "Major Change" as const, doc }))
-        : pendingModalTab === "conflict"
-        ? pendingDocs.conflict.map((doc) => ({ kind: "Schedule Conflict" as const, doc }))
+      pendingModalTab === "pending"
+        ? pendingDocs.conflict.map((doc) => ({ kind: "Schedule Pending" as const, doc }))
         : pendingModalTab === "reset"
         ? pendingDocs.reset.map((doc) => ({ kind: "Password Reset" as const, doc }))
         : pendingDocs.all;
@@ -491,7 +472,7 @@ const AdminDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   const go = (path: string) => navigate(path);
 
   // Row formatting for modal table (better UX)
-  const rowMeta = (kind: "Major Change" | "Schedule Conflict" | "Password Reset", doc: PendingDoc) => {
+  const rowMeta = (kind: "Schedule Pending" | "Password Reset", doc: PendingDoc) => {
     if (kind === "Password Reset") {
       const userObj = doc?.user || {};
       const name = userObj?.name || "Unknown";
@@ -504,27 +485,17 @@ const AdminDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
       return { key, status, id, when };
     }
 
-    if (kind === "Major Change") {
-      const key = doc?.major_name || doc?.major_id || doc?.student_id || doc?.user_id || "—";
-      const status = String(doc?.status || "—");
-      const id = String(doc?._id || doc?.id || doc?.major_id || "");
-      const when = doc?.updated_at || doc?.created_at;
-      return { key: String(key), status, id, when };
-    }
-
-    // Schedule Conflict
-    {
-      const key =
-        doc?.course_id ||
-        doc?.course_code ||
-        (doc?.student_id ? `Student ${doc.student_id}` : "") ||
-        doc?.user_id ||
-        "—";
-      const status = String(doc?.status || "Conflict");
-      const id = String(doc?._id || doc?.id || "");
-      const when = doc?.updated_at || doc?.created_at;
-      return { key: String(key), status, id, when };
-    }
+    // Schedule Pending
+    const key =
+      doc?.course_id ||
+      doc?.course_code ||
+      (doc?.student_id ? `Student ${doc.student_id}` : "") ||
+      doc?.user_id ||
+      "—";
+    const status = String(doc?.status || "Pending");
+    const id = String(doc?._id || doc?.id || "");
+    const when = doc?.updated_at || doc?.created_at;
+    return { key: String(key), status, id, when };
   };
 
   return (
@@ -650,11 +621,7 @@ const AdminDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
 
                     <div className="flex items-end gap-1 opacity-40 dark:opacity-20 shrink-0 mb-1">
                       {[8, 16, 12, 24, 20, 32, 28].map((h, i) => (
-                        <div
-                          key={i}
-                          className="w-1 rounded-full bg-primary"
-                          style={{ height: `${h}px` }}
-                        />
+                        <div key={i} className="w-1 rounded-full bg-primary" style={{ height: `${h}px` }} />
                       ))}
                     </div>
                   </div>
@@ -752,9 +719,7 @@ const AdminDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                       <h3 className="text-sm font-extrabold uppercase tracking-wider text-gray-700 dark:text-gray-300">
                         Major Distribution
                       </h3>
-                      <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                        Top majors and grouped remainder (scales to any number of majors).
-                      </p>
+                      <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Top majors and grouped remainder</p>
                     </div>
                     <Pill tone="gray">
                       <span className="material-icons-outlined text-[14px]">pie_chart</span>
@@ -954,7 +919,13 @@ const AdminDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
 
                   <div className="mt-5 space-y-3">
                     {loading ? (
-                      Array(3).fill(0).map((_, i) => <Skeleton key={i} className="h-16 w-full" />)
+                      Array(2)
+                        .fill(0)
+                        .map((_, i) => (
+                          <React.Fragment key={i}>
+                            <Skeleton className="h-16 w-full" />
+                          </React.Fragment>
+                        ))
                     ) : (
                       workQueue.map((w) => (
                         <div
@@ -964,13 +935,13 @@ const AdminDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                           <div className="flex items-start justify-between gap-4">
                             <div className="flex items-start gap-3 min-w-0 flex-1">
                               <div className="shrink-0">
-                                <IconBadge icon={w.icon} tone={w.tone === "rose" ? "rose" : w.tone === "amber" ? "amber" : w.tone === "cyan" ? "cyan" : "emerald"} />
+                                <IconBadge icon={w.icon} tone={w.tone === "rose" ? "rose" : "emerald"} />
                               </div>
                               <div className="min-w-0 flex-1">
                                 <div className="flex flex-wrap items-center gap-2">
                                   <div className="truncate text-sm font-bold text-gray-900 dark:text-white">{w.title}</div>
                                   {w.count > 0 ? (
-                                    <Pill tone={w.tone === "rose" ? "rose" : w.tone === "amber" ? "amber" : w.tone === "cyan" ? "cyan" : "green"}>{w.count}</Pill>
+                                    <Pill tone={w.tone === "rose" ? "rose" : "green"}>{w.count}</Pill>
                                   ) : (
                                     <Pill tone="gray">0</Pill>
                                   )}
@@ -1024,8 +995,7 @@ const AdminDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
           <div className="flex flex-wrap gap-2">
             {[
               { key: "all", label: `All (${pendingDocs.all.length})` },
-              { key: "major", label: `Major Changes (${pendingDocs.major.length})` },
-              { key: "conflict", label: `Conflicts (${pendingDocs.conflict.length})` },
+              { key: "pending", label: `Schedule Pending (${pendingDocs.conflict.length})` },
               { key: "reset", label: `Password Reset (${pendingDocs.reset.length || mustResetPasswordCount || 0})` },
             ].map((t) => (
               <button
@@ -1076,7 +1046,7 @@ const AdminDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                   <button
                     key={idx}
                     onClick={() => {
-                      if (row.kind === "Schedule Conflict") go("/admin/enrollment");
+                      if (row.kind === "Schedule Pending") go("/admin/enrollment");
                       else go("/admin/students");
                     }}
                     className="grid w-full grid-cols-12 items-center px-4 py-3 text-left text-sm hover:bg-gray-50 dark:hover:bg-slate-900/40"

@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { User } from '../types';
 import { useUI } from '../context/UIContext';
@@ -35,6 +34,7 @@ const Header: React.FC<HeaderProps> = ({ title, user }) => {
     } catch {}
     navigate(user.role === "admin" ? "/admin/announcements" : "/student/announcements");
   };
+
   return (
     <header className="flex h-16 items-center justify-between border-b border-border-light bg-surface-light px-4 md:px-6 dark:border-border-dark dark:bg-surface-dark transition-colors shrink-0">
       <div className="flex items-center md:hidden">
@@ -64,6 +64,7 @@ const Header: React.FC<HeaderProps> = ({ title, user }) => {
         </div>
         
         <div className="flex items-center gap-1 md:gap-2">
+<<<<<<< HEAD
           <button onClick={openAnnouncements} className="relative rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-700 dark:hover:text-gray-300">
             <span className="material-icons-outlined">notifications</span>
             {unread > 0 ? (
@@ -74,6 +75,22 @@ const Header: React.FC<HeaderProps> = ({ title, user }) => {
               <span className="absolute top-1.5 right-1.5 block h-2 w-2 rounded-full bg-gray-300 ring-2 ring-white dark:ring-surface-dark"></span>
             )}
           </button>
+=======
+          {/* ✅ Hide notifications for admin */}
+          {user.role !== 'admin' && (
+            <button
+              onClick={openAnnouncements}
+              className="relative rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-700 dark:hover:text-gray-300"
+            >
+              <span className="material-icons-outlined">notifications</span>
+
+              {/* show red dot only when unread > 0 */}
+              {unread > 0 && (
+                <span className="absolute top-1.5 right-1.5 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-white dark:ring-surface-dark"></span>
+              )}
+            </button>
+          )}
+>>>>>>> aaddc7d4b29ffd5316b5e566bd0cef1b25f363a1
           
           <button 
             onClick={() => document.documentElement.classList.toggle('dark')}

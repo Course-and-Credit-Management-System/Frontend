@@ -143,13 +143,12 @@ export default function AdminMessages({ user, onLogout }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-    useEffect(() => {
+  useEffect(() => {
     (async () => {
       setStudentIdsLoading(true);
       try {
         const data = await api.adminStudentOptions();
         setStudentOptions(Array.isArray(data) ? data : []);
-
       } catch (e: any) {
         // don’t hard fail the page, just show error banner
         setError(e?.message || "Failed to load student options");
@@ -168,19 +167,19 @@ export default function AdminMessages({ user, onLogout }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [receiverId, subject, body]);
 
-    const studentMatches = useMemo(() => {
+  const studentMatches = useMemo(() => {
     const q = studentSearch.trim().toLowerCase();
     const list = studentOptions;
 
     if (!q) return list.slice(0, 50);
 
     return list
-        .filter((s) => {
+      .filter((s) => {
         const hay = `${s.user_id} ${s.name}`.toLowerCase();
         return hay.includes(q);
-        })
-        .slice(0, 50);
-    }, [studentOptions, studentSearch]);
+      })
+      .slice(0, 50);
+  }, [studentOptions, studentSearch]);
 
   const unreadCount = useMemo(() => items.filter((m) => !m.is_read).length, [items]);
 
@@ -269,8 +268,8 @@ export default function AdminMessages({ user, onLogout }: Props) {
 
       showToast("Message sent", "success");
       setComposeOpen(false);
-        setReceiverOpen(false);
-        setStudentSearch("");
+      setReceiverOpen(false);
+      setStudentSearch("");
     } catch (e: any) {
       setError(e?.message || "Failed to send message");
     } finally {
@@ -356,7 +355,7 @@ export default function AdminMessages({ user, onLogout }: Props) {
   }
 
   return (
-    <div className="flex min-h-screen overflow-x-hidden bg-background-light dark:bg-background-dark font-poppins">
+    <div className="flex h-screen overflow-hidden bg-background-light dark:bg-background-dark font-poppins">
       <Sidebar user={user} onLogout={onLogout} />
       <div className="flex flex-1 flex-col">
         <Header title="Messages" user={user} />
@@ -413,85 +412,86 @@ export default function AdminMessages({ user, onLogout }: Props) {
                   <form onSubmit={onSend} className="grid grid-cols-1 xl:grid-cols-2 gap-4">
                     {/* Receiver (strict searchable select) */}
                     <div className="relative">
-                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Receiver ID</label>
+                      <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Receiver ID</label>
 
-                    <button
+                      <button
                         type="button"
                         onClick={() => setReceiverOpen((v) => !v)}
-                        disabled={studentIdsLoading || studentOptions.length === 0
-}
+                        disabled={studentIdsLoading || studentOptions.length === 0}
                         className={[
-                        "mt-1 w-full rounded-lg border px-3 py-2 text-sm text-left flex items-center justify-between",
-                        "border-gray-200 dark:border-gray-700 bg-transparent text-gray-800 dark:text-white",
-                        (studentIdsLoading || studentOptions.length === 0
-                        ) ? "opacity-60 cursor-not-allowed" : "hover:bg-gray-50 dark:hover:bg-slate-800/40",
+                          "mt-1 w-full rounded-lg border px-3 py-2 text-sm text-left flex items-center justify-between",
+                          "border-gray-200 dark:border-slate-500/60 bg-transparent dark:bg-slate-800 text-gray-800 dark:text-white",
+                          (studentIdsLoading || studentOptions.length === 0)
+                            ? "opacity-60 cursor-not-allowed"
+                            : "hover:bg-gray-50 dark:hover:bg-slate-700/60",
                         ].join(" ")}
-                    >
-                        <span className={receiverId ? "" : "text-gray-400 dark:text-gray-500"}>
-                        {receiverId ||
-                            (studentIdsLoading ? "Loading students..." : studentOptions.length === 0
-                        ? "No students found" : "Select a student (TNT-xxxx)")}
+                      >
+                        <span className={receiverId ? "" : "text-gray-400 dark:text-slate-300"}>
+                          {receiverId ||
+                            (studentIdsLoading
+                              ? "Loading students..."
+                              : studentOptions.length === 0
+                              ? "No students found"
+                              : "Select a student (TNT-xxxx)")}
                         </span>
-                        <span className="text-xs text-gray-500 dark:text-gray-400">{receiverOpen ? "▲" : "▼"}</span>
-                    </button>
+                        <span className="text-xs text-gray-500 dark:text-slate-300">{receiverOpen ? "▲" : "▼"}</span>
+                      </button>
 
-                    {receiverOpen && (
-                        <div className="absolute z-40 mt-2 w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-900 shadow-lg overflow-hidden">
-                        <div className="p-2 border-b border-gray-200 dark:border-gray-700">
+                      {receiverOpen && (
+                        <div className="absolute z-40 mt-2 w-full rounded-xl border border-gray-200 dark:border-slate-500/60 bg-white dark:bg-slate-800 shadow-lg overflow-hidden">
+                          <div className="p-2 border-b border-gray-200 dark:border-slate-500/40">
                             <input
-                            autoFocus
-                            value={studentSearch}
-                            onChange={(e) => setStudentSearch(e.target.value)}
-                            placeholder="Search TNT..."
-                            className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-transparent px-3 py-2 text-sm text-gray-800 dark:text-white"
+                              autoFocus
+                              value={studentSearch}
+                              onChange={(e) => setStudentSearch(e.target.value)}
+                              placeholder="Search TNT..."
+                              className="w-full rounded-lg border border-gray-200 dark:border-slate-500/60 bg-transparent dark:bg-slate-800 px-3 py-2 text-sm text-gray-800 dark:text-white placeholder:text-gray-400 dark:placeholder:text-slate-300"
                             />
-                        </div>
+                          </div>
 
-                        <div className="max-h-56 overflow-y-auto">
+                          <div className="max-h-56 overflow-y-auto">
                             {studentMatches.length === 0 ? (
-                            <div className="p-3 text-sm text-gray-500 dark:text-gray-400">No matches.</div>
+                              <div className="p-3 text-sm text-gray-500 dark:text-slate-300">No matches.</div>
                             ) : (
-                            studentMatches.map((s) => (
-                            <button
-                                key={s.user_id}
-                                type="button"
-                                onClick={() => {
-                                setReceiverId(s.user_id);
-                                setReceiverOpen(false);
-                                setStudentSearch("");
-                                }}
-                                className={[
-                                "w-full text-left px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-slate-800/40",
-                                s.user_id === receiverId ? "bg-gray-50 dark:bg-slate-800/50 font-bold" : "",
-                                ].join(" ")}
-                            >
-                                <div className="flex items-center justify-between gap-3">
-                                <span className="font-mono">{s.user_id}</span>
-                                <span className="text-xs text-gray-500 dark:text-gray-400 truncate">{s.name}</span>
-                                </div>
-                            </button>
-                            ))
-
+                              studentMatches.map((s) => (
+                                <button
+                                  key={s.user_id}
+                                  type="button"
+                                  onClick={() => {
+                                    setReceiverId(s.user_id);
+                                    setReceiverOpen(false);
+                                    setStudentSearch("");
+                                  }}
+                                  className={[
+                                    "w-full text-left px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-slate-700/60 text-gray-800 dark:text-white",
+                                    s.user_id === receiverId ? "bg-gray-50 dark:bg-slate-700/80 font-bold" : "",
+                                  ].join(" ")}
+                                >
+                                  <div className="flex items-center justify-between gap-3">
+                                    <span className="font-mono">{s.user_id}</span>
+                                    <span className="text-xs text-gray-500 dark:text-slate-300 truncate">{s.name}</span>
+                                  </div>
+                                </button>
+                              ))
                             )}
+                          </div>
                         </div>
-                        </div>
-                    )}
+                      )}
 
-                    <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                      <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                         Only existing student IDs can be selected.
+                      </div>
                     </div>
-                    </div>
-
 
                     <div>
                       <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Category</label>
                       <select
-                        className="mt-1 w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-transparent px-3 py-2 text-sm text-gray-800 dark:text-white"
+                        className="mt-1 w-full rounded-lg border border-gray-200 dark:border-slate-500/60 bg-transparent dark:bg-slate-800 px-3 py-2 text-sm text-gray-800 dark:text-white"
                         value={category}
                         onChange={(e) => setCategory(e.target.value)}
                       >
                         {CATEGORIES.map((c) => (
-                          <option key={c} value={c}>
+                          <option key={c} value={c} className="bg-white text-gray-800 dark:bg-slate-800 dark:text-white">
                             {c}
                           </option>
                         ))}
@@ -530,9 +530,9 @@ export default function AdminMessages({ user, onLogout }: Props) {
                       <button
                         type="button"
                         onClick={() => {
-                        setComposeOpen(false);
-                        setReceiverOpen(false);
-                        setStudentSearch("");
+                          setComposeOpen(false);
+                          setReceiverOpen(false);
+                          setStudentSearch("");
                         }}
                         className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-bold text-gray-700 hover:opacity-90 dark:border-gray-700 dark:bg-slate-800 dark:text-gray-200"
                       >
@@ -562,7 +562,11 @@ export default function AdminMessages({ user, onLogout }: Props) {
                   </div>
 
                   <div className="grid grid-cols-2 sm:flex items-center gap-2 shrink-0 w-full sm:w-auto">
-                    <button onClick={onRefresh} className="flex items-center justify-center gap-2 rounded-lg border border-primary/20 px-3 py-2 text-xs font-bold text-primary hover:bg-primary/5 transition-colors" disabled={loading}>
+                    <button
+                      onClick={onRefresh}
+                      className="flex items-center justify-center gap-2 rounded-lg border border-primary/20 px-3 py-2 text-xs font-bold text-primary hover:bg-primary/5 transition-colors"
+                      disabled={loading}
+                    >
                       <span className={clsx("material-icons-outlined text-sm", loading && "animate-spin")}>refresh</span>
                       Refresh
                     </button>
@@ -603,10 +607,7 @@ export default function AdminMessages({ user, onLogout }: Props) {
                     >
                       Unread
                       {unreadCount > 0 && (
-                        <span className={clsx(
-                          "size-1.5 rounded-full",
-                          tab === "Unread" ? "bg-white" : "bg-primary"
-                        )} />
+                        <span className={clsx("size-1.5 rounded-full", tab === "Unread" ? "bg-white" : "bg-primary")} />
                       )}
                     </button>
                   </div>
@@ -614,7 +615,9 @@ export default function AdminMessages({ user, onLogout }: Props) {
                   {/* Search + filters */}
                   <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2">
                     <div className="relative">
-                      <span className="material-icons-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm pointer-events-none">search</span>
+                      <span className="material-icons-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm pointer-events-none">
+                        search
+                      </span>
                       <input
                         className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-transparent pl-8 pr-3 py-1.5 text-xs font-bold text-gray-800 dark:text-white focus:border-primary outline-none transition-all"
                         placeholder="Search..."
@@ -624,23 +627,31 @@ export default function AdminMessages({ user, onLogout }: Props) {
                     </div>
 
                     <select
-                      className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-transparent px-3 py-1.5 text-xs font-bold text-gray-800 dark:text-white outline-none focus:border-primary transition-all"
+                      className="w-full rounded-xl border border-gray-200 dark:border-slate-500/60 bg-transparent dark:bg-slate-800 px-3 py-1.5 text-xs font-bold text-gray-800 dark:text-white outline-none focus:border-primary transition-all"
                       value={catFilter}
                       onChange={(e) => setCatFilter(e.target.value)}
                     >
-                      <option value="All">Categories</option>
+                      <option value="All" className="bg-white text-gray-800 dark:bg-slate-800 dark:text-white">
+                        Categories
+                      </option>
                       {CATEGORIES.map((c) => (
-                        <option key={c} value={c}>{c}</option>
+                        <option key={c} value={c} className="bg-white text-gray-800 dark:bg-slate-800 dark:text-white">
+                          {c}
+                        </option>
                       ))}
                     </select>
 
                     <select
-                      className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-transparent px-3 py-1.5 text-xs font-bold text-gray-800 dark:text-white outline-none focus:border-primary transition-all"
+                      className="w-full rounded-xl border border-gray-200 dark:border-slate-500/60 bg-transparent dark:bg-slate-800 px-3 py-1.5 text-xs font-bold text-gray-800 dark:text-white outline-none focus:border-primary transition-all"
                       value={sortDir}
                       onChange={(e) => setSortDir(e.target.value as any)}
                     >
-                      <option value="Newest">Newest</option>
-                      <option value="Oldest">Oldest</option>
+                      <option value="Newest" className="bg-white text-gray-800 dark:bg-slate-800 dark:text-white">
+                        Newest
+                      </option>
+                      <option value="Oldest" className="bg-white text-gray-800 dark:bg-slate-800 dark:text-white">
+                        Oldest
+                      </option>
                     </select>
                   </div>
                 </div>
@@ -649,10 +660,13 @@ export default function AdminMessages({ user, onLogout }: Props) {
               {/* Two-panel body (flex-1 = stable scrolling) */}
               <div className="grid grid-cols-1 xl:grid-cols-12">
                 {/* LEFT: list */}
-                <div className={clsx(
-                  "xl:col-span-5 2xl:col-span-4 border-b xl:border-b-0 xl:border-r border-gray-200 dark:border-gray-700 min-h-0 flex flex-col bg-gray-50/20",
-                  selectedId && "hidden xl:flex" // hide list on mobile/tablet if message selected
-                )}>
+                <div
+                  className={clsx(
+                    // ✅ FIXED: remove that grey slab + make list darker
+                    "xl:col-span-5 2xl:col-span-4 border-b xl:border-b-0 xl:border-r border-gray-200 dark:border-gray-700 min-h-0 flex flex-col bg-white dark:bg-slate-900/10",
+                    selectedId && "hidden xl:flex"
+                  )}
+                >
                   <div ref={listTopRef} />
 
                   {loading ? (
@@ -667,7 +681,7 @@ export default function AdminMessages({ user, onLogout }: Props) {
                       <div className="mt-1 text-[11px] text-gray-400">Try adjusting your filters.</div>
                     </div>
                   ) : (
-                    <div className="flex-1 min-h-0 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-800 scrollbar-thin">
+                    <div className="flex-1 min-h-0 overflow-y-auto divide-y divide-gray-100 dark:divide-slate-800 scrollbar-thin">
                       {filtered.map((m) => {
                         const isSelected = m._id === selectedId;
                         const isUnread = !m.is_read;
@@ -678,7 +692,10 @@ export default function AdminMessages({ user, onLogout }: Props) {
                             onClick={() => openMessage(m._id)}
                             className={clsx(
                               "w-full text-left px-4 py-4 transition-all group",
-                              isSelected ? "bg-white dark:bg-slate-800/60 shadow-inner" : "hover:bg-gray-50 dark:hover:bg-slate-800/30"
+                              // ✅ cleaner, less gray, and readable
+                              isSelected
+                                ? "bg-white dark:bg-slate-800/35 shadow-inner"
+                                : "hover:bg-gray-50 dark:hover:bg-slate-800/20"
                             )}
                           >
                             <div className="flex items-start gap-3">
@@ -687,39 +704,58 @@ export default function AdminMessages({ user, onLogout }: Props) {
                                 <div
                                   className={clsx(
                                     "h-2 w-2 rounded-full transition-all",
-                                    isUnread ? "bg-primary scale-110 shadow-[0_0_8px_rgba(7,125,138,0.4)]" : "bg-gray-300 dark:bg-slate-700 scale-75"
+                                    isUnread
+                                      ? "bg-primary scale-110 shadow-[0_0_8px_rgba(7,125,138,0.4)]"
+                                      : "bg-gray-300 dark:bg-slate-600 scale-75"
                                   )}
                                 />
                               </div>
 
                               <div className="min-w-0 flex-1">
                                 <div className="flex items-center justify-between gap-2 mb-1">
-                                   <span className={clsx(
-                                     "text-[10px] font-extrabold uppercase tracking-tight px-1.5 py-0.5 rounded shrink-0",
-                                     m.category === "Warning" ? "bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300" : "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300"
-                                   )}>
-                                     {m.category ?? "General"}
-                                   </span>
-                                   <span className="shrink-0 text-[10px] font-bold text-gray-400 uppercase">
-                                     {formatListDate(m.sent_at)}
-                                   </span>
+                                  <span
+                                    className={clsx(
+                                      "text-[10px] font-extrabold uppercase tracking-tight px-1.5 py-0.5 rounded shrink-0",
+                                      m.category === "Warning"
+                                        ? "bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-200"
+                                        : "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-200"
+                                    )}
+                                  >
+                                    {m.category ?? "General"}
+                                  </span>
+                                  {/* ✅ brighter date */}
+                                  <span className="shrink-0 text-[10px] font-bold text-gray-400 dark:text-slate-300 uppercase">
+                                    {formatListDate(m.sent_at)}
+                                  </span>
                                 </div>
 
-                                <div className={clsx(
-                                  "text-sm truncate transition-colors",
-                                  isSelected ? "text-primary font-bold" : isUnread ? "text-gray-900 dark:text-white font-bold" : "text-gray-600 dark:text-gray-400 font-medium"
-                                )}>
+                                <div
+                                  className={clsx(
+                                    "text-sm truncate transition-colors",
+                                    isSelected
+                                      ? "text-primary font-bold"
+                                      : isUnread
+                                      ? "text-gray-900 dark:text-white font-bold"
+                                      : "text-gray-600 dark:text-slate-200 font-semibold"
+                                  )}
+                                >
                                   {m.subject || "(No subject)"}
                                 </div>
 
-                                <div className={clsx(
-                                  "mt-1 text-xs truncate",
-                                  isUnread ? "text-gray-600 dark:text-gray-300 font-medium" : "text-gray-400 dark:text-gray-500"
-                                )}>
+                                {/* ✅ FIX: this is the line you said you can't see */}
+                                <div
+                                  className={clsx(
+                                    "mt-1 text-xs truncate",
+                                    isUnread
+                                      ? "text-gray-600 dark:text-slate-200 font-medium"
+                                      : "text-gray-400 dark:text-slate-300"
+                                  )}
+                                >
                                   {previewText(m.body, 60)}
                                 </div>
 
-                                <div className="mt-2 text-[10px] font-bold text-gray-400 dark:text-slate-600 flex items-center gap-2 uppercase tracking-tighter">
+                                {/* ✅ meta line brighter in dark */}
+                                <div className="mt-2 text-[10px] font-bold text-gray-400 dark:text-slate-300 flex items-center gap-2 uppercase tracking-tighter">
                                   <span className="truncate">From: {m.sender_id}</span>
                                   <span className="opacity-30">|</span>
                                   <span className="truncate">To: {m.receiver_id}</span>
@@ -734,15 +770,17 @@ export default function AdminMessages({ user, onLogout }: Props) {
                 </div>
 
                 {/* RIGHT: detail */}
-                <div className={clsx(
-                  "xl:col-span-7 2xl:col-span-8 min-h-0 flex flex-col bg-white dark:bg-transparent",
-                  !selectedId && "hidden xl:flex" // hide detail on mobile/tablet if none selected
-                )}>
+                <div
+                  className={clsx(
+                    "xl:col-span-7 2xl:col-span-8 min-h-0 flex flex-col bg-white dark:bg-transparent",
+                    !selectedId && "hidden xl:flex"
+                  )}
+                >
                   {!selected ? (
-                    <div className="h-full flex items-center justify-center p-8 bg-gray-50/30">
+                    <div className="h-full flex items-center justify-center p-8 bg-gray-50/30 dark:bg-slate-900/20">
                       <div className="text-center">
                         <div className="size-16 rounded-2xl bg-gray-100 dark:bg-slate-800 flex items-center justify-center mx-auto mb-4">
-                           <span className="material-icons-outlined text-gray-400 text-3xl">mail_outline</span>
+                          <span className="material-icons-outlined text-gray-400 text-3xl">mail_outline</span>
                         </div>
                         <div className="text-sm font-bold text-gray-400 uppercase tracking-widest">Select a message</div>
                         <div className="mt-1 text-xs text-gray-400">Choose an item to read its full content.</div>
@@ -752,29 +790,28 @@ export default function AdminMessages({ user, onLogout }: Props) {
                     <div className="h-full min-h-0 flex flex-col">
                       {/* mobile back button */}
                       <div className="xl:hidden px-4 py-2 border-b border-gray-100 dark:border-slate-800">
-                         <button 
-                           onClick={() => setSelectedId(null)}
-                           className="flex items-center gap-1 text-xs font-bold text-primary"
-                         >
-                           <span className="material-icons-outlined text-sm">arrow_back</span>
-                           Back to Inbox
-                         </button>
+                        <button onClick={() => setSelectedId(null)} className="flex items-center gap-1 text-xs font-bold text-primary">
+                          <span className="material-icons-outlined text-sm">arrow_back</span>
+                          Back to Inbox
+                        </button>
                       </div>
 
                       {/* detail header */}
-                      <div className="border-b border-gray-200 dark:border-gray-700 px-4 md:px-6 py-5 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 bg-gray-50/30 dark:bg-slate-900/10">
+                      <div className="border-b border-gray-200 dark:border-gray-700 px-4 md:px-6 py-5 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 bg-gray-50/30 dark:bg-slate-900/20">
                         <div className="min-w-0">
                           <div className="flex items-center gap-2 flex-wrap mb-3">
                             <span className="text-[10px] font-extrabold uppercase tracking-wide px-2 py-1 rounded bg-primary/10 text-primary border border-primary/20">
                               {selected.category ?? "General"}
                             </span>
 
-                            <span className={clsx(
-                              "text-[10px] font-extrabold uppercase tracking-wide px-2 py-1 rounded border",
-                              selected.is_read
-                                ? "bg-gray-100 text-gray-500 border-gray-200 dark:bg-slate-800 dark:text-gray-400 dark:border-gray-700"
-                                : "bg-emerald-50 text-emerald-700 border-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-300 dark:border-emerald-900/40"
-                            )}>
+                            <span
+                              className={clsx(
+                                "text-[10px] font-extrabold uppercase tracking-wide px-2 py-1 rounded border",
+                                selected.is_read
+                                  ? "bg-gray-100 text-gray-500 border-gray-200 dark:bg-slate-800/80 dark:text-slate-300 dark:border-slate-700"
+                                  : "bg-emerald-50 text-emerald-700 border-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-300 dark:border-emerald-900/40"
+                              )}
+                            >
                               {selected.is_read ? "Read" : "Unread"}
                             </span>
                           </div>
@@ -785,20 +822,24 @@ export default function AdminMessages({ user, onLogout }: Props) {
 
                           <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-[11px] font-bold">
                             <div className="flex items-center gap-2 text-gray-500">
-                               <span className="uppercase tracking-widest text-[9px] w-10">From:</span>
-                               <span className="font-mono text-gray-900 dark:text-white bg-gray-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">{selected.sender_id}</span>
+                              <span className="uppercase tracking-widest text-[9px] w-10">From:</span>
+                              <span className="font-mono text-gray-900 dark:text-white bg-gray-100 dark:bg-slate-800/80 px-1.5 py-0.5 rounded">
+                                {selected.sender_id}
+                              </span>
                             </div>
                             <div className="flex items-center gap-2 text-gray-500">
-                               <span className="uppercase tracking-widest text-[9px] w-10">To:</span>
-                               <span className="font-mono text-gray-900 dark:text-white bg-gray-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">{selected.receiver_id}</span>
+                              <span className="uppercase tracking-widest text-[9px] w-10">To:</span>
+                              <span className="font-mono text-gray-900 dark:text-white bg-gray-100 dark:bg-slate-800/80 px-1.5 py-0.5 rounded">
+                                {selected.receiver_id}
+                              </span>
                             </div>
                             <div className="flex items-center gap-2 text-gray-500">
-                               <span className="uppercase tracking-widest text-[9px] w-10">Sent:</span>
-                               <span className="text-gray-700 dark:text-gray-300">{formatLocal(selected.sent_at)}</span>
+                              <span className="uppercase tracking-widest text-[9px] w-10">Sent:</span>
+                              <span className="text-gray-700 dark:text-gray-300">{formatLocal(selected.sent_at)}</span>
                             </div>
                             <div className="flex items-center gap-2 text-gray-500">
-                               <span className="uppercase tracking-widest text-[9px] w-10">ID:</span>
-                               <span className="font-mono text-gray-400 truncate">{selected._id}</span>
+                              <span className="uppercase tracking-widest text-[9px] w-10">ID:</span>
+                              <span className="font-mono text-gray-400 truncate">{selected._id}</span>
                             </div>
                           </div>
                         </div>
@@ -806,7 +847,7 @@ export default function AdminMessages({ user, onLogout }: Props) {
                         <div className="grid grid-cols-2 sm:grid-cols-1 gap-2 shrink-0 w-full sm:w-auto">
                           <button
                             onClick={() => setReadState(selected._id, !selected.is_read)}
-                            className="rounded-xl border border-gray-200 bg-white px-3 py-2 text-[10px] font-extrabold uppercase tracking-wide text-gray-700 hover:bg-gray-50 shadow-sm transition-all dark:border-gray-700 dark:bg-slate-800 dark:text-gray-200"
+                            className="rounded-xl border border-gray-200 bg-white px-3 py-2 text-[10px] font-extrabold uppercase tracking-wide text-gray-700 hover:bg-gray-50 shadow-sm transition-all dark:border-slate-700 dark:bg-slate-800 dark:text-gray-200 dark:hover:bg-slate-700/70"
                           >
                             Mark {selected.is_read ? "Unread" : "Read"}
                           </button>
@@ -822,13 +863,13 @@ export default function AdminMessages({ user, onLogout }: Props) {
 
                       {/* body */}
                       <div className="px-4 md:px-8 py-6 md:py-8">
-                        <div className="whitespace-pre-wrap text-sm md:text-base text-gray-800 dark:text-gray-200 break-words leading-relaxed max-w-3xl">
+                        <div className="whitespace-pre-wrap text-sm md:text-base text-gray-800 dark:text-gray-100 break-words leading-relaxed max-w-3xl">
                           {selected.body || "—"}
                         </div>
 
                         {/* attachments placeholder */}
-                        <div className="mt-12 rounded-2xl border border-dashed border-gray-200 dark:border-gray-700 p-6 bg-gray-50/30">
-                          <div className="flex items-center gap-2 text-[10px] font-extrabold text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] mb-4">
+                        <div className="mt-12 rounded-2xl border border-dashed border-gray-200 dark:border-slate-700 p-6 bg-gray-50/30 dark:bg-slate-900/30">
+                          <div className="flex items-center gap-2 text-[10px] font-extrabold text-gray-400 dark:text-slate-300 uppercase tracking-[0.2em] mb-4">
                             <span className="material-icons-outlined text-sm">attach_file</span>
                             Attachments
                           </div>
@@ -838,7 +879,7 @@ export default function AdminMessages({ user, onLogout }: Props) {
                               {selected.attachments.map((a, idx) => (
                                 <li
                                   key={`${a}-${idx}`}
-                                  className="text-xs text-gray-700 dark:text-gray-200 flex items-center justify-between gap-3 p-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 shadow-sm hover:border-primary/30 transition-colors"
+                                  className="text-xs text-gray-700 dark:text-gray-200 flex items-center justify-between gap-3 p-3 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm hover:border-primary/30 transition-colors"
                                 >
                                   <span className="font-mono truncate">{a}</span>
                                   <span className="material-icons-outlined text-gray-400 text-sm">download</span>
@@ -846,7 +887,7 @@ export default function AdminMessages({ user, onLogout }: Props) {
                               ))}
                             </ul>
                           ) : (
-                            <div className="text-xs font-bold text-gray-400 italic">No files attached to this message.</div>
+                            <div className="text-xs font-bold text-gray-400 dark:text-slate-300 italic">No files attached to this message.</div>
                           )}
                         </div>
                       </div>

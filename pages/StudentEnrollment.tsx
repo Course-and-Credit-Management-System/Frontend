@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
@@ -38,10 +38,12 @@ function formatLocalDateTime(value?: string) {
 }
 
 const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
+  type CourseFilterKey = 'enrollable' | 'track:cs' | 'track:ct' | 'major';
+
   const navigate = useNavigate();
   const [credits, setCredits] = useState<string>("0");
   const [searchQuery, setSearchQuery] = useState("");
-  const [sortOption, setSortOption] = useState<'enrollable' | 'prereq' | null>(null);
+  const [activeFilters, setActiveFilters] = useState<Set<CourseFilterKey>>(new Set());
   const [showValidation, setShowValidation] = useState(false);
   const [isFinalized, setIsFinalized] = useState(false);
   const [aiMessage, setAiMessage] = useState("");
@@ -73,12 +75,29 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
   const [courses, setCourses] = useState<AvailableCourse[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedRegistry, setSelectedRegistry] = useState<Map<string, AvailableCourse>>(new Map());
+  const searchTextQuery = useMemo(() => searchQuery.trim().toLowerCase(), [searchQuery]);
+
+  const toggleFilter = (filter: CourseFilterKey) => {
+    setActiveFilters((prev) => {
+      const next = new Set(prev);
+      if (next.has(filter)) {
+        next.delete(filter);
+      } else {
+        next.add(filter);
+      }
+      return next;
+    });
+  };
+
+  const effectiveSort = useMemo(() => {
+    return Array.from(activeFilters).join(',');
+  }, [activeFilters]);
 
   useEffect(() => {
     const fetchCourses = async () => {
       setLoading(true);
       try {
-        const res = await api.studentAvailableCourses("", sortOption || undefined);
+        const res = await api.studentAvailableCourses(undefined, effectiveSort || undefined);
         setCourses(res.data || []);
       } catch (error) {
         console.error("Failed to fetch courses", error);
@@ -88,7 +107,7 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
     };
 
     fetchCourses();
-  }, [sortOption]);
+  }, [effectiveSort]);
 
   useEffect(() => {
     const fetchEnrollmentSetting = async () => {
@@ -136,13 +155,14 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, sortOption]);
+  }, [searchQuery, effectiveSort]);
 
   const filteredCourses = courses.filter(c => {
-    const enrollmentClosedForEnrollableSort = sortOption === 'enrollable' && enrollmentSetting && !enrollmentSetting.is_active;
+    const enrollmentClosedForEnrollableSort = effectiveSort.includes('enrollable') && enrollmentSetting && !enrollmentSetting.is_active;
     if (enrollmentClosedForEnrollableSort) return false;
 
-    const q = searchQuery.toLowerCase();
+    const q = searchTextQuery;
+    if (!q) return true;
     return (
       (c.title?.toLowerCase() || '').includes(q) || 
       (c.code?.toLowerCase() || '').includes(q) ||
@@ -174,7 +194,8 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
   }, []);
 
   const isEnrollmentActive = enrollmentSetting ? enrollmentSetting.is_active : true;
-  const enrollmentClosedForEnrollableSort = sortOption === 'enrollable' && !isEnrollmentActive;
+  const isEnrollableFilterActive = activeFilters.has('enrollable');
+  const enrollmentClosedForEnrollableSort = isEnrollableFilterActive && !isEnrollmentActive;
 
   const baseCredits = parseInt(credits) || 0;
   const selectedCredits = Array.from(selectedRegistry.values())
@@ -366,11 +387,29 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
                     className="w-full pl-9 pr-4 py-2 text-sm rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all font-sans"
                 />
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <span className="text-xs font-bold text-gray-500 uppercase tracking-wider mr-2">Sort By:</span>
                 <button 
-                    onClick={() => setSortOption(sortOption === 'enrollable' ? null : 'enrollable')}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all ${sortOption === 'enrollable' ? 'bg-primary text-white border-primary' : 'bg-transparent text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:border-primary'}`}
+                    onClick={() => toggleFilter('track:cs')}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all ${activeFilters.has('track:cs') ? 'bg-primary text-white border-primary' : 'bg-transparent text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:border-primary'}`}
+                >
+                  CS
+                </button>
+                <button 
+                    onClick={() => toggleFilter('track:ct')}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all ${activeFilters.has('track:ct') ? 'bg-primary text-white border-primary' : 'bg-transparent text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:border-primary'}`}
+                >
+                  CT
+                </button>
+                <button 
+                    onClick={() => toggleFilter('major')}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all ${activeFilters.has('major') ? 'bg-primary text-white border-primary' : 'bg-transparent text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:border-primary'}`}
+                >
+                  Major
+                </button>
+                <button 
+                    onClick={() => toggleFilter('enrollable')}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all ${isEnrollableFilterActive ? 'bg-primary text-white border-primary' : 'bg-transparent text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:border-primary'}`}
                 >
                   Enrollable
                 </button>
@@ -794,4 +833,3 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
 };
 
 export default StudentEnrollment;
-

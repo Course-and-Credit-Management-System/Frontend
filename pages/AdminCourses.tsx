@@ -23,6 +23,10 @@ type CourseRow = {
   description?: string;
   prerequisites: string[];
   semester: string[];
+
+  // ✅ NEW
+  major?: string;
+  track?: string;
 };
 
 const API_BASE = (import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000").replace(/\/$/, "");
@@ -278,7 +282,6 @@ function TagInput({
       add(text);
     }
     if (e.key === "Backspace" && !text && values.length) {
-      // quick remove last
       onChange(values.slice(0, -1));
     }
   };
@@ -295,11 +298,7 @@ function TagInput({
           onKeyDown={onKeyDown}
           placeholder={placeholder}
         />
-        <button
-          type="button"
-          onClick={() => add(text)}
-          className="rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-white hover:bg-primary-hover"
-        >
+        <button type="button" onClick={() => add(text)} className="rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-white hover:bg-primary-hover">
           Add
         </button>
       </div>
@@ -386,11 +385,16 @@ type CourseDraft = {
   credits: string;
   type: string;
   instructor: string;
+
+  // ✅ NEW
+  major: string;
+  track: string;
+
   room: string;
   description: string;
   prerequisites: string[];
-  schedule: string[]; // ✅ now free-type tags
-  semester: string[]; // ✅ dropdown multi-select
+  schedule: string[];
+  semester: string[];
 };
 
 const CourseWizardModal = React.memo(function CourseWizardModal({
@@ -454,10 +458,15 @@ const CourseWizardModal = React.memo(function CourseWizardModal({
       credits: creditsNum,
       type: draft.type,
       instructor: draft.instructor.trim() ? draft.instructor.trim() : null,
+
+      // ✅ NEW
+      major: draft.major.trim() ? draft.major.trim() : null,
+      track: draft.track.trim() ? draft.track.trim() : null,
+
       room: draft.room.trim() ? draft.room.trim() : null,
       description: draft.description.trim() ? draft.description.trim() : null,
       prerequisites: draft.prerequisites ?? [],
-      schedule: draft.schedule ?? [], // ✅ free type array
+      schedule: draft.schedule ?? [],
       semester: (draft.semester ?? []).map((s) => ({ semester: s })),
     };
 
@@ -475,7 +484,9 @@ const CourseWizardModal = React.memo(function CourseWizardModal({
         <div className="px-6 py-5 border-b border-gray-100 dark:border-gray-700 flex items-start justify-between gap-4">
           <div className="min-w-0">
             <div className="text-lg font-extrabold text-gray-900 dark:text-white">{headerTitle}</div>
-            <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">Semester + Prereqs are selected. Schedule is free-type tags.</div>
+            <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              Semester + Prereqs are selected. Schedule is free-type tags. Major/Track are optional.
+            </div>
 
             <div className="mt-4 flex flex-wrap gap-2">
               {steps.map((s, idx) => (
@@ -550,7 +561,6 @@ const CourseWizardModal = React.memo(function CourseWizardModal({
                 >
                   <option value="Core">Core</option>
                   <option value="Elective">Elective</option>
-                  <option value="Prerequisite">Prerequisite</option>
                   <option value="Major">Major</option>
                 </select>
               </div>
@@ -562,6 +572,28 @@ const CourseWizardModal = React.memo(function CourseWizardModal({
                   value={draft.instructor}
                   onChange={(e) => setField("instructor", e.target.value)}
                   placeholder="Optional"
+                />
+              </div>
+
+              {/* ✅ NEW */}
+              <div>
+                <label className="text-xs font-bold text-gray-500 dark:text-gray-400">Major (optional)</label>
+                <input
+                  className="mt-1 w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                  value={draft.major}
+                  onChange={(e) => setField("major", e.target.value)}
+                  placeholder="e.g. Software Engineering"
+                />
+              </div>
+
+              {/* ✅ NEW */}
+              <div>
+                <label className="text-xs font-bold text-gray-500 dark:text-gray-400">Track (optional)</label>
+                <input
+                  className="mt-1 w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                  value={draft.track}
+                  onChange={(e) => setField("track", e.target.value)}
+                  placeholder="e.g. CS / CT"
                 />
               </div>
 
@@ -639,6 +671,24 @@ const CourseWizardModal = React.memo(function CourseWizardModal({
                   <span className="font-mono">{draft.course_code || "—"}</span> • {draft.department || "—"} • {draft.type || "—"} •{" "}
                   {Number(draft.credits || 0).toFixed(1)} credits
                 </div>
+
+                {/* ✅ NEW: show Major/Track if present */}
+                {(draft.major.trim() || draft.track.trim()) && (
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {draft.major.trim() && (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-white dark:bg-slate-900 border border-gray-200 dark:border-gray-700 px-3 py-1 text-xs text-gray-700 dark:text-gray-200">
+                        <span className="material-icons-outlined text-[16px] text-gray-400">badge</span>
+                        Major: {draft.major.trim()}
+                      </span>
+                    )}
+                    {draft.track.trim() && (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-white dark:bg-slate-900 border border-gray-200 dark:border-gray-700 px-3 py-1 text-xs text-gray-700 dark:text-gray-200">
+                        <span className="material-icons-outlined text-[16px] text-gray-400">timeline</span>
+                        Track: {draft.track.trim()}
+                      </span>
+                    )}
+                  </div>
+                )}
 
                 <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
                   <div className="rounded-xl bg-white dark:bg-slate-900 border border-gray-200 dark:border-gray-700 p-4">
@@ -799,6 +849,11 @@ const AdminCourses: React.FC<CoursesProps> = ({ user, onLogout }) => {
     credits: "",
     type: "Elective",
     instructor: "",
+
+    // ✅ NEW
+    major: "",
+    track: "",
+
     room: "",
     description: "",
     prerequisites: [],
@@ -836,6 +891,11 @@ const AdminCourses: React.FC<CoursesProps> = ({ user, onLogout }) => {
         type: safeStr(c.type, "Elective"),
         instructor: c.instructor ? String(c.instructor) : "",
         schedule: normalizeSchedule(c.schedule),
+
+        // ✅ NEW
+        major: c.major ? String(c.major) : "",
+        track: c.track ? String(c.track) : "",
+
         room: c.room ? String(c.room) : "",
         description: c.description ? String(c.description) : "",
         prerequisites: Array.isArray(c.prerequisites) ? c.prerequisites.map((x: any) => String(x)) : [],
@@ -880,6 +940,11 @@ const AdminCourses: React.FC<CoursesProps> = ({ user, onLogout }) => {
       credits: "",
       type: "Elective",
       instructor: "",
+
+      // ✅ NEW
+      major: "",
+      track: "",
+
       room: "",
       description: "",
       prerequisites: [],
@@ -898,6 +963,11 @@ const AdminCourses: React.FC<CoursesProps> = ({ user, onLogout }) => {
       credits: String(course.credits ?? ""),
       type: course.type ?? "Elective",
       instructor: course.instructor ?? "",
+
+      // ✅ NEW
+      major: course.major ?? "",
+      track: course.track ?? "",
+
       room: course.room ?? "",
       description: course.description ?? "",
       prerequisites: Array.isArray(course.prerequisites) ? course.prerequisites : [],
@@ -987,7 +1057,9 @@ const AdminCourses: React.FC<CoursesProps> = ({ user, onLogout }) => {
             <div className="p-5 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
               <div className="min-w-0">
                 <div className="text-lg font-extrabold text-gray-900 dark:text-white">Manage Courses</div>
-                <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">Semester + prereqs are selected. Schedule is free typed.</div>
+                <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                  Semester + prereqs are selected. Schedule is free typed. Major/Track optional.
+                </div>
 
                 <div className="mt-3 flex flex-wrap gap-2">
                   <span className={badge(`Total: ${courses.length}`)}>
@@ -1004,7 +1076,7 @@ const AdminCourses: React.FC<CoursesProps> = ({ user, onLogout }) => {
               <div className="flex items-center gap-3">
                 <button
                   className="flex items-center justify-center gap-2 rounded-xl border border-primary bg-white px-4 py-2.5 text-sm font-semibold text-primary hover:bg-gray-50 dark:bg-transparent dark:hover:bg-slate-800 transition-colors"
-                  onClick={() => toast("info", "Excel import", "We can implement this next.")}
+                  onClick={() => toast("info", "Excel import", "To be implemented in the future.")}
                   disabled={mutating}
                 >
                   <span className="material-icons-outlined text-lg">description</span>
@@ -1137,6 +1209,8 @@ const AdminCourses: React.FC<CoursesProps> = ({ user, onLogout }) => {
                         {course.department}
                         {course.instructor ? ` • Instructor: ${course.instructor}` : ""}
                         {course.room ? ` • Room: ${course.room}` : ""}
+                        {course.major ? ` • Major: ${course.major}` : ""}
+                        {course.track ? ` • Track: ${course.track}` : ""}
                       </div>
 
                       <div className="mt-3 flex flex-wrap gap-2">
