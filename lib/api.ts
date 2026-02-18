@@ -313,6 +313,14 @@ export const api = {
   studentSelectMajor: (payload: { major: string }) =>
     request("/api/v1/student/major/select", { method: "POST", body: payload }),
 
+  // --- Special Major Access (standalone flow) ---
+  specialMajorEligibility: () => request("/api/v1/student/special-major/eligibility"),
+  specialMajorOptions: () => request("/api/v1/student/special-major/options"),
+  specialMajorSelect: (payload: { major: string }) =>
+    request("/api/v1/student/special-major/select", { method: "POST", body: payload }),
+  specialMajorPopulateFromProfile: () =>
+    request("/api/v1/student/special-major/populate-from-profile", { method: "POST" }),
+
   currentStudentCourses: () => request<CurrentCoursesResponse>("/api/v1/student/courses/current"),
 
   studentCourseDetails: (code: string) =>
@@ -377,6 +385,8 @@ export const api = {
 
   studentDegreeProgress: () =>
     request("/api/v1/student/progress"),
+  studentDegreeAudit: () =>
+    request("/api/v1/student/degree-audit"),
 
   // --- Student Dashboard ---
   studentDashboardSummary: () => request("/api/v1/student/dashboard-summary"),
