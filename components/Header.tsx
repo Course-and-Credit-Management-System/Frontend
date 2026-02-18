@@ -92,7 +92,6 @@ const Header: React.FC<HeaderProps> = ({ title, user }) => {
               )}
             </button>
           )}
->>>>>>> aaddc7d4b29ffd5316b5e566bd0cef1b25f363a1
           
           <button 
             onClick={() => document.documentElement.classList.toggle('dark')}
