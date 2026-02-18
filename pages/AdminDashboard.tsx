@@ -679,7 +679,7 @@ const AdminDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                       </div>
                       <div className="text-xs font-bold text-emerald-600 dark:text-emerald-400 mb-1">
                         {stats?.totalStudents
-                          ? `${Math.round(((stats.graduatedCount || 0) / (stats.totalStudents || 1)) * 100)}% of cohort`
+                          ? `${Math.round(((stats.graduatedCount || 0) / (stats.totalStudents || 1)) * 100)}% of system`
                           : "—"}
                       </div>
                     </div>
