@@ -2,10 +2,12 @@ import React from "react";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
 import { User } from "../types";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const StudentMajorLocked: React.FC<{ user: User; onLogout: () => void }> = ({ user, onLogout }) => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const custom = (location.state as any)?.message as string | undefined;
   return (
     <div className="flex h-screen overflow-hidden bg-background-light dark:bg-background-dark">
       <Sidebar user={user} onLogout={onLogout} />
@@ -19,7 +21,7 @@ const StudentMajorLocked: React.FC<{ user: User; onLogout: () => void }> = ({ us
                 <div>
                   <h1 className="text-2xl font-bold text-[#0d1a1c] dark:text-white">Major Selection Locked</h1>
                   <p className="mt-2 text-sm text-rose-800 dark:text-rose-200">
-                    Major changes are locked for First and Second Year. Available later per program rules.
+                    {custom ?? "Major changes are locked for First and Second Year. Available later per program rules."}
                   </p>
                 </div>
               </div>

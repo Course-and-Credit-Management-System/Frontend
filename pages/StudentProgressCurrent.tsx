@@ -55,17 +55,22 @@ const StudentProgressCurrent: React.FC<{ user: User; onLogout: () => void }> = (
     }
     setLoading(true);
     try {
-      await api.studentProgressSaveCurrent({ current_year: currentYear, current_semester: currentSemester });
+      const resp: any = await api.studentProgressSaveCurrent({ current_year: currentYear, current_semester: currentSemester });
       const yr = (currentYear || "").toLowerCase();
       const yearNum = yr.includes("first") ? 1 : yr.includes("second") ? 2 : yr.includes("third") ? 3 : yr.includes("fourth") ? 4 : yr.includes("fifth") ? 5 : 0;
       if (yearNum <= 2) {
         navigate("/student/major/locked", { replace: true });
         return;
       }
-      if (programType === "4-year") {
+      const effectiveProgram = (resp?.program_type || programType);
+      if (effectiveProgram === "4-year") {
         navigate("/student/major/select", { replace: true });
       } else {
-        navigate("/student/major/track", { replace: true });
+        if (yearNum === 3) {
+          navigate("/student/major/track", { replace: true });
+        } else {
+          navigate("/student/major/select", { replace: true });
+        }
       }
     } catch (err: any) {
       setError(err?.message || "Failed");

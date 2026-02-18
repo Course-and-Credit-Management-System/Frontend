@@ -27,6 +27,8 @@ const StudentMajorSelection: React.FC<{ user: User; onLogout: () => void }> = ({
   const [programType, setProgramType] = useState<"4-year" | "5-year">("4-year");
   const [track, setTrack] = useState<"CS" | "CT" | null>(null);
   const [selectedMajor, setSelectedMajor] = useState<string>("");
+  const [profileMajorId, setProfileMajorId] = useState<string>("");
+  const [profileMajorTrack, setProfileMajorTrack] = useState<string>("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [eligibility, setEligibility] = useState<any | null>(null);
@@ -36,10 +38,17 @@ const StudentMajorSelection: React.FC<{ user: User; onLogout: () => void }> = ({
       .then((st) => {
         const pt = (st?.program_type as string) || "4-year";
         setProgramType(pt === "5-year" ? "5-year" : "4-year");
-        setTrack(st?.selected_track || null);
+        setTrack(st?.selected_track || st?.profile_major_track || null);
         setSelectedMajor(st?.selected_major || "");
-        if (pt === "5-year" && !st?.selected_track) {
-          navigate("/student/major/track", { replace: true });
+        setProfileMajorId(st?.profile_major_id || "");
+        setProfileMajorTrack(st?.profile_major_track || "");
+        if (pt === "5-year") {
+          const cy = st?.current_year;
+          const cs = st?.current_semester;
+          const isFourthFirst = cy === "Fourth Year" && cs === "First Semester";
+          if (!isFourthFirst && !st?.selected_track && !st?.profile_major_track) {
+            navigate("/student/major/track", { replace: true });
+          }
         }
       })
       .catch(() => {});
@@ -73,8 +82,9 @@ const StudentMajorSelection: React.FC<{ user: User; onLogout: () => void }> = ({
     setLoading(true);
     try {
       await api.studentSelectMajor({ major: code });
+      const st = await api.studentMajorState();
+      setSelectedMajor(st?.selected_major || code);
       alert("Major selected and permanently locked. You cannot change it later.");
-      setSelectedMajor(code);
       navigate("/student/dashboard", { replace: true });
     } catch (e: any) {
       setError(e?.message || "Failed");
@@ -108,6 +118,11 @@ const StudentMajorSelection: React.FC<{ user: User; onLogout: () => void }> = ({
             {eligibility && !eligibility.can_select_major ? (
               <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-sm text-red-700 dark:border-red-900/40 dark:bg-red-900/20 dark:text-red-200">
                 {eligibility.reason || "Major selection is not available for the current year or semester."}
+                {(profileMajorId || selectedMajor || profileMajorTrack || track) && (
+                  <div className="mt-3 text-[12px] text-gray-700 dark:text-gray-300 font-bold">
+                    Recorded: {programType} • Track: {track || profileMajorTrack || "-"} • Major: {selectedMajor || profileMajorId || "-"}
+                  </div>
+                )}
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
