@@ -21,7 +21,7 @@ When rules conflict, apply this precedence:
 - `admin`/staff -> Admin Dashboard.
 3. Enrollment flow must be sequential and strict:
 - Course selection.
-- Credit limit check (`total + candidate <= 18`).
+- Credit limit check (`total + candidate <= 24`).
 - Prerequisite validation against `Academic History` with `Completed` status.
 - Retake verification (`is_retake: true` for previously failed courses).
 - Final confirmation and persistence.
@@ -83,7 +83,7 @@ Use these behavior modes when task intent matches:
 - Tailor advice to registration type and academic standing.
 
 ### Conflict Resolver Mode
-- Trigger: enrollment exceeds 18 credits or conflict optimization request.
+- Trigger: enrollment exceeds 24 credits or conflict optimization request.
 - Resolve using strict priorities:
 1. Preserve retakes.
 2. Remove electives first.

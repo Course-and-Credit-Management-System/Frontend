@@ -18,7 +18,7 @@ This skill covers the core domain logic for the University Portal based on the o
 The student enrollment process must follow this strict sequential logic:
 1. **Course Selection**: Student picks a candidate course.
 2. **Credit Limit Check**: 
-   - Mandatory Check: Total Enrolled + Candidate <= **18 Credits**.
+   - Mandatory Check: Total Enrolled + Candidate <= **24 Credits**.
    - If Exceeded: Trigger **Trade-off Decision** module (Modify selection by dropping electives).
 3. **Prerequisite Check**:
    - Verify if all prerequisite course IDs are marked as "Completed" in `Academic History`.
