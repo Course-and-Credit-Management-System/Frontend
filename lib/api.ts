@@ -67,7 +67,6 @@ function shouldAutoLogout(path: string) {
   if (path === "/api/v1/auth/forgot-password") return false;
   if (path === "/api/v1/auth/reset-password-with-token") return false;
   if (path.includes("/api/v1/admin/messages/") && path.endsWith("/read")) return false;
-  if (path.includes("/api/v1/student/messages/") && path.endsWith("/read")) return false;
   return true;
 }
 // -----------------------------------------------
@@ -503,18 +502,5 @@ export const api = {
 
     return data as AdminChatResponse;
   },
-    // --- Student Messages ---
-  studentMessages: () => request("/api/v1/student/messages"),
-
-  studentMarkMessageRead: (messageId: string, is_read: boolean) =>
-    request(`/api/v1/student/messages/${encodeURIComponent(messageId)}/read`, {
-      method: "PUT",
-      body: { is_read },
-    }),
-
-  studentDeleteMessage: (messageId: string) =>
-    request(`/api/v1/student/messages/${encodeURIComponent(messageId)}`, { method: "DELETE" }),
-
-  
 };
   
