@@ -106,13 +106,20 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
     return majorsList;
   };
 
-  // Major options based on year (like AdminGrading) - for filter dropdown
+  // Major options based on year - for filter dropdown
   const selectedYear = typeof year === 'number' ? year : 0;
   const showSection = selectedYear >= 1 && selectedYear <= 3;
   const showMajorFilter = selectedYear >= 3 && selectedYear <= 5;
-  const majorOptions = selectedYear === 3 
-    ? ['CS', 'CT'] 
-    : ['SE', 'KE', 'HPC', 'CSec', 'CN', 'BIS', 'ES'];
+  
+  // For 1st and 2nd year: no major filter (can choose any major)
+  // For 3rd year: show all majors (new students can choose any, old students have CS/CT)
+  // For 4th and 5th year: show all majors
+  const majorOptions = selectedYear === 1 || selectedYear === 2
+    ? [] // No major filter - show all majors
+    : getMajorOptionsForForm(''); // Use all majors for 3rd year and above
+  
+  // Debug logs
+  console.log('Year:', selectedYear, 'ShowMajorFilter:', showMajorFilter, 'MajorOptions:', majorOptions);
 
   // Fetch students
   const fetchStudents = async () => {
@@ -241,13 +248,15 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
       const payload = {
         name: formData.name,
         email: formData.email,
-        major: formData.major,
+        major: formData.year >= 3 ? formData.major : '', // Send empty string instead of null for validation
         year: formData.year,
         semester: formData.semester,
-        section: (formData.year >= 1 && formData.year <= 3 && formData.section) ? formData.section : null,
+        section: formData.section || null, // Include section properly
         status: formData.status,
         total_credits: formData.total_credits,
       };
+
+      console.log('Edit payload:', payload); // Debug log
 
       const res = await fetch(`${API_BASE}/admin/students/${encodeURIComponent(editingStudent.user_id)}/update`, {
         method: 'POST',
@@ -257,6 +266,9 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
       });
 
       const errData = await res.json().catch(() => ({}));
+      console.log('Update response status:', res.status);
+      console.log('Update response data:', errData);
+      
       if (res.ok) {
         setMessage({ type: 'success', text: 'Student updated successfully' });
         setEditingStudent(null);
@@ -265,6 +277,7 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
       } else {
         const detail = errData?.detail ?? (res.status ? `HTTP ${res.status}` : 'Unknown error');
         const msg = Array.isArray(detail) ? detail.map((x: { msg?: string }) => x?.msg ?? JSON.stringify(x)).join('; ') : String(detail);
+        console.error('Update failed with error:', msg);
         setMessage({ type: 'error', text: `Failed to update: ${msg}` });
       }
     } catch (err) {
@@ -300,6 +313,7 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
 
   // Open edit modal
   const openEditModal = (student: Student) => {
+    console.log('Opening edit modal for student:', student); // Debug log
     setEditingStudent(student);
     setFormData({
       user_id: student.user_id,
@@ -308,10 +322,11 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
       major: student.major,
       year: student.year,
       semester: student.semester,
-      section: student.section ?? '',
+      section: student.section || '', // Handle null/undefined properly
       status: student.status,
       total_credits: student.total_credits,
     });
+    console.log('Set form data with section:', student.section); // Debug log
   };
 
   // Reset form
@@ -446,7 +461,7 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
                     >
                       <option value="">All Majors</option>
                       {majorOptions.map((m) => (
-                        <option key={m} value={m}>{m}</option>
+                        <option key={m.id} value={m}>{m}</option>
                       ))}
                     </select>
                   </div>
@@ -847,17 +862,40 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
                   </div>
                 </div>
 
+                {/* Current Major - Only show for 3rd year and above */}
+                {formData.year >= 3 && (
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Current Major</label>
+                    <select
+                      value={formData.major}
+                      onChange={(e) => setFormData(prev => ({ ...prev, major: e.target.value }))}
+                      className="w-full px-5 py-3.5 border border-slate-200 dark:border-slate-800 rounded-2xl focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500/50 outline-none transition-all dark:bg-slate-950 dark:text-white font-bold text-sm cursor-pointer"
+                    >
+                      {getMajorOptionsForForm(formData.major).map((m) => (
+                        <option key={m.id} value={m.id}>{m.id} — {m.major_name}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
+                {/* Section - Show for all years */}
                 <div className="space-y-2">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Current Major</label>
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Section</label>
                   <select
-                    value={formData.major}
-                    onChange={(e) => setFormData(prev => ({ ...prev, major: e.target.value }))}
+                    key={`section-${formData.section}`} // Force re-render when section changes
+                    value={formData.section === "None" || formData.section === "N/A" || !formData.section ? "" : formData.section} // Handle None/N/A
+                    onChange={(e) => setFormData(prev => ({ ...prev, section: e.target.value }))}
                     className="w-full px-5 py-3.5 border border-slate-200 dark:border-slate-800 rounded-2xl focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500/50 outline-none transition-all dark:bg-slate-950 dark:text-white font-bold text-sm cursor-pointer"
                   >
-                    {getMajorOptionsForForm(formData.major).map((m) => (
-                      <option key={m.id} value={m.id}>{m.id} — {m.major_name}</option>
-                    ))}
+                    <option value="">No Section</option>
+                    <option value="A">Section A</option>
+                    <option value="B">Section B</option>
+                    <option value="C">Section C</option>
                   </select>
+                  {/* Debug display */}
+                  <div className="text-xs text-slate-500 mt-1">
+                    Debug: formData.section = "{formData.section}" | Type: {typeof formData.section}
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
