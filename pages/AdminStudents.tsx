@@ -36,10 +36,9 @@ interface StudentFormData {
   total_credits: number;
 }
 
-// Use relative /api/v1 when proxied (avoids CORS). Fallback to explicit URL for direct backend.
-const API_BASE = (import.meta.env.VITE_API_BASE_URL || "").trim()
-  ? ((import.meta.env.VITE_API_BASE_URL || "").replace(/\/$/, "")) + "/api/v1"
-  : "/api/v1";
+// Always use relative /api/v1 so the browser talks to the same origin (localhost:3000),
+// and Vite's dev proxy forwards to the backend. This keeps cookie-based auth working.
+const API_BASE = "/api/v1";
 
 
 const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
