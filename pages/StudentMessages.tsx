@@ -3,6 +3,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import Sidebar from "../components/Sidebar";
 import { api } from "../lib/api";
 import { User } from "../types";
+import Header from "../components/Header";
 
 type Props = {
   user: User;
@@ -103,6 +104,7 @@ export default function StudentMessages({ user, onLogout }: Props) {
       <Sidebar user={user} onLogout={onLogout} />
 
       <div className="flex-1 flex flex-col overflow-hidden relative">
+        <Header user={user} onLogout={onLogout} /> 
         <main className="flex-1 p-10 lg:p-16 scrollbar-hide animate-in fade-in duration-1000 slide-in-from-bottom-4 overflow-y-auto">
           {/* Header */}
           <div className="flex flex-col gap-10 xl:flex-row xl:items-end xl:justify-between mb-12">
