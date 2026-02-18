@@ -16,16 +16,16 @@
             theme: {
                 extend: {
                     colors: {
-                        primary: "#077d8a",
-                        "primary-hover": "#066a75",
-                        "background-light": "#F3F4F6",
-                        "background-dark": "#0F172A",
-                        "surface-light": "#FFFFFF",
-                        "surface-dark": "#1E293B",
-                        "text-light": "#1F2937",
-                        "text-dark": "#F8FAFC",
-                        "border-light": "#E5E7EB",
-                        "border-dark": "#334155",
+                        primary: "#0d9488", /* teal-600 */
+                        "primary-hover": "#0f766e", /* teal-700 */
+                        "background-light": "#ffffff",
+                        "background-dark": "#020617", /* slate-950 */
+                        "surface-light": "#ffffff",
+                        "surface-dark": "#0f172a", /* slate-900 */
+                        "text-light": "#0f172a",
+                        "text-dark": "#f8fafc",
+                        "border-light": "#f1f5f9",
+                        "border-dark": "#1e293b", /* slate-800 */
                     },
                     fontFamily: {
                         sans: ["Roboto", "sans-serif"],
@@ -86,11 +86,11 @@
 
         /* Dark mode scrollbar */
         .dark ::-webkit-scrollbar-thumb {
-            background-color: #334155; /* slate-700 */
+            background-color: #1e293b; /* slate-800 */
         }
         
         .dark ::-webkit-scrollbar-thumb:hover {
-            background-color: #475569; /* slate-600 */
+            background-color: #334155; /* slate-700 */
         }
 
         /* Firefox Support */
@@ -100,7 +100,7 @@
         }
 
         .dark * {
-            scrollbar-color: #334155 transparent;
+            scrollbar-color: #1e293b transparent;
         }
     </style>
 <script type="importmap">
@@ -114,7 +114,7 @@
 }
 </script>
 </head>
-<body class="bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark transition-colors duration-200">
+<body class="bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-50 transition-colors duration-500 selection:bg-teal-500/10">
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>
 </body>

@@ -28,6 +28,11 @@ type RequestOptions = {
   body?: any;
 };
 
+type BlobResponse = {
+  blob: Blob;
+  filename: string | null;
+};
+
 export class HttpStatusError extends Error {
   status: number;
 
@@ -105,6 +110,36 @@ async function request<T = any>(path: string, options: RequestOptions = {}): Pro
   }
 
   return data;
+}
+
+async function requestBlob(path: string, options: RequestOptions = {}): Promise<BlobResponse> {
+  const headers: Record<string, string> = options.body
+    ? { "Content-Type": "application/json" }
+    : {};
+
+  const res = await fetch(`${API_BASE}${path}`, {
+    method: options.method ?? "GET",
+    headers,
+    credentials: "include",
+    body: options.body ? JSON.stringify(options.body) : undefined,
+  });
+
+  if ((res.status === 401 || res.status === 403) && shouldAutoLogout(path)) {
+    clearAuthSession();
+    redirectToLogin();
+    throw new HttpStatusError(res.status, `Not authorized (${res.status})`);
+  }
+
+  if (!res.ok) {
+    throw new HttpStatusError(res.status, `Request failed (${res.status})`);
+  }
+
+  const blob = await res.blob();
+  const contentDisposition = res.headers.get("content-disposition") || "";
+  const filenameMatch = contentDisposition.match(/filename\*?=(?:UTF-8''|")?([^\";]+)/i);
+  const filename = filenameMatch?.[1]?.trim()?.replace(/"/g, "") || null;
+
+  return { blob, filename };
 }
 
 // ---------------------------
@@ -322,6 +357,8 @@ export const api = {
     request("/api/v1/student/special-major/populate-from-profile", { method: "POST" }),
 
   currentStudentCourses: () => request<CurrentCoursesResponse>("/api/v1/student/courses/current"),
+  studentCurrentCoursesPdf: () =>
+    requestBlob("/api/v1/student/courses/current/pdf", { method: "GET" }),
 
   studentCourseDetails: (code: string) =>
     request<any>(`/api/v1/student/courses/detail/${encodeURIComponent(code)}`),

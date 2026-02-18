@@ -100,26 +100,26 @@ const StudentDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     ((eligibility?.current_year_num === 4 && eligibility?.current_semester_num === 2) ||
       eligibility?.current_year_num === 5);
   return (
-    <div className="flex h-screen overflow-hidden bg-background-light dark:bg-background-dark font-poppins relative">
+    <div className="flex h-screen overflow-hidden bg-white dark:bg-slate-950 font-poppins relative">
       {/* Toast Container */}
-      <div className="fixed top-24 right-6 z-50 flex flex-col gap-3 max-w-sm w-full">
+      <div className="fixed top-24 right-8 z-50 flex flex-col gap-4 max-w-sm w-full">
         {alerts.map((alert) => (
           <div 
             key={alert._id} 
-            className="flex items-start gap-3 rounded-lg bg-[#fff4e5] px-5 py-4 shadow-[0_4px_12px_rgba(0,0,0,0.1)] border-l-4 border-[#ffc20e] transition-all animate-in slide-in-from-right duration-300"
+            className="flex items-start gap-4 rounded-2xl bg-amber-50 dark:bg-amber-950/20 px-6 py-5 shadow-xl border border-amber-100 dark:border-amber-900/30 transition-all animate-in slide-in-from-right-10 duration-500"
           >
-            <span className="material-icons-outlined text-[#ffc20e] mt-0.5">warning</span>
+            <span className="material-icons-outlined text-amber-500 mt-0.5">warning</span>
             <div className="flex-1">
-              <p className="text-sm font-medium text-[#333333] leading-relaxed">
+              <p className="text-sm font-bold text-amber-900 dark:text-amber-200 leading-relaxed">
                 {alert.message}
               </p>
-              <p className="text-xs text-[#666666] mt-2 opacity-80">
-                {new Date(alert.created_at).toLocaleDateString()}
+              <p className="text-[10px] font-black uppercase tracking-widest text-amber-600 dark:text-amber-500/70 mt-3">
+                {new Date(alert.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
               </p>
             </div>
             <button 
               onClick={() => handleDismissAlert(alert._id)}
-              className="text-[#666666] hover:text-[#333333] transition-colors p-1 -mr-2 -mt-2"
+              className="text-amber-400 hover:text-amber-600 transition-colors p-1"
             >
               <span className="material-icons-outlined text-sm">close</span>
             </button>
@@ -129,54 +129,62 @@ const StudentDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
 
       <Sidebar user={user} onLogout={onLogout} />
       <div className="flex flex-1 flex-col overflow-hidden">
-        <Header title={`Welcome back, ${user.name}! 👋`} user={user} />
-        <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 relative">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-8 gap-6">
-            <div className="min-w-0">
-              <h2 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white truncate">Welcome back, {user.name}! 👋</h2>
-              <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm md:text-base">Here's your academic progress overview for today.</p>
+        <Header title={`Dashboard Overview`} user={user} />
+        <main className="flex-1 overflow-y-auto p-8 lg:p-12 relative animate-in fade-in duration-700 slide-in-from-bottom-4 scrollbar-hide">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-8">
+            <div className="min-w-0 space-y-2">
+              <h2 className="text-4xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">Welcome back, {user.name.split(' ')[0]}! 👋</h2>
+              <p className="text-lg font-medium text-slate-400 dark:text-slate-500">Your academic trajectory is looking healthy. Here's the briefing.</p>
             </div>
-            <div className="w-full sm:w-auto bg-surface-light dark:bg-surface-dark px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm flex items-center gap-2 shrink-0">
-              <span className="material-icons-round text-primary text-sm">calendar_today</span>
-              <span className="text-xs md:text-sm font-bold text-gray-700 dark:text-gray-200">Fall Semester 2024 - Week 8</span>
+            <div className="w-full md:w-auto bg-slate-50/50 dark:bg-slate-900/50 px-6 py-3.5 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm flex items-center gap-3 shrink-0">
+              <span className="material-icons-round text-teal-600 text-base">calendar_today</span>
+              <span className="text-xs font-black uppercase tracking-widest text-slate-600 dark:text-slate-300">Fall '24 • Week 08</span>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-8">
-            <div className="bg-surface-light dark:bg-surface-dark p-5 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm flex flex-col justify-between transition-all hover:shadow-md">
-              <div className="flex justify-between items-start mb-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+            <div className="bg-white dark:bg-slate-900 p-8 rounded-[32px] border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col justify-between transition-all hover:shadow-xl hover:-translate-y-1 group relative overflow-hidden">
+              <div className="absolute top-0 right-0 h-24 w-24 bg-emerald-500/5 rounded-bl-full transform translate-x-4 -translate-y-4 transition-transform group-hover:scale-110" />
+              <div className="flex justify-between items-start mb-8 relative z-10">
                 <div>
-                  <p className="text-[10px] font-extrabold text-gray-400 uppercase tracking-widest">Enrollment Status</p>
-                  <h3 className="text-xl md:text-2xl font-bold mt-1 text-green-600 dark:text-green-400">Active</h3>
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Enrollment Status</p>
+                  <h3 className="text-3xl font-black text-emerald-600 dark:text-emerald-400 tracking-tight">Active</h3>
                 </div>
-                <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg text-green-600 dark:text-green-400">
-                  <span className="material-icons-round text-xl">check_circle</span>
+                <div className="p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-2xl text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-800/50">
+                  <span className="material-icons-round text-2xl">verified</span>
                 </div>
               </div>
-              <div className="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-1.5 mt-2">
-                <div className="bg-green-500 h-1.5 rounded-full" style={{ width: '100%' }}></div>
+              <div className="relative z-10">
+                <div className="w-full bg-slate-50 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                  <div className="bg-emerald-500 h-full rounded-full transition-all duration-1000 w-full" />
+                </div>
+                <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 mt-4 uppercase tracking-widest flex items-center gap-2">
+                  <span className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
+                  Full-time Matrix • {currentCredits !== null ? `${currentCredits} Credits` : "- Credits"}
+                </p>
               </div>
-              <p className="text-[10px] font-bold text-gray-500 dark:text-gray-400 mt-2 uppercase">Full-time • {currentCredits !== null ? `${currentCredits} Credits` : "- Credits"}</p>
             </div>
 
-            <div className="bg-surface-light dark:bg-surface-dark p-5 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm flex flex-col justify-between transition-all hover:shadow-md">
-              <div className="flex justify-between items-start mb-4">
+            <div className="bg-white dark:bg-slate-900 p-8 rounded-[32px] border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col justify-between transition-all hover:shadow-xl hover:-translate-y-1 group relative overflow-hidden">
+              <div className="absolute top-0 right-0 h-24 w-24 bg-blue-500/5 rounded-bl-full transform translate-x-4 -translate-y-4 transition-transform group-hover:scale-110" />
+              <div className="flex justify-between items-start mb-8 relative z-10">
                 <div>
-                  <p className="text-[10px] font-extrabold text-gray-400 uppercase tracking-widest">Current GPA</p>
-                  <h3 className="text-xl md:text-2xl font-bold mt-1 text-gray-800 dark:text-white">{gpa !== null ? gpa.toFixed(2) : "-"}</h3>
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Academic Index</p>
+                  <h3 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">{gpa !== null ? gpa.toFixed(2) : "—"} <span className="text-lg text-slate-300 dark:text-slate-600 font-bold ml-1">/ 4.0</span></h3>
                 </div>
-                <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg text-blue-500">
-                  <span className="material-icons-round text-xl">analytics</span>
+                <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-2xl text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-800/50">
+                  <span className="material-icons-round text-2xl">analytics</span>
                 </div>
               </div>
-              <div className="flex items-center gap-1 text-green-500 text-xs font-bold mt-2">
+              <div className="flex items-center gap-2 text-emerald-500 text-[10px] font-black uppercase tracking-widest relative z-10">
                 <span className="material-icons-round text-sm">trending_up</span>
-                <span>+0.2 from last term</span>
+                <span>Optimizing Performance</span>
               </div>
             </div>
 
-            <div className="bg-surface-light dark:bg-surface-dark p-5 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm flex flex-col justify-between group cursor-pointer hover:border-primary transition-all hover:shadow-md sm:col-span-2 lg:col-span-1">
-               <div className="flex justify-between items-start mb-4">
+            <div className="bg-white dark:bg-slate-900 p-8 rounded-[32px] border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col justify-between group cursor-pointer transition-all hover:shadow-xl hover:-translate-y-1 sm:col-span-2 lg:col-span-1 relative overflow-hidden">
+               <div className="absolute top-0 right-0 h-24 w-24 bg-indigo-500/5 rounded-bl-full transform translate-x-4 -translate-y-4 transition-transform group-hover:scale-110" />
+               <div className="flex justify-between items-start mb-8 relative z-10">
                 <div>
                   <p className="text-[10px] font-extrabold text-gray-400 uppercase tracking-widest">Next Step</p>
                   <h3 className="text-xl font-bold mt-1 text-gray-800 dark:text-white">
@@ -198,8 +206,8 @@ const StudentDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                     </div>
                   ) : null}
                   {majorState?.status && !majorState.selected_major && (
-                    <div className="mt-1 text-[11px] font-semibold text-gray-500 dark:text-gray-400">
-                      Status: {majorState.status}
+                    <div className="mt-2 text-[10px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 px-2 py-0.5 rounded-md inline-block border border-indigo-100 dark:border-indigo-800">
+                      {majorState.status}
                     </div>
                   )}
                   {majorState?.program_type === "5-year" &&
@@ -211,8 +219,8 @@ const StudentDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                     </div>
                   ) : null}
                 </div>
-                <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg text-purple-500">
-                  <span className="material-icons-round text-xl">alt_route</span>
+                <div className="p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-800/50">
+                  <span className="material-icons-round text-2xl">alt_route</span>
                 </div>
               </div>
               {(() => {
@@ -326,17 +334,22 @@ const StudentDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            <div className="lg:col-span-7 xl:col-span-8 flex flex-col gap-6">
-              <div className="bg-surface-light dark:bg-surface-dark rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
-                <div className="p-4 md:p-5 border-b border-gray-200 dark:border-gray-700 flex items-center gap-2">
-                  <span className="material-icons-round text-primary">auto_graph</span>
-                  <h2 className="text-lg font-bold text-gray-800 dark:text-white">Degree Progress</h2>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+            <div className="lg:col-span-7 xl:col-span-8 flex flex-col gap-8">
+              <div className="bg-white dark:bg-slate-900 rounded-[40px] border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden flex-1 transition-all hover:shadow-md">
+                <div className="px-10 py-8 border-b border-slate-50 dark:border-slate-800 flex items-center gap-4 bg-slate-50/30 dark:bg-slate-950/20">
+                  <div className="h-10 w-10 rounded-2xl bg-white dark:bg-slate-900 flex items-center justify-center border border-slate-100 dark:border-slate-800 shadow-sm">
+                    <span className="material-icons-round text-teal-600 text-lg">auto_graph</span>
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">Institutional Audit</h2>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mt-0.5">Degree Completion Progress</p>
+                  </div>
                 </div>
-                <div className="p-5 md:p-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-                    <div className="relative flex items-center justify-center">
-                      <div className="relative w-32 h-32 md:w-40 md:h-40">
+                <div className="p-10 lg:p-12">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
+                    <div className="flex items-center justify-center relative">
+                      <div className="relative w-48 h-48 md:w-56 md:h-56 transform transition-transform duration-1000 hover:scale-105">
                          <svg className="w-full h-full transform -rotate-90" viewBox="0 0 112 112">
                            <circle className="text-gray-100 dark:text-gray-800" cx="56" cy="56" fill="transparent" r="50" stroke="currentColor" strokeWidth="8" />
                            <circle
@@ -378,7 +391,7 @@ const StudentDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                          </div>
                       </div>
                     </div>
-                    <div className="space-y-4 md:space-y-5">
+                    <div className="space-y-8">
                       {[
                         {
                           label: 'Core Requirements',
@@ -449,14 +462,19 @@ const StudentDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
               </div>
             </div>
 
-            <div className="lg:col-span-5 xl:col-span-4 flex flex-col gap-6">
-              <div className="bg-surface-light dark:bg-surface-dark rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm flex flex-col flex-1 min-h-[400px] overflow-hidden">
-                <div className="p-4 md:p-5 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-                  <h3 className="font-bold text-gray-800 dark:text-white flex items-center gap-2">
-                    <span className="material-icons-round text-primary">history</span>
-                    Recent Activity
-                  </h3>
-                  <a className="text-xs text-primary hover:underline font-bold uppercase tracking-wide" href="#">View All</a>
+            <div className="lg:col-span-5 xl:col-span-4 flex flex-col gap-8">
+              <div className="bg-white dark:bg-slate-900 rounded-[40px] border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col flex-1 min-h-[500px] overflow-hidden transition-all hover:shadow-md">
+                <div className="px-10 py-8 border-b border-slate-50 dark:border-slate-800 flex justify-between items-center bg-slate-50/30 dark:bg-slate-950/20">
+                  <div className="flex items-center gap-4">
+                    <div className="h-10 w-10 rounded-2xl bg-white dark:bg-slate-900 flex items-center justify-center border border-slate-100 dark:border-slate-800 shadow-sm text-teal-600">
+                      <span className="material-icons-round text-lg">history</span>
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">Sync History</h3>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mt-0.5">Recent Ledger Activity</p>
+                    </div>
+                  </div>
+                  <a className="text-[9px] font-black uppercase tracking-widest text-teal-600 hover:text-teal-700 pb-0.5 border-b-2 border-teal-600/10 transition-colors" href="#">Archive</a>
                 </div>
                 <div className="divide-y divide-gray-100 dark:divide-gray-800 overflow-y-auto max-h-[500px]">
                   {recent.map((act, i) => (
@@ -475,8 +493,11 @@ const StudentDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
               </div>
             </div>
           </div>
-          <footer className="mt-12 text-center text-xs text-gray-400 dark:text-gray-600 pb-8">
-            © 2024 University Portal System. All rights reserved.
+          <footer className="mt-20 text-center space-y-4 pb-12">
+            <div className="h-px w-20 bg-slate-100 dark:bg-slate-800 mx-auto" />
+            <p className="text-[10px] font-black text-slate-300 dark:text-slate-700 uppercase tracking-[0.4em]">
+              Institutional Administrative Framework • 2024
+            </p>
           </footer>
         </main>
       </div>

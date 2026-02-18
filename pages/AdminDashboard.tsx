@@ -94,7 +94,7 @@ function detectHttpStatus(err: any): number | null {
 }
 
 function Skeleton({ className }: { className?: string }) {
-  return <div className={cn("animate-pulse rounded-lg bg-gray-200/70 dark:bg-slate-700/50", className)} />;
+  return <div className={cn("animate-pulse rounded-lg bg-slate-100 dark:bg-slate-800/50", className)} />;
 }
 
 function IconBadge({
@@ -499,96 +499,91 @@ const AdminDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background-light dark:bg-background-dark">
+    <div className="flex h-screen overflow-hidden bg-white dark:bg-slate-950">
       <Sidebar user={user} onLogout={onLogout} />
 
       <div className="flex flex-1 flex-col overflow-hidden">
         <Header title="Admin Dashboard" user={user} />
 
-        <main className="flex-1 overflow-y-auto">
+        <main className="flex-1 overflow-y-auto scrollbar-hide">
           {/* Top command bar */}
-          <div className="px-4 md:px-6 pt-6">
-            <div className={cn(surface, "p-4 md:p-6")}>
-              <div className="flex flex-col gap-6 xl:flex-row xl:items-center xl:justify-between">
-                <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <h1 className="text-xl font-extrabold tracking-tight text-gray-900 dark:text-white">
+          <div className="px-10 pt-10 animate-in fade-in duration-1000 slide-in-from-bottom-4">
+            <div className="bg-slate-50/30 dark:bg-slate-900/20 rounded-[40px] border border-slate-100 dark:border-slate-800/50 p-10 shadow-sm transition-all hover:shadow-md">
+              <div className="flex flex-col gap-10 xl:flex-row xl:items-end xl:justify-between">
+                <div className="space-y-3">
+                  <div className="flex flex-wrap items-center gap-4">
+                    <h1 className="text-4xl font-black tracking-tight text-slate-900 dark:text-white leading-tight">
                       Operations Overview
                     </h1>
                     {refreshing ? (
-                      <Pill tone="gray">
-                        <span className="material-icons-outlined text-[14px] animate-spin">refresh</span>
-                        Updating…
-                      </Pill>
+                      <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-[10px] font-black uppercase tracking-[0.2em]">
+                        <span className="material-icons-outlined text-[14px] animate-spin">sync</span>
+                        Synchronizing
+                      </div>
                     ) : (
-                      <Pill tone="gray">
-                        <span className="material-icons-outlined text-[14px]">schedule</span>
+                      <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-400 text-[10px] font-black uppercase tracking-[0.2em] border border-teal-100 dark:border-teal-800">
+                        <span className="material-icons-outlined text-[14px]">history</span>
                         {lastUpdated ? timeAgo(lastUpdated) : "—"}
-                      </Pill>
+                      </div>
                     )}
                   </div>
-                  <p className="mt-1 text-sm text-gray-500 dark:text-gray-400 truncate">
-                    Academic outcomes and pending actions.
+                  <p className="text-lg font-medium text-slate-400 dark:text-slate-500 max-w-2xl leading-relaxed">
+                    Institutional intelligence and administrative priorities synchronized in real-time.
                   </p>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-2">
+                <div className="flex flex-wrap items-center gap-4">
                   <button
                     onClick={() => load("refresh")}
-                    className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 rounded-xl border border-border-light bg-white px-3 py-2 text-sm font-bold text-gray-900 shadow-sm hover:bg-gray-50 dark:border-border-dark dark:bg-slate-900/40 dark:text-white dark:hover:bg-slate-900/60"
+                    className="flex-1 sm:flex-none inline-flex items-center justify-center gap-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-6 py-4 text-xs font-black uppercase tracking-widest text-slate-900 dark:text-white shadow-sm hover:bg-slate-50 dark:hover:bg-slate-800 transition-all active:scale-[0.98]"
                   >
-                    <span className={cn("material-icons-outlined text-[18px]", refreshing && "animate-spin")}>
+                    <span className={cn("material-icons-outlined text-[20px]", refreshing && "animate-spin")}>
                       refresh
                     </span>
-                    Refresh
+                    Sync
                   </button>
 
-                  <div className="hidden sm:block h-6 w-px bg-border-light dark:bg-border-dark" />
+                  <div className="hidden sm:block h-10 w-px bg-slate-200 dark:bg-slate-800 mx-4" />
 
                   <button
                     onClick={() => go("/admin/announcements")}
-                    className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-3 py-2 text-sm font-bold text-white shadow-sm hover:opacity-95"
+                    className="flex-1 sm:flex-none inline-flex items-center justify-center gap-3 rounded-2xl bg-teal-600 px-8 py-4 text-xs font-black uppercase tracking-widest text-white shadow-lg hover:bg-teal-700 transition-all active:scale-[0.98]"
                   >
-                    <span className="material-icons-outlined text-[18px]">campaign</span>
+                    <span className="material-icons-outlined text-[20px]">campaign</span>
                     Announce
                   </button>
 
                   <button
                     onClick={() => go("/admin/courses")}
-                    className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 rounded-xl bg-white px-3 py-2 text-sm font-bold text-gray-900 shadow-sm hover:bg-gray-50 dark:bg-slate-900/40 dark:text-white dark:hover:bg-slate-900/60"
+                    className="flex-1 sm:flex-none inline-flex items-center justify-center gap-3 rounded-2xl bg-white dark:bg-slate-900 px-6 py-4 text-xs font-black uppercase tracking-widest text-slate-900 dark:text-white border border-slate-200 dark:border-slate-800 shadow-sm hover:bg-slate-50 dark:hover:bg-slate-800 transition-all active:scale-[0.98]"
                   >
-                    <span className="material-icons-outlined text-[18px]">library_add</span>
-                    Course
+                    Catalog
                   </button>
 
                   <button
                     onClick={() => go("/admin/students")}
-                    className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 rounded-xl bg-white px-3 py-2 text-sm font-bold text-gray-900 shadow-sm hover:bg-gray-50 dark:bg-slate-900/40 dark:text-white dark:hover:bg-slate-900/60"
+                    className="flex-1 sm:flex-none inline-flex items-center justify-center gap-3 rounded-2xl bg-white dark:bg-slate-900 px-6 py-4 text-xs font-black uppercase tracking-widest text-slate-900 dark:text-white border border-slate-200 dark:border-slate-800 shadow-sm hover:bg-slate-50 dark:hover:bg-slate-800 transition-all active:scale-[0.98]"
                   >
-                    <span className="material-icons-outlined text-[18px]">person_add</span>
-                    Student
+                    Directory
                   </button>
                 </div>
               </div>
 
               {error && (
-                <div className="mt-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700 dark:border-rose-900/40 dark:bg-rose-900/20 dark:text-rose-200">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-start gap-2">
-                      <span className="material-icons-outlined mt-0.5 text-[18px]">error_outline</span>
+                <div className="mt-8 rounded-2xl border border-rose-200 bg-rose-50 px-6 py-4 text-sm text-rose-700 dark:border-rose-900/40 dark:bg-rose-900/20 dark:text-rose-200 animate-in fade-in slide-in-from-top-2">
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                      <span className="material-icons-outlined text-[20px]">error_outline</span>
                       <div>
-                        <div className="font-semibold">Dashboard failed to load</div>
-                        <div className="opacity-90">{error}</div>
-                        {sessionState === "expired" ? (
-                          <div className="mt-1 text-xs font-semibold">Session expired — please log in again.</div>
-                        ) : null}
+                        <span className="font-bold mr-2">Sync Error:</span>
+                        <span className="opacity-90">{error}</span>
                       </div>
                     </div>
                     <button
                       onClick={() => load("refresh")}
-                      className="rounded-lg bg-rose-600 px-3 py-1.5 text-xs font-bold text-white hover:opacity-95"
+                      className="rounded-xl bg-rose-600 px-4 py-2 text-xs font-bold text-white hover:bg-rose-700 transition-colors"
                     >
-                      Retry
+                      Retry Sync
                     </button>
                   </div>
                 </div>
@@ -597,32 +592,36 @@ const AdminDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
           </div>
 
           {/* KPI row */}
-          <div className="px-4 md:px-6 pt-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="px-10 pt-10 animate-in fade-in duration-1000 slide-in-from-bottom-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
               {kpis.map((kpi, idx) => (
-                <div key={idx} className={cn(surface, "p-4 transition-all hover:-translate-y-0.5 hover:shadow-md min-w-0")}>
-                  <div className="flex items-start justify-between gap-3 mb-4">
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className="shrink-0 scale-90 md:scale-100">{kpi.icon}</div>
-                      <div className="min-w-0">
-                        <div className="text-xs md:text-sm font-bold text-gray-900 dark:text-white truncate">{kpi.label}</div>
-                        <div className="text-[10px] text-gray-500 dark:text-gray-400 truncate">{kpi.sub}</div>
+                <div key={idx} className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-[32px] p-8 transition-all hover:-translate-y-2 hover:shadow-2xl group cursor-default">
+                  <div className="flex items-start justify-between gap-4 mb-10">
+                    <div className="flex items-center gap-5">
+                      <div className="shrink-0 transform group-hover:scale-110 transition-transform duration-500 bg-slate-50 dark:bg-slate-950 p-3 rounded-2xl border border-slate-100 dark:border-slate-800">{kpi.icon}</div>
+                      <div>
+                        <div className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-1">{kpi.label}</div>
+                        <div className="text-xs font-bold text-slate-400 dark:text-slate-500 group-hover:text-teal-600 transition-colors">{kpi.sub}</div>
                       </div>
-                    </div>
-                    <div className="hidden xl:block text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-tight shrink-0">
-                      {kpi.rightHint}
                     </div>
                   </div>
 
                   <div className="flex items-end justify-between gap-2">
-                    <div className="text-2xl md:text-3xl font-extrabold tracking-tight text-gray-900 dark:text-white truncate">
-                      {loading ? <Skeleton className="h-9 w-20" /> : kpi.value}
+                    <div className="text-5xl font-black tracking-tighter text-slate-900 dark:text-white">
+                      {loading ? <Skeleton className="h-12 w-28 rounded-xl" /> : kpi.value}
                     </div>
 
-                    <div className="flex items-end gap-1 opacity-40 dark:opacity-20 shrink-0 mb-1">
-                      {[8, 16, 12, 24, 20, 32, 28].map((h, i) => (
-                        <div key={i} className="w-1 rounded-full bg-primary" style={{ height: `${h}px` }} />
+                    <div className="flex items-end gap-1.5 mb-3">
+                      {[8, 18, 12, 28, 22, 36, 30].map((h, i) => (
+                        <div key={i} className="w-1.5 rounded-full bg-teal-500/10 group-hover:bg-teal-500/40 transition-all duration-700" style={{ height: `${h}px` }} />
                       ))}
+                    </div>
+                  </div>
+                  
+                  <div className="mt-8 pt-6 border-t border-slate-50 dark:border-slate-800/50 flex justify-between items-center">
+                    <span className="text-[9px] font-black text-slate-300 dark:text-slate-600 uppercase tracking-[0.2em]">{kpi.rightHint}</span>
+                    <div className="h-6 w-6 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all transform translate-x-4 group-hover:translate-x-0">
+                      <span className="text-teal-500 material-icons-outlined text-[14px]">arrow_forward</span>
                     </div>
                   </div>
                 </div>
@@ -631,147 +630,143 @@ const AdminDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
           </div>
 
           {/* Main grid */}
-          <div className="px-4 md:px-6 py-6">
-            <div className="grid grid-cols-1 gap-6 xl:grid-cols-12">
+          <div className="px-8 py-8">
+            <div className="grid grid-cols-1 gap-8 xl:grid-cols-12">
               {/* Analytics (left) */}
-              <section className={cn(surface, "xl:col-span-8 p-4 md:p-6")}>
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h2 className="text-lg font-extrabold text-gray-900 dark:text-white truncate">Student Analytics</h2>
-                      <Pill tone="cyan">
-                        <span className="material-icons-outlined text-[14px]">insights</span>
-                        Live
-                      </Pill>
+              <section className="xl:col-span-8 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-8 shadow-sm">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 mb-10">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-3">
+                      <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">Student Analytics</h2>
+                      <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-400 text-[10px] font-bold uppercase tracking-widest border border-teal-100 dark:border-teal-800">
+                        <span className="w-1.5 h-1.5 rounded-full bg-teal-500 animate-pulse" />
+                        Live Metrics
+                      </div>
                     </div>
-                    <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                      Snapshot of academic outcomes and operational load.
+                    <p className="text-sm text-slate-500 dark:text-slate-400">
+                      Distribution of academic performance and institutional scale.
                     </p>
                   </div>
 
                   <button
                     onClick={() => openPendingModal("all")}
-                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl border border-border-light bg-white px-3 py-2 text-sm font-bold text-gray-900 hover:bg-gray-50 dark:border-border-dark dark:bg-slate-900/40 dark:text-white dark:hover:bg-slate-900/60"
+                    className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 px-5 py-2.5 text-sm font-bold text-slate-900 dark:text-white hover:bg-white dark:hover:bg-slate-700 transition-all shadow-sm"
                   >
                     <span className="material-icons-outlined text-[18px]">visibility</span>
-                    View Queue
+                    Management Queue
                   </button>
                 </div>
 
-                <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="relative overflow-hidden rounded-2xl border border-emerald-100 bg-emerald-50 p-4 md:p-5 dark:border-emerald-900/30 dark:bg-emerald-900/10">
-                    <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-emerald-200/40 dark:bg-emerald-500/10" />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <div className="relative overflow-hidden rounded-3xl border border-emerald-100/50 bg-emerald-50/30 p-6 dark:border-emerald-900/20 dark:bg-emerald-900/10 transition-all hover:bg-emerald-50/50 dark:hover:bg-emerald-900/20">
+                    <div className="absolute -right-6 -top-6 h-32 w-32 rounded-full bg-emerald-200/20 dark:bg-emerald-500/5" />
                     <div className="relative flex items-start justify-between gap-2">
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-4">
                         <IconBadge icon="school" tone="emerald" />
                         <div>
-                          <div className="text-sm font-bold text-gray-900 dark:text-white">Graduated</div>
-                          <div className="text-[10px] md:text-xs text-gray-600 dark:text-gray-300">Completed students</div>
+                          <div className="text-base font-bold text-slate-900 dark:text-white">Graduated</div>
+                          <div className="text-xs text-slate-500 dark:text-slate-400">Successfully completed</div>
                         </div>
                       </div>
-                      <Pill tone="green">
-                        <span className="material-icons-outlined text-[14px]">trending_up</span>
+                      <div className="px-2 py-0.5 rounded-md bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 text-[9px] font-extrabold uppercase tracking-widest">
                         Healthy
-                      </Pill>
+                      </div>
                     </div>
 
-                    <div className="relative mt-5 flex items-end justify-between">
-                      <div className="text-3xl md:text-4xl font-extrabold tracking-tight text-gray-900 dark:text-white">
-                        {loading ? <Skeleton className="h-10 w-28" /> : formatNumber(stats?.graduatedCount ?? 0)}
+                    <div className="relative mt-8 flex items-end justify-between">
+                      <div className="text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+                        {loading ? <Skeleton className="h-10 w-32" /> : formatNumber(stats?.graduatedCount ?? 0)}
                       </div>
-                      <div className="text-xs font-bold text-emerald-700 dark:text-emerald-300">
+                      <div className="text-xs font-bold text-emerald-600 dark:text-emerald-400 mb-1">
                         {stats?.totalStudents
-                          ? `${Math.round(((stats.graduatedCount || 0) / (stats.totalStudents || 1)) * 100)}% total`
+                          ? `${Math.round(((stats.graduatedCount || 0) / (stats.totalStudents || 1)) * 100)}% of cohort`
                           : "—"}
                       </div>
                     </div>
                   </div>
 
-                  <div className="relative overflow-hidden rounded-2xl border border-amber-100 bg-amber-50 p-4 md:p-5 dark:border-amber-900/30 dark:bg-amber-900/10">
-                    <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-amber-200/40 dark:bg-amber-500/10" />
+                  <div className="relative overflow-hidden rounded-3xl border border-amber-100/50 bg-amber-50/30 p-6 dark:border-amber-900/20 dark:bg-amber-900/10 transition-all hover:bg-amber-50/50 dark:hover:bg-amber-900/20">
+                    <div className="absolute -right-6 -top-6 h-32 w-32 rounded-full bg-amber-200/20 dark:bg-amber-500/5" />
                     <div className="relative flex items-start justify-between gap-2">
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-4">
                         <IconBadge icon="history_edu" tone="amber" />
                         <div>
-                          <div className="text-sm font-bold text-gray-900 dark:text-white">Retake Required</div>
-                          <div className="text-[10px] md:text-xs text-gray-600 dark:text-gray-300">Enrollment flags</div>
+                          <div className="text-base font-bold text-slate-900 dark:text-white">Retake Required</div>
+                          <div className="text-xs text-slate-500 dark:text-slate-400">Requires intervention</div>
                         </div>
                       </div>
-                      <Pill tone="amber">
-                        <span className="material-icons-outlined text-[14px]">priority_high</span>
-                        Action
-                      </Pill>
+                      <div className="px-2 py-0.5 rounded-md bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 text-[9px] font-extrabold uppercase tracking-widest">
+                        Attention
+                      </div>
                     </div>
 
-                    <div className="relative mt-5 flex items-end justify-between">
-                      <div className="text-3xl md:text-4xl font-extrabold tracking-tight text-gray-900 dark:text-white">
-                        {loading ? <Skeleton className="h-10 w-28" /> : formatNumber(stats?.retakeRequirement ?? 0)}
+                    <div className="relative mt-8 flex items-end justify-between">
+                      <div className="text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+                        {loading ? <Skeleton className="h-10 w-32" /> : formatNumber(stats?.retakeRequirement ?? 0)}
                       </div>
-                      <div className="text-xs font-bold text-amber-700 dark:text-amber-300">Review needed</div>
+                      <div className="text-xs font-bold text-amber-600 dark:text-amber-400 mb-1">Review pending</div>
                     </div>
                   </div>
                 </div>
 
                 {/* Major chart */}
-                <div className="mt-6 rounded-2xl border border-border-light bg-gray-50 p-5 dark:border-border-dark dark:bg-slate-800/30">
-                  <div className="flex items-start justify-between gap-4">
+                <div className="mt-8 rounded-3xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/30 p-8">
+                  <div className="flex items-start justify-between gap-4 mb-8">
                     <div>
-                      <h3 className="text-sm font-extrabold uppercase tracking-wider text-gray-700 dark:text-gray-300">
+                      <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">
                         Major Distribution
                       </h3>
-                      <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Top majors and grouped remainder</p>
+                      <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Cohort split by academic specialization</p>
                     </div>
-                    <Pill tone="gray">
+                    <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 text-[10px] font-bold uppercase tracking-widest shadow-sm">
                       <span className="material-icons-outlined text-[14px]">pie_chart</span>
-                      {loading ? "Loading…" : `${formatNumber(majorWidget.total)} students`}
-                    </Pill>
+                      {loading ? "Loading" : `${formatNumber(majorWidget.total)} students`}
+                    </div>
                   </div>
 
-                  <div className="mt-5 grid grid-cols-1 gap-5 md:grid-cols-2">
+                  <div className="grid grid-cols-1 gap-12 lg:grid-cols-2 items-center">
                     <div className="flex items-center justify-center">
                       {loading ? (
-                        <div className="grid place-items-center">
-                          <Skeleton className="h-44 w-44 rounded-full" />
-                          <Skeleton className="mt-3 h-4 w-28" />
+                        <div className="grid place-items-center relative">
+                          <Skeleton className="h-48 w-48 rounded-full" />
+                          <div className="absolute inset-0 flex items-center justify-center flex-col">
+                            <Skeleton className="h-8 w-16 mb-2" />
+                            <Skeleton className="h-4 w-20" />
+                          </div>
                         </div>
                       ) : majorWidget.total > 0 ? (
                         <Donut segments={majorWidget.segments} centerTop={formatCompact(majorWidget.total)} centerBottom="Students" />
                       ) : (
-                        <div className="rounded-xl border border-border-light bg-white p-6 text-center text-sm text-gray-500 dark:border-border-dark dark:bg-slate-900/30 dark:text-gray-400">
-                          No major data found.
+                        <div className="h-48 w-48 rounded-full border-2 border-dashed border-slate-200 dark:border-slate-800 flex items-center justify-center text-sm text-slate-400 italic">
+                          No data
                         </div>
                       )}
                     </div>
 
-                    <div className="space-y-3">
+                    <div className="space-y-4">
                       {loading ? (
-                        <>
-                          <Skeleton className="h-12 w-full" />
-                          <Skeleton className="h-12 w-full" />
-                          <Skeleton className="h-12 w-full" />
-                          <Skeleton className="h-12 w-full" />
-                        </>
+                        Array(4).fill(0).map((_, i) => <Skeleton key={i} className="h-14 w-full rounded-2xl" />)
                       ) : (
                         majorWidget.ranked.map((r, idx) => {
                           const pct = majorWidget.total ? (r.value / majorWidget.total) * 100 : 0;
                           const color = majorWidget.segments[idx]?.color || "#94a3b8";
                           return (
-                            <div key={`${r.label}-${idx}`} className="rounded-xl border border-border-light bg-white p-3 dark:border-border-dark dark:bg-slate-900/30">
-                              <div className="flex items-center justify-between gap-3">
+                            <div key={`${r.label}-${idx}`} className="group p-1 transition-all">
+                              <div className="flex items-center justify-between gap-3 mb-2 px-1">
                                 <div className="min-w-0">
                                   <div className="flex items-center gap-2">
-                                    <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: color }} />
-                                    <div className="truncate text-sm font-semibold text-gray-900 dark:text-white">{r.label || "—"}</div>
+                                    <span className="h-2 w-2 rounded-full" style={{ backgroundColor: color }} />
+                                    <div className="truncate text-sm font-bold text-slate-900 dark:text-white">{r.label || "—"}</div>
                                   </div>
-                                  <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                                    {formatNumber(r.value)} students • {pct.toFixed(1)}%
+                                  <div className="mt-0.5 text-[10px] font-bold text-slate-400 uppercase tracking-tight">
+                                    {pct.toFixed(1)}% of total
                                   </div>
                                 </div>
-                                <div className="text-sm font-extrabold text-gray-900 dark:text-white">{formatCompact(r.value)}</div>
+                                <div className="text-sm font-extrabold text-slate-900 dark:text-white">{formatNumber(r.value)}</div>
                               </div>
 
-                              <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-gray-100 dark:bg-slate-700/50">
-                                <div className="h-full rounded-full" style={{ width: `${clamp(pct, 0, 100)}%`, backgroundColor: color }} />
+                              <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800/50">
+                                <div className="h-full rounded-full transition-all duration-1000 ease-out" style={{ width: `${clamp(pct, 0, 100)}%`, backgroundColor: color }} />
                               </div>
                             </div>
                           );
@@ -783,192 +778,148 @@ const AdminDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
               </section>
 
               {/* Right column */}
-              <aside className="xl:col-span-4 flex flex-col gap-6">
+              <aside className="xl:col-span-4 flex flex-col gap-10">
                 {/* System Status */}
-                <div className={cn(surface, "p-5 md:p-6")}>
-                  <div className="flex items-start justify-between gap-2">
-                    <div>
-                      <h3 className="text-sm font-extrabold text-gray-900 dark:text-white">System Status</h3>
-                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Live health derived from API calls</p>
+                <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-[40px] p-10 shadow-sm transition-all hover:shadow-md">
+                  <div className="flex items-start justify-between gap-6 mb-10">
+                    <div className="space-y-1">
+                      <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Core Engine</h3>
+                      <p className="text-sm font-bold text-slate-500">Service availability</p>
                     </div>
                     {(() => {
                       const pill =
                         apiHealth === "online" && sessionState === "active"
-                          ? { tone: "green" as const, label: "Operational" }
+                          ? { tone: "green" as const, label: "Nominal" }
                           : apiHealth === "degraded"
-                          ? { tone: "amber" as const, label: "Degraded" }
+                          ? { tone: "amber" as const, label: "Warning" }
                           : apiHealth === "offline"
-                          ? { tone: "rose" as const, label: "Offline" }
+                          ? { tone: "rose" as const, label: "Critical" }
                           : { tone: "gray" as const, label: "Unknown" };
                       return (
-                        <Pill tone={pill.tone}>
+                        <div className={cn(
+                          "flex items-center gap-2.5 px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-[0.2em] border shadow-sm",
+                          pill.tone === "green" ? "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border-emerald-100 dark:border-emerald-800" :
+                          pill.tone === "amber" ? "bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 border-amber-100 dark:border-amber-800" :
+                          pill.tone === "rose" ? "bg-rose-50 dark:bg-rose-900/20 text-rose-700 dark:text-rose-400 border-rose-100 dark:border-rose-800" :
+                          "bg-slate-50 dark:bg-slate-900 text-slate-500 dark:text-slate-400 border-slate-100 dark:border-slate-800"
+                        )}>
                           <span className="material-icons-outlined text-[14px]">
-                            {pill.tone === "green" ? "verified" : pill.tone === "amber" ? "warning_amber" : "error_outline"}
+                            {pill.tone === "green" ? "check_circle" : pill.tone === "amber" ? "warning" : "error"}
                           </span>
                           {pill.label}
-                        </Pill>
-                      );
-                    })()}
-                  </div>
-
-                  <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-1 gap-3">
-                    {(() => {
-                      const p = healthPill(apiHealth);
-                      return (
-                        <div className="flex items-center justify-between rounded-xl border border-border-light bg-white px-4 py-3 dark:border-border-dark dark:bg-slate-900/30">
-                          <div className="flex items-center gap-2">
-                            <span
-                              className={cn(
-                                "material-icons-outlined text-[18px]",
-                                p.tone === "green"
-                                  ? "text-emerald-500"
-                                  : p.tone === "amber"
-                                  ? "text-amber-500"
-                                  : p.tone === "rose"
-                                  ? "text-rose-500"
-                                  : "text-slate-400"
-                              )}
-                            >
-                              dns
-                            </span>
-                            <div className="text-sm font-bold text-gray-900 dark:text-white">API</div>
-                          </div>
-                          <div
-                            className={cn(
-                              "text-[10px] font-extrabold uppercase",
-                              p.tone === "green"
-                                ? "text-emerald-600 dark:text-emerald-300"
-                                : p.tone === "amber"
-                                ? "text-amber-700 dark:text-amber-300"
-                                : p.tone === "rose"
-                                ? "text-rose-700 dark:text-rose-300"
-                                : "text-slate-500 dark:text-slate-300"
-                            )}
-                          >
-                            {p.label}
-                          </div>
-                        </div>
-                      );
-                    })()}
-
-                    {(() => {
-                      const p = healthPill(dbHealth);
-                      return (
-                        <div className="flex items-center justify-between rounded-xl border border-border-light bg-white px-4 py-3 dark:border-border-dark dark:bg-slate-900/30">
-                          <div className="flex items-center gap-2">
-                            <span
-                              className={cn(
-                                "material-icons-outlined text-[18px]",
-                                p.tone === "green"
-                                  ? "text-emerald-500"
-                                  : p.tone === "amber"
-                                  ? "text-amber-500"
-                                  : p.tone === "rose"
-                                  ? "text-rose-500"
-                                  : "text-slate-400"
-                              )}
-                            >
-                              storage
-                            </span>
-                            <div className="text-sm font-bold text-gray-900 dark:text-white">Database</div>
-                          </div>
-                          <div
-                            className={cn(
-                              "text-[10px] font-extrabold uppercase",
-                              p.tone === "green"
-                                ? "text-emerald-600 dark:text-emerald-300"
-                                : p.tone === "amber"
-                                ? "text-amber-700 dark:text-amber-300"
-                                : p.tone === "rose"
-                                ? "text-rose-700 dark:text-rose-300"
-                                : "text-slate-500 dark:text-slate-300"
-                            )}
-                          >
-                            {p.label}
-                          </div>
                         </div>
                       );
                     })()}
                   </div>
 
-                  <div className="mt-5 rounded-xl bg-gray-50/50 p-4 text-[10px] md:text-xs text-gray-500 dark:bg-slate-800/30 dark:text-gray-400">
-                    <span className="font-bold text-gray-700 dark:text-gray-200">Tip:</span> Use Refresh for real-time updates during enrollment periods.
-                    <div className="mt-1 opacity-80">{lastUpdated ? `Checked ${timeAgo(lastUpdated)}` : "No checks yet."}</div>
+                  <div className="space-y-5">
+                    {[
+                      { label: "API Cluster", health: apiHealth, icon: "dns" },
+                      { label: "Database", health: dbHealth, icon: "storage" },
+                    ].map((svc, i) => {
+                      const p = healthPill(svc.health);
+                      return (
+                        <div key={i} className="flex items-center justify-between rounded-[24px] border border-slate-50 dark:border-slate-800/50 bg-slate-50/20 dark:bg-slate-950/30 px-6 py-5 transition-all hover:bg-white dark:hover:bg-slate-900 hover:shadow-sm group">
+                          <div className="flex items-center gap-4">
+                            <span className={cn(
+                              "material-icons-outlined text-[20px] transition-colors",
+                              p.tone === "green" ? "text-emerald-500" :
+                              p.tone === "amber" ? "text-amber-500" :
+                              p.tone === "rose" ? "text-rose-500" : "text-slate-300"
+                            )}>
+                              {svc.icon}
+                            </span>
+                            <div className="text-sm font-black text-slate-900 dark:text-white tracking-tight">{svc.label}</div>
+                          </div>
+                          <div className={cn(
+                            "text-[9px] font-black uppercase tracking-[0.2em] px-2 py-1 rounded-md",
+                            p.tone === "green" ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-900/40" :
+                            p.tone === "amber" ? "bg-amber-50 text-amber-600 dark:bg-amber-900/40" :
+                            p.tone === "rose" ? "bg-rose-50 text-rose-600 dark:bg-rose-900/40" :
+                            "bg-slate-100 text-slate-400 dark:bg-slate-800"
+                          )}>
+                            {p.label}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <div className="mt-10 p-6 rounded-[24px] bg-slate-50/50 dark:bg-slate-950/50 border border-slate-100 dark:border-slate-800">
+                    <div className="flex gap-4">
+                      <span className="text-xl opacity-50">💡</span>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-bold">
+                        Global sync pulse: Every navigation cycle or manual refresh updates system state.
+                        <span className="block mt-3 text-[10px] font-black uppercase tracking-widest text-slate-300 dark:text-slate-600 italic">
+                          {lastUpdated ? `Verified ${timeAgo(lastUpdated)}` : "Pending Protocol"}
+                        </span>
+                      </p>
+                    </div>
                   </div>
                 </div>
 
                 {/* Pending inbox */}
-                <div className={cn(surface, "p-5 md:p-6")}>
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2">
-                        <h3 className="text-sm font-extrabold text-gray-900 dark:text-white">Pending Actions</h3>
-                        {totalPending > 0 && (
-                          <span className="inline-flex rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-extrabold text-amber-700">
-                            {totalPending}
-                          </span>
-                        )}
-                      </div>
-                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Items requiring immediate review.</p>
+                <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-[40px] p-10 shadow-sm transition-all hover:shadow-md">
+                  <div className="flex items-start justify-between gap-6 mb-10">
+                    <div className="space-y-1">
+                      <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Action Inbox</h3>
+                      <p className="text-sm font-bold text-slate-500">Awaiting intervention</p>
                     </div>
 
-                    <button onClick={() => openPendingModal("all")} className="text-xs font-bold text-primary hover:underline uppercase tracking-wide">
-                      View all
+                    <button onClick={() => openPendingModal("all")} className="text-[10px] font-black text-teal-600 hover:text-teal-700 uppercase tracking-[0.2em] transition-colors border-b-2 border-teal-600/20 pb-1">
+                      Expand
                     </button>
                   </div>
 
-                  <div className="mt-5 space-y-3">
+                  <div className="space-y-5">
                     {loading ? (
-                      Array(2)
-                        .fill(0)
-                        .map((_, i) => (
-                          <React.Fragment key={i}>
-                            <Skeleton className="h-16 w-full" />
-                          </React.Fragment>
-                        ))
+                      Array(2).fill(0).map((_, i) => <Skeleton key={i} className="h-28 w-full rounded-[24px]" />)
                     ) : (
                       workQueue.map((w) => (
                         <div
                           key={w.key}
-                          className="group rounded-2xl border border-border-light bg-white p-3 md:p-4 transition-all hover:border-primary/30 dark:border-border-dark dark:bg-slate-900/40 shadow-sm"
+                          className="group relative rounded-[32px] border border-slate-50 dark:border-slate-800 bg-slate-50/20 dark:bg-slate-950/30 p-6 transition-all hover:bg-white dark:hover:bg-slate-900 hover:shadow-xl hover:border-teal-500/20"
                         >
-                          <div className="flex items-start justify-between gap-4">
-                            <div className="flex items-start gap-3 min-w-0 flex-1">
-                              <div className="shrink-0">
+                          <div className="flex items-start justify-between gap-6">
+                            <div className="flex items-start gap-5 flex-1 min-w-0">
+                              <div className="shrink-0 transform group-hover:scale-110 transition-transform duration-500">
                                 <IconBadge icon={w.icon} tone={w.tone === "rose" ? "rose" : "emerald"} />
                               </div>
                               <div className="min-w-0 flex-1">
-                                <div className="flex flex-wrap items-center gap-2">
-                                  <div className="truncate text-sm font-bold text-gray-900 dark:text-white">{w.title}</div>
-                                  {w.count > 0 ? (
-                                    <Pill tone={w.tone === "rose" ? "rose" : "green"}>{w.count}</Pill>
-                                  ) : (
-                                    <Pill tone="gray">0</Pill>
-                                  )}
+                                <div className="flex items-center gap-3 mb-2">
+                                  <div className="truncate text-base font-black text-slate-900 dark:text-white tracking-tight">{w.title}</div>
+                                  <div className={cn(
+                                    "px-2.5 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-widest border shadow-sm",
+                                    w.count > 0 
+                                      ? (w.tone === "rose" ? "bg-rose-50 text-rose-700 border-rose-100 dark:bg-rose-900/20 dark:text-rose-400 dark:border-rose-900/40" : "bg-emerald-50 text-emerald-700 border-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-900/40")
+                                      : "bg-slate-50 text-slate-300 border-slate-100 dark:bg-slate-900 dark:text-slate-600 dark:border-slate-800"
+                                  )}>
+                                    {w.count}
+                                  </div>
                                 </div>
-                                <div className="mt-1 text-[11px] text-gray-500 dark:text-gray-400 line-clamp-1">{w.description}</div>
-
+                                <div className="text-[11px] font-bold text-slate-400 dark:text-slate-500 line-clamp-2 leading-relaxed mb-4">{w.description}</div>
+                                
                                 {w.sample && (
-                                  <div className="mt-2 text-[10px] font-bold text-gray-400 dark:text-gray-500 flex items-center gap-1">
-                                    <span className="material-icons-outlined text-[12px]">history</span>
+                                  <div className="flex items-center gap-2 text-[9px] font-black text-slate-300 dark:text-slate-600 uppercase tracking-widest">
+                                    <span className="material-icons-outlined text-[14px]">update</span>
                                     {timeAgo(w.sample?.updated_at || w.sample?.created_at)}
                                   </div>
                                 )}
                               </div>
                             </div>
-
-                            <div className="flex flex-col gap-2 shrink-0">
-                              <button
-                                onClick={() => openPendingModal(w.modalTab)}
-                                className={cn(
-                                  "rounded-lg px-2.5 py-1.5 text-[10px] font-extrabold uppercase tracking-wide shadow-sm transition-all active:scale-95",
-                                  w.count > 0 ? "bg-primary text-white hover:opacity-90" : "bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-slate-800"
-                                )}
-                              >
-                                Review
-                              </button>
-                            </div>
                           </div>
+                          
+                          <button
+                            onClick={() => openPendingModal(w.modalTab)}
+                            className={cn(
+                              "mt-6 w-full rounded-2xl py-3.5 text-[10px] font-black uppercase tracking-[0.2em] transition-all active:scale-[0.98] shadow-sm",
+                              w.count > 0 
+                                ? "bg-slate-900 dark:bg-slate-800 text-white hover:bg-slate-800 dark:hover:bg-slate-700" 
+                                : "bg-slate-50 dark:bg-slate-900 text-slate-300 cursor-not-allowed border border-slate-100 dark:border-slate-800"
+                            )}
+                          >
+                            Resolve Tasks
+                          </button>
                         </div>
                       ))
                     )}
@@ -977,8 +928,10 @@ const AdminDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
               </aside>
             </div>
 
-            <footer className="mt-6 border-t border-border-light pt-6 text-center text-xs text-gray-400 dark:border-border-dark">
-              © {new Date().getFullYear()} University Admin System • Built for real operations
+            <footer className="mt-20 py-12 border-t border-slate-50 dark:border-slate-900 text-center">
+              <p className="text-[10px] font-black text-slate-300 dark:text-slate-700 uppercase tracking-[0.4em]">
+                University Administrative Operating System • V2.4.0
+              </p>
             </footer>
           </div>
         </main>
@@ -987,25 +940,25 @@ const AdminDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
       {/* Pending Queue Modal */}
       <Modal
         open={pendingModalOpen}
-        title="Pending Queue"
-        subtitle="Live records returned by /api/v1/admin/pending-actions"
+        title="Institutional Queue"
+        subtitle="Priority protocols from the central records fabric"
         onClose={() => setPendingModalOpen(false)}
       >
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex flex-wrap gap-2">
+        <div className="flex flex-col gap-8 sm:flex-row sm:items-center sm:justify-between mb-10 px-2">
+          <div className="flex flex-wrap gap-3 p-2 bg-slate-50 dark:bg-slate-950 rounded-[24px] border border-slate-100 dark:border-slate-800 shadow-inner">
             {[
-              { key: "all", label: `All (${pendingDocs.all.length})` },
-              { key: "pending", label: `Schedule Pending (${pendingDocs.conflict.length})` },
-              { key: "reset", label: `Password Reset (${pendingDocs.reset.length || mustResetPasswordCount || 0})` },
+              { key: "all", label: `Aggregate (${pendingDocs.all.length})` },
+              { key: "pending", label: `Conflict (${pendingDocs.conflict.length})` },
+              { key: "reset", label: `Security (${pendingDocs.reset.length || mustResetPasswordCount || 0})` },
             ].map((t) => (
               <button
                 key={t.key}
                 onClick={() => setPendingModalTab(t.key as any)}
                 className={cn(
-                  "rounded-full px-3 py-1.5 text-xs font-extrabold border transition",
+                  "rounded-2xl px-6 py-2.5 text-[10px] font-black uppercase tracking-widest transition-all",
                   pendingModalTab === t.key
-                    ? "border-primary bg-primary/10 text-primary"
-                    : "border-border-light bg-white text-gray-700 hover:bg-gray-50 dark:border-border-dark dark:bg-slate-900/30 dark:text-gray-200 dark:hover:bg-slate-900/50"
+                    ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-xl ring-1 ring-slate-100 dark:ring-slate-700"
+                    : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
                 )}
               >
                 {t.label}
@@ -1013,30 +966,30 @@ const AdminDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
             ))}
           </div>
 
-          <div className="relative">
-            <span className="material-icons-outlined pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-gray-400">
+          <div className="relative flex-1 max-w-sm group">
+            <span className="material-icons-outlined pointer-events-none absolute left-5 top-1/2 -translate-y-1/2 text-[20px] text-slate-300 group-focus-within:text-teal-500 transition-colors">
               search
             </span>
             <input
               value={pendingSearch}
               onChange={(e) => setPendingSearch(e.target.value)}
-              placeholder="Search in queue…"
-              className="w-full rounded-xl border border-border-light bg-white pl-10 pr-3 py-2 text-sm font-semibold text-gray-900 shadow-sm outline-none focus:ring-2 focus:ring-primary/30 dark:border-border-dark dark:bg-slate-900/30 dark:text-white"
+              placeholder="Search protocols..."
+              className="w-full rounded-[24px] border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950 pl-14 pr-6 py-4 text-sm font-bold text-slate-900 dark:text-white outline-none focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500/50 transition-all shadow-sm"
             />
           </div>
         </div>
 
-        <div className="mt-4 overflow-hidden rounded-xl border border-border-light dark:border-border-dark">
-          <div className="grid grid-cols-12 bg-gray-50 px-4 py-2 text-[11px] font-extrabold uppercase tracking-wider text-gray-600 dark:bg-slate-900/40 dark:text-gray-300">
-            <div className="col-span-3">Type</div>
-            <div className="col-span-5">Key</div>
-            <div className="col-span-2">Status</div>
-            <div className="col-span-2 text-right">Updated</div>
+        <div className="overflow-hidden rounded-[32px] border border-slate-100 dark:border-slate-800 shadow-sm bg-white dark:bg-slate-950 mx-2">
+          <div className="grid grid-cols-12 bg-slate-50/50 dark:bg-slate-900/50 px-10 py-5 text-[9px] font-black uppercase tracking-[0.3em] text-slate-400 dark:text-slate-500 border-b border-slate-100 dark:border-slate-800">
+            <div className="col-span-3">Protocol</div>
+            <div className="col-span-5">Subject Matrix</div>
+            <div className="col-span-2">Vector</div>
+            <div className="col-span-2 text-right">Age</div>
           </div>
 
-          <div className="divide-y divide-border-light dark:divide-border-dark">
+          <div className="divide-y divide-slate-50 dark:divide-slate-800/50 max-h-[50vh] overflow-y-auto scrollbar-hide">
             {modalList.length === 0 ? (
-              <div className="p-6 text-center text-sm text-gray-500 dark:text-gray-400">No items in this bucket.</div>
+              <div className="p-20 text-center text-sm font-bold text-slate-300 italic uppercase tracking-widest">Zero Matching Records</div>
             ) : (
               modalList.slice(0, 50).map((row, idx) => {
                 const doc = row.doc || {};
@@ -1049,14 +1002,14 @@ const AdminDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                       if (row.kind === "Schedule Pending") go("/admin/enrollment");
                       else go("/admin/students");
                     }}
-                    className="grid w-full grid-cols-12 items-center px-4 py-3 text-left text-sm hover:bg-gray-50 dark:hover:bg-slate-900/40"
+                    className="grid w-full grid-cols-12 items-center px-10 py-6 text-left text-sm hover:bg-slate-50/50 dark:hover:bg-slate-900/40 transition-all group"
                   >
-                    <div className="col-span-3 font-extrabold text-gray-900 dark:text-white">{row.kind}</div>
-                    <div className="col-span-5 truncate text-gray-700 dark:text-gray-200">{meta.key}</div>
+                    <div className="col-span-3 font-black text-slate-900 dark:text-white group-hover:text-teal-600 transition-colors uppercase tracking-widest text-[11px]">{row.kind}</div>
+                    <div className="col-span-5 truncate text-slate-500 dark:text-slate-400 font-bold">{meta.key}</div>
                     <div className="col-span-2">
                       <StatusBadge kind={row.kind} status={meta.status} />
                     </div>
-                    <div className="col-span-2 text-right text-xs font-bold text-gray-500 dark:text-gray-400">
+                    <div className="col-span-2 text-right text-[10px] font-black text-slate-300 dark:text-slate-600 uppercase tracking-tighter tabular-nums">
                       {meta.when ? timeAgo(meta.when) : "—"}
                     </div>
                   </button>
@@ -1066,18 +1019,18 @@ const AdminDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
           </div>
         </div>
 
-        <div className="mt-4 flex flex-wrap justify-end gap-2">
+        <div className="mt-10 flex flex-wrap justify-end gap-4 px-2">
           <button
             onClick={() => go("/admin/enrollment")}
-            className="rounded-xl bg-primary px-4 py-2 text-sm font-extrabold text-white hover:opacity-95"
+            className="rounded-[20px] bg-teal-600 px-8 py-4 text-[11px] font-black uppercase tracking-widest text-white hover:bg-teal-700 shadow-lg shadow-teal-500/20 transition-all active:scale-[0.98]"
           >
-            Go to Enrollment
+            Manage Enrollment
           </button>
           <button
             onClick={() => go("/admin/students")}
-            className="rounded-xl border border-border-light bg-white px-4 py-2 text-sm font-bold text-gray-900 hover:bg-gray-50 dark:border-border-dark dark:bg-slate-900/40 dark:text-white dark:hover:bg-slate-900/60"
+            className="rounded-[20px] border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-8 py-4 text-[11px] font-black uppercase tracking-widest text-slate-900 dark:text-white hover:bg-slate-50 dark:hover:bg-slate-800 transition-all shadow-sm active:scale-[0.98]"
           >
-            Go to Students
+            Manage Students
           </button>
         </div>
       </Modal>

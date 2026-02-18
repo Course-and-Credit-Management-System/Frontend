@@ -42,6 +42,7 @@ import StudentDegreeAudit from "./pages/StudentDegreeAudit";
 
 // ✅ student course details page stays as CourseDetails.tsx (student-facing)
 import CourseDetails from "./pages/CourseDetails";
+import { DetailedCardGridSkeleton, Skeleton } from "./components/Skeleton";
 
 import { User } from "./types";
 import { api } from "./lib/api";
@@ -114,7 +115,16 @@ const App: React.FC = () => {
     }
   };
 
-  if (booting) return <div style={{ padding: 20 }}>Loading...</div>;
+  if (booting) {
+    return (
+      <div className="min-h-screen bg-white dark:bg-slate-950 p-10 flex flex-col items-center justify-center space-y-8 animate-in fade-in duration-700">
+        <div className="w-full max-w-4xl space-y-8">
+          <Skeleton className="h-10 w-64 rounded-2xl" />
+          <DetailedCardGridSkeleton count={2} />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <UIProvider>
