@@ -36,7 +36,10 @@ import StudentTrackSelection from "./pages/StudentTrackSelection";
 import StudentMajorSelection from "./pages/StudentMajorSelection";
 import StudentAnnouncements from "./pages/StudentAnnouncements";
 import StudentMajorLocked from "./pages/StudentMajorLocked";
-import StudentMessages from "./pages/StudentMessages";
+import StudentMessages from "./pages/StudentMessages";import StudentSpecialMajorAccess from "./pages/StudentSpecialMajorAccess";
+import StudentSpecialMajorError from "./pages/StudentSpecialMajorError";
+import StudentDegreeAudit from "./pages/StudentDegreeAudit";
+
 // ✅ student course details page stays as CourseDetails.tsx (student-facing)
 import CourseDetails from "./pages/CourseDetails";
 import { DetailedCardGridSkeleton, Skeleton } from "./components/Skeleton";
@@ -259,6 +262,14 @@ const App: React.FC = () => {
                   element={<StudentMajorLocked user={user} onLogout={handleLogout} />}
                 />
                 <Route
+                  path="/student/special-major/access"
+                  element={<StudentSpecialMajorAccess user={user} onLogout={handleLogout} />}
+                />
+                <Route
+                  path="/student/special-major/error"
+                  element={<StudentSpecialMajorError user={user} onLogout={handleLogout} />}
+                />
+                <Route
                   path="/student/enrollment"
                   element={<StudentEnrollment user={user} onLogout={handleLogout} />}
                 />
@@ -295,7 +306,11 @@ const App: React.FC = () => {
               <Route
                 path="/student/messages"
                 element={<StudentMessages user={user} onLogout={handleLogout} />}
-              />
+              />                <Route
+                  path="/student/degree-audit"
+                  element={<StudentDegreeAudit user={user} onLogout={handleLogout} />}
+                />
+
                 <Route path="*" element={<Navigate to="/student/dashboard" replace />} />
               </>
             ) : (

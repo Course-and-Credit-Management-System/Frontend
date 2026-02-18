@@ -63,7 +63,12 @@ const StudentTrackSelection: React.FC<{ user: User; onLogout: () => void }> = ({
     setLoading(true);
     try {
       await api.studentSelectTrack({ track });
-      navigate("/student/major/select", { replace: true });
+      const y = eligibility?.current_year_num;
+      if (typeof y === "number" && y === 3) {
+        navigate("/student/major/locked", { replace: true, state: { message: "Major selection is not allowed in Third Year. Please proceed next year per program rules." } });
+      } else {
+        navigate("/student/major/select", { replace: true });
+      }
     } catch (e: any) {
       setError(e?.message || "Failed");
     } finally {
