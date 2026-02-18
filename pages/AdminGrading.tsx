@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
+import { TableSkeletonRows } from '../components/Skeleton';
 import { User } from '../types';
 
 interface GradingProps {
@@ -321,91 +322,106 @@ const AdminGrading: React.FC<GradingProps> = ({ user, onLogout }) => {
   const hasChanges = Object.keys(editedScores).length > 0;
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background-light dark:bg-background-dark font-sans">
+    <div className="flex h-screen overflow-hidden bg-white dark:bg-slate-950 font-poppins">
       <Sidebar user={user} onLogout={onLogout} />
       <div className="flex flex-1 flex-col overflow-hidden">
-        <Header title="Grading & Results Management" user={user} />
-        <main className="flex-1 overflow-y-auto p-6">
-           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
-            <div className="flex flex-wrap items-center gap-3">
+        <Header title="Academic Performance" user={user} />
+        <main className="flex-1 overflow-y-auto p-10 animate-in fade-in duration-1000 slide-in-from-bottom-4 scrollbar-hide max-w-[1600px] mx-auto w-full">
+           <div className="flex flex-col xl:flex-row items-start xl:items-end justify-between gap-10 mb-12">
+            <div className="flex flex-wrap items-end gap-5">
               {/* Year Selection */}
-              <select
-                value={year}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  const newYear = val === '' ? '' : Number(val);
-                  setYear(newYear);
-                  if (newYear === '') {
-                    setSection('');
-                    setMajor('');
-                  } else if (newYear <= 2) {
-                    setMajor('');
-                  } else if (newYear === 3) {
-                    setMajor('CS');
-                  } else {
-                    setSection('');
-                    setMajor('SE');
-                  }
-                }}
-                className="pl-3 pr-10 py-2 bg-white dark:bg-slate-800 border border-border-light dark:border-border-dark rounded-md text-sm shadow-sm outline-none"
-              >
-                <option value="">All Years</option>
-                <option value={1}>1st Year</option>
-                <option value={2}>2nd Year</option>
-                <option value={3}>3rd Year</option>
-                <option value={4}>4th Year</option>
-                <option value={5}>5th Year</option>
-              </select>
+              <div className="space-y-2.5">
+                <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] ml-1">Academic Year</label>
+                <select
+                  value={year}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    const newYear = val === '' ? '' : Number(val);
+                    setYear(newYear);
+                    if (newYear === '') {
+                      setSection('');
+                      setMajor('');
+                    } else if (newYear <= 2) {
+                      setMajor('');
+                    } else if (newYear === 3) {
+                      setMajor('CS');
+                    } else {
+                      setSection('');
+                      setMajor('SE');
+                    }
+                  }}
+                  className="rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950 py-3 pl-4 pr-10 text-xs font-black text-slate-700 dark:text-white outline-none focus:ring-4 focus:ring-teal-500/10 transition-all cursor-pointer shadow-sm appearance-none min-w-[140px]"
+                >
+                  <option value="">All Tiers</option>
+                  {[1,2,3,4,5].map(y => <option key={y} value={y}>{y} Year</option>)}
+                </select>
+              </div>
 
               {/* Semester Selection */}
-              <select
-                value={semester}
-                onChange={(e) => setSemester(e.target.value === '' ? '' : Number(e.target.value))}
-                className="pl-3 pr-10 py-2 bg-white dark:bg-slate-800 border border-border-light dark:border-border-dark rounded-md text-sm shadow-sm outline-none"
-              >
-                <option value="">All Semesters</option>
-                <option value={1}>1st Semester</option>
-                <option value={2}>2nd Semester</option>
-              </select>
-
-              {/* Section Selection (years 1-3 or when All Years) */}
-              {showSection && (
+              <div className="space-y-2.5">
+                <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] ml-1">Period</label>
                 <select
-                  value={section}
-                  onChange={(e) => setSection(e.target.value)}
-                  className="pl-3 pr-10 py-2 bg-white dark:bg-slate-800 border border-border-light dark:border-border-dark rounded-md text-sm shadow-sm outline-none"
+                  value={semester}
+                  onChange={(e) => setSemester(e.target.value === '' ? '' : Number(e.target.value))}
+                  className="rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950 py-3 pl-4 pr-10 text-xs font-black text-slate-700 dark:text-white outline-none focus:ring-4 focus:ring-teal-500/10 transition-all cursor-pointer shadow-sm appearance-none min-w-[120px]"
                 >
-                  <option value="">All Sections</option>
-                  <option value="A">Section A</option>
-                  <option value="B">Section B</option>
-                  <option value="C">Section C</option>
+                  <option value="">Full Cycle</option>
+                  <option value={1}>1st Sem</option>
+                  <option value={2}>2nd Sem</option>
                 </select>
+              </div>
+
+              {/* Section Selection */}
+              {showSection && (
+                <div className="space-y-2.5 animate-in fade-in slide-in-from-left-4">
+                  <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] ml-1">Cohort</label>
+                  <select
+                    value={section}
+                    onChange={(e) => setSection(e.target.value)}
+                    className="rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950 py-3 pl-4 pr-10 text-xs font-black text-slate-700 dark:text-white outline-none focus:ring-4 focus:ring-teal-500/10 transition-all cursor-pointer shadow-sm appearance-none min-w-[120px]"
+                  >
+                    <option value="">All Sec</option>
+                    <option value="A">Sec A</option>
+                    <option value="B">Sec B</option>
+                    <option value="C">Sec C</option>
+                  </select>
+                </div>
               )}
 
-              {/* Major Selection (years 3-5 or when All Years) */}
+              {/* Major Selection */}
               {showMajor && (
-                <select
-                  value={major}
-                  onChange={(e) => setMajor(e.target.value)}
-                  className="pl-3 pr-10 py-2 bg-white dark:bg-slate-800 border border-border-light dark:border-border-dark rounded-md text-sm shadow-sm outline-none"
-                >
-                  <option value="">All Majors</option>
-                  {majorOptions.map((m) => (
-                    <option key={m} value={m}>{m}</option>
-                  ))}
-                </select>
+                <div className="space-y-2.5 animate-in fade-in slide-in-from-left-4">
+                  <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] ml-1">Specialization</label>
+                  <select
+                    value={major}
+                    onChange={(e) => setMajor(e.target.value)}
+                    className="rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950 py-3 pl-4 pr-10 text-xs font-black text-slate-700 dark:text-white outline-none focus:ring-4 focus:ring-teal-500/10 transition-all cursor-pointer shadow-sm appearance-none min-w-[160px]"
+                  >
+                    <option value="">All Majors</option>
+                    {majorOptions.map((m) => (
+                      <option key={m} value={m}>{m}</option>
+                    ))}
+                  </select>
+                </div>
               )}
 
               {/* Course Code Input */}
-              <input
-                type="text"
-                placeholder="Course Code (optional)"
-                value={courseCode}
-                onChange={(e) => setCourseCode(e.target.value)}
-                className="pl-3 pr-3 py-2 bg-white dark:bg-slate-800 border border-border-light dark:border-border-dark rounded-md text-sm shadow-sm outline-none w-44"
-              />
+              <div className="space-y-2.5">
+                <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] ml-1">Inventory ID</label>
+                <div className="relative group">
+                  <span className="material-icons-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 text-base group-focus-within:text-teal-500 transition-colors">qr_code</span>
+                  <input
+                    type="text"
+                    placeholder="Search Code..."
+                    value={courseCode}
+                    onChange={(e) => setCourseCode(e.target.value)}
+                    className="pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl text-xs font-bold text-slate-900 dark:text-white outline-none focus:ring-4 focus:ring-teal-500/10 transition-all w-44 shadow-inner"
+                  />
+                </div>
+              </div>
             </div>
-            <div className="flex items-center gap-3">
+
+            <div className="flex flex-wrap items-center gap-4">
               <input
                 type="file"
                 ref={fileInputRef}
@@ -416,10 +432,9 @@ const AdminGrading: React.FC<GradingProps> = ({ user, onLogout }) => {
               <button
                 onClick={() => fileInputRef.current?.click()}
                 disabled={importing}
-                className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-hover text-white rounded-md text-sm font-medium shadow-sm transition-colors disabled:opacity-50"
+                className="h-12 px-6 rounded-[20px] border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-[10px] font-black uppercase tracking-widest text-slate-700 dark:text-white hover:bg-slate-50 transition-all shadow-sm active:scale-95 disabled:opacity-40"
               >
-                <span className="material-icons-outlined text-base">file_upload</span>
-                {importing ? 'Importing...' : 'Import Excel'}
+                Bulk Import
               </button>
               <button
                 onClick={() => {
@@ -427,110 +442,126 @@ const AdminGrading: React.FC<GradingProps> = ({ user, onLogout }) => {
                   setShowAddModal(true);
                 }}
                 disabled={year === '' || semester === ''}
-                title={year === '' || semester === '' ? 'Select Year and Semester first' : ''}
-                className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md text-sm font-medium shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="h-12 px-8 rounded-[20px] bg-teal-600 text-[10px] font-black uppercase tracking-widest text-white hover:bg-teal-700 transition-all shadow-xl shadow-teal-500/20 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed"
               >
-                <span className="material-icons-outlined text-base">add</span>
-                Add Result
+                Insert Result
               </button>
               <button
                 onClick={handleSaveGrades}
                 disabled={saving || !hasChanges}
-                className={`flex items-center gap-2 px-4 py-2 text-white rounded-md text-sm font-medium shadow-sm transition-colors disabled:opacity-50 ${
-                  hasChanges ? 'bg-primary hover:bg-primary-hover' : 'bg-gray-400'
+                className={`h-12 px-8 rounded-[20px] text-[10px] font-black uppercase tracking-widest text-white transition-all shadow-xl active:scale-95 disabled:opacity-40 ${
+                  hasChanges ? 'bg-slate-900 dark:bg-slate-800 hover:bg-slate-800' : 'bg-slate-200 dark:bg-slate-800 cursor-not-allowed'
                 }`}
               >
-                <span className="material-icons-outlined text-base">save</span>
-                {saving ? 'Saving...' : `Save Grades${hasChanges ? ` (${Object.keys(editedScores).length})` : ''}`}
+                {saving ? 'Syncing...' : `Commit Metrics ${hasChanges ? `(${Object.keys(editedScores).length})` : ''}`}
               </button>
             </div>
           </div>
 
           {/* Status Message */}
           {message && (
-            <div className={`mb-4 p-3 rounded-md text-sm ${message.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+            <div className={`mb-10 p-5 rounded-[24px] text-sm font-bold animate-in fade-in slide-in-from-top-4 flex items-center gap-4 shadow-sm ${message.type === 'success' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-900/40' : 'bg-rose-50 text-rose-700 border border-rose-100 dark:bg-rose-950/30 dark:text-rose-400 dark:border-rose-900/40'}`}>
+              <span className="material-icons-outlined text-2xl">{message.type === 'success' ? 'verified' : 'report_problem'}</span>
               {message.text}
             </div>
           )}
 
-          <div className="bg-[#077d8a]/5 dark:bg-[#077d8a]/20 border border-primary/20 rounded-lg p-3 mb-6 flex flex-wrap gap-4 text-xs text-slate-600 dark:text-slate-400 items-center">
-            <span className="font-semibold text-primary">Grading Scale:</span>
-            <div className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-green-500"></span> 90-100 (A+)</div>
-            <div className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-green-400"></span> 80-89 (A)</div>
-            <div className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-red-500"></span> &lt; 40 (F)</div>
+          <div className="bg-slate-50/30 dark:bg-slate-900/20 border border-slate-100 dark:border-slate-800 rounded-[32px] p-8 mb-10 flex flex-wrap items-center gap-10 shadow-sm transition-all hover:bg-white dark:hover:bg-slate-900">
+            <span className="text-[10px] font-black text-slate-300 dark:text-slate-600 uppercase tracking-[0.4em]">Evaluation Matrix</span>
+            <div className="flex items-center gap-10">
+              <div className="flex items-center gap-3">
+                <div className="w-3 h-3 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.4)]"></div> 
+                <span className="text-xs font-black text-slate-600 dark:text-slate-300 uppercase tracking-widest">90-100 (Superior)</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-3 h-3 rounded-full bg-teal-400 shadow-[0_0_10px_rgba(45,212,191,0.4)]"></div> 
+                <span className="text-xs font-black text-slate-600 dark:text-slate-300 uppercase tracking-widest">80-89 (Standard)</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-3 h-3 rounded-full bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.4)]"></div> 
+                <span className="text-xs font-black text-slate-600 dark:text-slate-300 uppercase tracking-widest">Sub-40 (Deficient)</span>
+              </div>
+            </div>
           </div>
 
-          <div className="bg-surface-light dark:bg-surface-dark border border-border-light rounded-lg shadow-sm overflow-hidden">
-            <div className="overflow-x-auto">
+          <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-[40px] shadow-sm overflow-hidden transition-all hover:shadow-md">
+            <div className="overflow-x-auto scrollbar-hide">
               <table className="w-full text-left">
                 <thead>
-                  <tr className="bg-primary text-white text-sm uppercase tracking-wider">
-                    <th className="px-6 py-4 font-semibold">Student ID</th>
-                    <th className="px-6 py-4 font-semibold w-64">Full Name</th>
-                    <th className="px-6 py-4 font-semibold">Course Code</th>
-                    <th className="px-6 py-4 font-semibold text-center w-32">Exam Score (100)</th>
-                    <th className="px-6 py-4 font-semibold text-center w-24">Grade</th>
-                    <th className="px-6 py-4 font-semibold text-center w-24">Status</th>
-                    <th className="px-6 py-4 text-right">Actions</th>
+                  <tr className="bg-slate-50/50 dark:bg-slate-950/50 text-[9px] font-black uppercase tracking-[0.3em] text-slate-400 dark:text-slate-500 border-b border-slate-100 dark:border-slate-800">
+                    <th className="px-10 py-5">System UID</th>
+                    <th className="px-10 py-5 w-80">Institutional Identity</th>
+                    <th className="px-10 py-5">Catalog Course</th>
+                    <th className="px-10 py-5 text-center w-48">Scaled Evaluation</th>
+                    <th className="px-10 py-5 text-center w-32">Grade</th>
+                    <th className="px-10 py-5 text-center w-40">Integrity</th>
+                    <th className="px-10 py-5 text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-border-light text-sm text-slate-700 dark:text-slate-300">
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
                   {loading ? (
-                    <tr>
-                      <td colSpan={7} className="px-6 py-8 text-center text-slate-500">Loading...</td>
-                    </tr>
+                    <TableSkeletonRows rows={10} cols={7} />
                   ) : results.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="px-6 py-8 text-center text-slate-500">No exam results found for the selected filters.</td>
+                      <td colSpan={7} className="px-10 py-32 text-center text-slate-300 font-black uppercase tracking-[0.4em] italic">Zero Records Discovered</td>
                     </tr>
                   ) : (
                     results.map((r, i) => (
-                      <tr key={`${r.student_id}-${r.course_code}-${i}`} className="hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-                        <td className="px-6 py-4 font-mono">{r.student_id}</td>
-                        <td className="px-6 py-4 flex items-center gap-3 font-medium">
-                          <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs font-bold">
-                            {getInitials(r.student_name)}
+                      <tr key={`${r.student_id}-${r.course_code}-${i}`} className="group hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors">
+                        <td className="px-10 py-6 font-black text-xs text-slate-400 dark:text-slate-500 uppercase tracking-tighter">{r.student_id}</td>
+                        <td className="px-10 py-6">
+                          <div className="flex items-center gap-5">
+                            <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 flex items-center justify-center text-xs font-black border-2 border-white dark:border-slate-800 shadow-sm group-hover:scale-110 transition-transform">
+                              {getInitials(r.student_name)}
+                            </div>
+                            <span className="font-black text-slate-900 dark:text-white group-hover:text-teal-600 transition-colors tracking-tight">{r.student_name || 'Anonymous Entity'}</span>
                           </div>
-                          {r.student_name || 'Unknown'}
                         </td>
-                        <td className="px-6 py-4">{r.course_code}</td>
-                        <td className="px-6 py-3 text-center">
-                          <input 
-                            className="w-20 text-center rounded-md border border-gray-300 dark:bg-slate-700 dark:text-white text-sm font-semibold" 
-                            type="number" 
-                            value={editedScores[getResultKey(r)] ?? r.exam_score}
-                            onChange={(e) => handleScoreChange(r, Number(e.target.value))}
-                            min={0}
-                            max={100}
-                          />
+                        <td className="px-10 py-6">
+                          <span className="px-3 py-1 rounded-xl bg-slate-50 dark:bg-slate-950 text-[10px] font-black text-slate-500 dark:text-slate-400 border border-slate-100 dark:border-slate-800 uppercase tracking-[0.2em]">{r.course_code}</span>
                         </td>
-                        <td className={`px-6 py-4 text-center font-bold ${r.grade === 'F' ? 'text-red-500' : 'text-green-600'}`}>
-                          {r.grade}
+                        <td className="px-10 py-6">
+                          <div className="flex justify-center group/input">
+                            <input 
+                              className="w-24 px-4 py-2 text-center rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-base font-black text-slate-900 dark:text-white focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500/50 outline-none transition-all shadow-sm group-hover/input:border-teal-500/30" 
+                              type="number" 
+                              value={editedScores[getResultKey(r)] ?? r.exam_score}
+                              onChange={(e) => handleScoreChange(r, Number(e.target.value))}
+                              min={0}
+                              max={100}
+                            />
+                          </div>
                         </td>
-                        <td className="px-6 py-4 text-center">
-                          <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                            r.status === 'Passed' ? 'bg-green-100 text-green-800' :
-                            r.status === 'Probation' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'
+                        <td className="px-10 py-6 text-center">
+                          <div className={`text-2xl font-black tracking-tighter ${r.grade === 'F' ? 'text-rose-500' : 'text-emerald-600'}`}>
+                            {r.grade}
+                          </div>
+                        </td>
+                        <td className="px-10 py-6 text-center">
+                          <span className={`inline-flex px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border shadow-sm ${
+                            r.status === 'Passed' ? 'bg-emerald-50 text-emerald-700 border-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400' :
+                            r.status === 'Probation' ? 'bg-amber-50 text-amber-700 border-amber-100 dark:bg-amber-900/20 dark:text-amber-400' : 
+                            'bg-rose-50 text-rose-700 border-rose-100 dark:bg-rose-900/20 dark:text-rose-400'
                           }`}>
                             {r.status}
                           </span>
                         </td>
-                        <td className="px-6 py-4 text-right">
-                          <div className="flex items-center justify-end gap-1">
+                        <td className="px-10 py-6 text-right">
+                          <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all transform translate-x-4 group-hover:translate-x-0">
                             <button
                               onClick={() => r.year != null && r.semester != null && openEditModal(r)}
                               disabled={r.year == null || r.semester == null}
-                              className={`p-1 transition-colors ${r.year != null && r.semester != null ? 'text-slate-400 hover:text-primary cursor-pointer' : 'text-slate-300 cursor-not-allowed'}`}
-                              title={r.year != null && r.semester != null ? 'Edit' : 'Cannot edit: missing year or semester. Delete and re-add if needed.'}
+                              className={`p-2.5 rounded-2xl transition-all ${r.year != null && r.semester != null ? 'text-slate-400 hover:text-teal-600 hover:bg-teal-50 dark:hover:bg-teal-900/20 shadow-sm border border-transparent hover:border-teal-500/20' : 'text-slate-200 cursor-not-allowed'}`}
+                              title="Tuning Interface"
                             >
-                              <span className="material-icons-outlined text-lg">edit_note</span>
+                              <span className="material-icons-outlined text-xl">tune</span>
                             </button>
                             <button
                               onClick={() => handleDeleteResult(r)}
-                              className="text-slate-400 hover:text-red-500 transition-colors p-1"
-                              title="Delete"
+                              className="p-2.5 rounded-2xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-all shadow-sm border border-transparent hover:border-rose-500/20"
+                              title="Expunge Record"
                             >
-                              <span className="material-icons-outlined text-lg">delete</span>
+                              <span className="material-icons-outlined text-xl">delete_outline</span>
                             </button>
                           </div>
                         </td>
@@ -546,59 +577,71 @@ const AdminGrading: React.FC<GradingProps> = ({ user, onLogout }) => {
 
       {/* Add Result Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-slate-800 rounded-lg shadow-xl p-6 w-full max-w-md mx-4">
-            <h3 className="text-lg font-semibold mb-4 text-slate-800 dark:text-white">Add Exam Result</h3>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Student ID</label>
+        <div className="fixed inset-0 bg-slate-950/40 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-in fade-in duration-300">
+          <div className="bg-white dark:bg-slate-900 rounded-[32px] shadow-2xl p-10 w-full max-w-md border border-slate-200 dark:border-slate-800 animate-in zoom-in-95 duration-300">
+            <div className="flex items-center justify-between mb-8">
+              <h3 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">Record Performance</h3>
+              <button onClick={() => setShowAddModal(false)} className="h-10 w-10 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
+                <span className="material-icons-outlined">close</span>
+              </button>
+            </div>
+            
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Student Identifier *</label>
                 <input
                   type="text"
                   value={formData.student_id}
                   onChange={(e) => setFormData(prev => ({ ...prev, student_id: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-slate-700 dark:text-white"
-                  placeholder="e.g. TNT-1001"
+                  className="w-full px-5 py-3.5 border border-slate-200 dark:border-slate-800 rounded-2xl focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500/50 outline-none transition-all dark:bg-slate-950 dark:text-white font-bold text-sm"
+                  placeholder="TNT-xxxx"
                 />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Course Code</label>
+              <div className="space-y-2">
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Catalog Course Code *</label>
                 <input
                   type="text"
                   value={formData.course_code}
                   onChange={(e) => setFormData(prev => ({ ...prev, course_code: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-slate-700 dark:text-white"
-                  placeholder="e.g. CST-1010"
+                  className="w-full px-5 py-3.5 border border-slate-200 dark:border-slate-800 rounded-2xl focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500/50 outline-none transition-all dark:bg-slate-950 dark:text-white font-bold text-sm"
+                  placeholder="CST-xxxx"
                 />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Exam Score (0-100)</label>
+              <div className="space-y-2">
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Examination Score (0-100)</label>
                 <input
                   type="number"
                   value={formData.exam_score}
                   onChange={(e) => setFormData(prev => ({ ...prev, exam_score: Number(e.target.value) }))}
                   min={0}
                   max={100}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-slate-700 dark:text-white"
+                  className="w-full px-5 py-3.5 border border-slate-200 dark:border-slate-800 rounded-2xl focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500/50 outline-none transition-all dark:bg-slate-950 dark:text-white font-black text-lg text-center"
                 />
               </div>
-              <div className="text-sm text-slate-500 dark:text-slate-400">
-                Will be added to: Year {year}, Semester {semester}
-                {showSection && `, Section ${section || 'All'}`}
-                {showMajor && `, Major ${major || 'All'}`}
+              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800">
+                <div className="flex items-start gap-3">
+                  <span className="text-teal-600">📍</span>
+                  <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 leading-relaxed uppercase tracking-tighter">
+                    Entry context: Year {year}, Sem {semester}
+                    {showSection && `, Sec ${section || 'All'}`}
+                    {showMajor && `, Major ${major || 'All'}`}
+                  </p>
+                </div>
               </div>
             </div>
-            <div className="flex justify-end gap-3 mt-6">
+            
+            <div className="flex justify-end gap-4 mt-10">
               <button
                 onClick={() => setShowAddModal(false)}
-                className="px-4 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-md transition-colors"
+                className="px-6 py-3 text-sm font-bold text-slate-500 hover:text-slate-900 transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={handleAddResult}
-                className="px-4 py-2 bg-primary hover:bg-primary-hover text-white rounded-md transition-colors"
+                className="px-10 py-3 rounded-2xl bg-slate-900 dark:bg-slate-800 text-sm font-extrabold text-white hover:bg-slate-800 shadow-lg transition-all active:scale-[0.98]"
               >
-                Add Result
+                Log Result
               </button>
             </div>
           </div>
@@ -607,52 +650,55 @@ const AdminGrading: React.FC<GradingProps> = ({ user, onLogout }) => {
 
       {/* Edit Result Modal */}
       {editingResult && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-slate-800 rounded-lg shadow-xl p-6 w-full max-w-md mx-4">
-            <h3 className="text-lg font-semibold mb-4 text-slate-800 dark:text-white">Edit Exam Result</h3>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Student ID</label>
-                <input
-                  type="text"
-                  value={formData.student_id}
-                  disabled
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 dark:bg-slate-600 dark:text-white"
-                />
+        <div className="fixed inset-0 bg-slate-950/40 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-in fade-in duration-300">
+          <div className="bg-white dark:bg-slate-900 rounded-[32px] shadow-2xl p-10 w-full max-w-md border border-slate-200 dark:border-slate-800 animate-in zoom-in-95 duration-300">
+            <div className="flex items-center justify-between mb-8">
+              <div className="space-y-1">
+                <h3 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">Edit Metric</h3>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Modifying student record</p>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Course Code</label>
-                <input
-                  type="text"
-                  value={formData.course_code}
-                  disabled
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 dark:bg-slate-600 dark:text-white"
-                />
+              <button onClick={() => setEditingResult(null)} className="h-10 w-10 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
+                <span className="material-icons-outlined">close</span>
+              </button>
+            </div>
+
+            <div className="space-y-6">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Student ID</label>
+                  <div className="px-5 py-3 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 text-xs font-bold text-slate-500">{formData.student_id}</div>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Course Code</label>
+                  <div className="px-5 py-3 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 text-xs font-bold text-slate-500">{formData.course_code}</div>
+                </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Exam Score (0-100)</label>
+              
+              <div className="space-y-2">
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Updated Exam Score</label>
                 <input
                   type="number"
                   value={formData.exam_score}
                   onChange={(e) => setFormData(prev => ({ ...prev, exam_score: Number(e.target.value) }))}
                   min={0}
                   max={100}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-slate-700 dark:text-white"
+                  className="w-full px-5 py-4 border border-slate-200 dark:border-slate-800 rounded-2xl focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500/50 outline-none transition-all dark:bg-slate-950 dark:text-white font-black text-2xl text-center"
                 />
               </div>
             </div>
-            <div className="flex justify-end gap-3 mt-6">
+
+            <div className="flex justify-end gap-4 mt-12 pt-8 border-t border-slate-100 dark:border-slate-800">
               <button
                 onClick={() => setEditingResult(null)}
-                className="px-4 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-md transition-colors"
+                className="px-6 py-3 text-sm font-bold text-slate-500 hover:text-slate-900 transition-colors"
               >
-                Cancel
+                Discard
               </button>
               <button
                 onClick={handleEditResult}
-                className="px-4 py-2 bg-primary hover:bg-primary-hover text-white rounded-md transition-colors"
+                className="px-10 py-3 rounded-2xl bg-teal-600 text-sm font-extrabold text-white hover:bg-teal-700 shadow-lg transition-all active:scale-[0.98]"
               >
-                Save Changes
+                Apply Change
               </button>
             </div>
           </div>
@@ -660,6 +706,7 @@ const AdminGrading: React.FC<GradingProps> = ({ user, onLogout }) => {
       )}
     </div>
   );
+
 };
 
 export default AdminGrading;

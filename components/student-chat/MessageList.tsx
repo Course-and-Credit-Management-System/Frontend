@@ -9,18 +9,18 @@ interface MessageListProps {
 
 const MessageList: React.FC<MessageListProps> = ({ messages, isPending }) => {
   return (
-    <div className="space-y-4">
+    <div className="space-y-2">
       {messages.map((message) => (
         <MessageBubble key={message.id} message={message} />
       ))}
 
       {isPending && (
-        <div className="flex justify-start">
-          <div className="rounded-[8px] border border-[#cccccc] bg-white px-4 py-3 shadow-[0_2px_6px_rgba(0,0,0,0.1)] dark:border-gray-700 dark:bg-slate-800/70">
-            <div className="flex items-center gap-1" aria-label="Assistant is typing">
-              <span className="h-2 w-2 animate-bounce rounded-full bg-[#1f6f5f]" />
-              <span className="h-2 w-2 animate-bounce rounded-full bg-[#1f6f5f] [animation-delay:120ms]" />
-              <span className="h-2 w-2 animate-bounce rounded-full bg-[#1f6f5f] [animation-delay:240ms]" />
+        <div className="flex justify-start mb-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
+          <div className="rounded-[24px] rounded-tl-none border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 px-6 py-4 shadow-sm">
+            <div className="flex items-center gap-1.5" aria-label="Assistant is synthesizing">
+              <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-teal-500" />
+              <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-teal-500 [animation-delay:150ms]" />
+              <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-teal-500 [animation-delay:300ms]" />
             </div>
           </div>
         </div>

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
+import { DetailedCardGridSkeleton } from "../components/Skeleton";
 import { User, Course } from "../types";
 import { api } from "../lib/api";
 
@@ -113,154 +114,190 @@ const AdminManualEnrollment: React.FC<Props> = ({ user, onLogout }) => {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background-light dark:bg-background-dark relative">
+    <div className="flex h-screen overflow-hidden bg-white dark:bg-slate-950 font-poppins relative">
       <Sidebar user={user} onLogout={onLogout} />
 
       {toast.type && (
-        <div className={`fixed top-4 right-4 z-50 flex items-center gap-3 rounded-lg px-6 py-4 shadow-lg transition-all animate-in slide-in-from-top-5 ${
-            toast.type === "success" ? "bg-[#eafaf1] text-[#27ae60] border border-[#27ae60]/20" : "bg-[#fdecea] text-[#e74c3c] border border-[#e74c3c]/20"
+        <div className={`fixed top-8 right-8 z-[100] flex items-center gap-4 rounded-2xl px-8 py-5 shadow-2xl transition-all animate-in slide-in-from-right-8 ${
+            toast.type === "success" ? "bg-emerald-50 text-emerald-700 border border-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-900/40" : "bg-rose-50 text-rose-700 border border-rose-100 dark:bg-rose-900/20 dark:text-rose-400 dark:border-rose-900/40"
         }`}>
-            <span className="material-icons-outlined text-xl">
-                {toast.type === "success" ? "check_circle" : "error"}
+            <span className="material-icons-outlined text-2xl">
+                {toast.type === "success" ? "verified_user" : "error_outline"}
             </span>
-            <p className="font-medium text-sm">{toast.message}</p>
+            <p className="font-black text-xs uppercase tracking-widest">{toast.message}</p>
         </div>
       )}
 
-      <div className="flex flex-1 flex-col overflow-hidden">
-        <Header title="Manual Enrollment" user={user} />
-        <main className="flex-1 overflow-y-auto p-6">
-          <div className="max-w-3xl mx-auto rounded-xl bg-surface-light p-8 shadow-sm dark:bg-surface-dark border border-gray-200 dark:border-gray-700">
-            <div className="flex items-center gap-2 mb-6">
-              <button 
-                onClick={() => navigate(-1)} 
-                className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                title="Go Back"
-              >
-                <span className="material-icons-outlined text-gray-600 dark:text-gray-300">arrow_back</span>
-              </button>
-              <h2 className="text-xl font-bold text-gray-800 dark:text-white">Create New Enrollment</h2>
+      <div className="flex flex-1 flex-col overflow-hidden relative">
+        <Header title="Enrollment Override" user={user} />
+        <main className="flex-1 overflow-y-auto p-10 lg:p-16 scrollbar-hide animate-in fade-in duration-1000 slide-in-from-bottom-4">
+          <div className="max-w-4xl mx-auto">
+            <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-8">
+              <div className="space-y-3">
+                <button 
+                  onClick={() => navigate(-1)} 
+                  className="group flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 hover:text-teal-600 transition-colors mb-4"
+                >
+                  <span className="material-icons-outlined text-sm transform group-hover:-translate-x-1 transition-transform">west</span>
+                  Return to Matrix
+                </button>
+                <h2 className="text-4xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">Manual Provisioning</h2>
+                <p className="text-lg font-medium text-slate-400 dark:text-slate-500 max-w-xl">Bypass standard enrollment protocols to manually assign institutional courses to students.</p>
+              </div>
+              <div className="px-4 py-1.5 rounded-full bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-400 text-[10px] font-black uppercase tracking-[0.2em] border border-teal-100 dark:border-teal-800 shadow-sm shrink-0">
+                Override Authorization Active
+              </div>
             </div>
             
-            {loading ? (
-              <p className="text-gray-500">Loading data...</p>
-            ) : error ? (
-              <p className="text-red-500">{error}</p>
-            ) : (
-              <form onSubmit={handleSubmit} className="space-y-6">
-                
-                {/* Student Selection (Searchable) */}
-                <div ref={studentDropdownRef} className="relative">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Student</label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      placeholder="Select a student..."
-                      value={studentSearch}
-                      onChange={(e) => {
-                        setStudentSearch(e.target.value);
-                        setIsStudentOpen(true);
-                        if (selectedStudentId) setSelectedStudentId("");
-                      }}
-                      onFocus={() => setIsStudentOpen(true)}
-                      className="w-full rounded-lg border border-gray-300 bg-white p-3 pr-10 text-gray-800 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-gray-600 dark:bg-slate-800 dark:text-white"
-                    />
-                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-400">
-                        <span className="material-icons-outlined text-sm">expand_more</span>
+            <div className="bg-slate-50/50 dark:bg-slate-900/30 rounded-[40px] border border-slate-100 dark:border-slate-800 p-10 lg:p-12 shadow-sm transition-all hover:bg-white dark:hover:bg-slate-900 hover:shadow-md relative overflow-hidden group">
+              <div className="absolute top-0 right-0 h-40 w-40 bg-teal-500/[0.02] rounded-bl-full pointer-events-none" />
+              
+              {loading ? (
+                <div className="space-y-10">
+                  <div className="h-20 bg-slate-100 dark:bg-slate-800 rounded-3xl animate-pulse" />
+                  <div className="h-20 bg-slate-100 dark:bg-slate-800 rounded-3xl animate-pulse" />
+                  <div className="h-14 bg-slate-100 dark:bg-slate-800 rounded-3xl animate-pulse" />
+                </div>
+              ) : error ? (
+                <div className="p-8 text-center bg-rose-50 rounded-3xl border border-rose-100">
+                  <p className="text-sm font-black text-rose-700 uppercase tracking-widest italic">{error}</p>
+                </div>
+              ) : (
+                <form onSubmit={handleSubmit} className="space-y-10 relative z-10">
+                  
+                  {/* Student Selection (Searchable) */}
+                  <div ref={studentDropdownRef} className="relative group/field">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4 block ml-1">Target Subject</label>
+                    <div className="relative">
+                      <span className="material-icons-outlined absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within/field:text-teal-500 transition-colors">person_pin</span>
+                      <input
+                        type="text"
+                        placeholder="Search student nomenclature or UID..."
+                        value={studentSearch}
+                        onChange={(e) => {
+                          setStudentSearch(e.target.value);
+                          setIsStudentOpen(true);
+                          if (selectedStudentId) setSelectedStudentId("");
+                        }}
+                        onFocus={() => setIsStudentOpen(true)}
+                        className="w-full pl-14 pr-12 py-5 text-base font-bold rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950 focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500/50 outline-none transition-all dark:text-white placeholder:text-slate-200"
+                      />
+                      <div className="absolute inset-y-0 right-5 flex items-center pointer-events-none text-slate-300">
+                          <span className={`material-icons-outlined transition-transform duration-300 ${isStudentOpen ? 'rotate-180' : ''}`}>expand_more</span>
+                      </div>
                     </div>
-                  </div>
 
-                  {isStudentOpen && (
-                    <ul className="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-lg border border-gray-200 bg-white py-1 shadow-lg dark:bg-slate-800 dark:border-gray-700">
-                      {students.filter(s => 
-                          (s.userId || "").toLowerCase().includes(studentSearch.toLowerCase()) || 
-                          (s.name || "").toLowerCase().includes(studentSearch.toLowerCase())
-                      ).length === 0 ? (
-                        <li className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400">No students found</li>
-                      ) : (
-                        students.filter(s => 
+                    {isStudentOpen && (
+                      <ul className="absolute z-20 mt-3 max-h-72 w-full overflow-auto rounded-[24px] border border-slate-100 bg-white p-2 shadow-2xl dark:bg-slate-900 dark:border-slate-800 scrollbar-hide animate-in fade-in zoom-in-95 duration-200">
+                        {students.filter(s => 
                             (s.userId || "").toLowerCase().includes(studentSearch.toLowerCase()) || 
                             (s.name || "").toLowerCase().includes(studentSearch.toLowerCase())
-                        ).map((student) => (
-                            <li
-                              key={student.id}
-                              className="cursor-pointer px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-slate-700"
-                              onClick={() => {
-                                setSelectedStudentId(student.userId);
-                                setStudentSearch(`${student.userId} — ${student.name}`);
-                                setIsStudentOpen(false);
-                              }}
-                            >
-                              <span className="font-semibold">{student.userId}</span> — {student.name}
-                            </li>
-                        ))
-                      )}
-                    </ul>
-                  )}
-                </div>
-
-                {/* Course Selection (Searchable) */}
-                <div ref={courseDropdownRef} className="relative">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Course</label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      placeholder="Select a course..."
-                      value={courseSearch}
-                      onChange={(e) => {
-                        setCourseSearch(e.target.value);
-                        setIsCourseOpen(true);
-                        if (selectedCourseId) setSelectedCourseId(""); // Reset ID if user types
-                      }}
-                      onFocus={() => setIsCourseOpen(true)}
-                      className="w-full rounded-lg border border-gray-300 bg-white p-3 pr-10 text-gray-800 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-gray-600 dark:bg-slate-800 dark:text-white"
-                    />
-                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-400">
-                        <span className="material-icons-outlined text-sm">expand_more</span>
-                    </div>
+                        ).length === 0 ? (
+                          <li className="px-6 py-10 text-center">
+                            <span className="text-xs font-black text-slate-300 uppercase tracking-widest italic">No Student Records Matching Filter</span>
+                          </li>
+                        ) : (
+                          students.filter(s => 
+                              (s.userId || "").toLowerCase().includes(studentSearch.toLowerCase()) || 
+                              (s.name || "").toLowerCase().includes(studentSearch.toLowerCase())
+                          ).map((student) => (
+                              <li
+                                key={student.id}
+                                className="cursor-pointer px-6 py-4 rounded-xl transition-all group/item hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center justify-between"
+                                onClick={() => {
+                                  setSelectedStudentId(student.userId);
+                                  setStudentSearch(`${student.userId} — ${student.name}`);
+                                  setIsStudentOpen(false);
+                                }}
+                              >
+                                <div>
+                                  <span className="text-xs font-black text-slate-900 dark:text-white group-hover/item:text-teal-600 transition-colors uppercase tracking-tight">{student.name}</span>
+                                  <p className="text-[10px] font-mono font-bold text-slate-400 mt-0.5">{student.userId}</p>
+                                </div>
+                                <span className="material-icons-outlined text-slate-200 group-hover/item:text-teal-500 opacity-0 group-hover/item:opacity-100 transition-all">check_circle</span>
+                              </li>
+                          ))
+                        )}
+                      </ul>
+                    )}
                   </div>
 
-                  {isCourseOpen && (
-                    <ul className="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-lg border border-gray-200 bg-white py-1 shadow-lg dark:bg-slate-800 dark:border-gray-700">
-                      {courses.filter(c => 
-                          (c.code || "").toLowerCase().includes(courseSearch.toLowerCase()) || 
-                          (c.name || "").toLowerCase().includes(courseSearch.toLowerCase())
-                      ).length === 0 ? (
-                        <li className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400">No courses found</li>
-                      ) : (
-                        courses.filter(c => 
+                  {/* Course Selection (Searchable) */}
+                  <div ref={courseDropdownRef} className="relative group/field">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4 block ml-1">Institutional Course</label>
+                    <div className="relative">
+                      <span className="material-icons-outlined absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within/field:text-teal-500 transition-colors">auto_stories</span>
+                      <input
+                        type="text"
+                        placeholder="Search course code or title..."
+                        value={courseSearch}
+                        onChange={(e) => {
+                          setCourseSearch(e.target.value);
+                          setIsCourseOpen(true);
+                          if (selectedCourseId) setSelectedCourseId(""); 
+                        }}
+                        onFocus={() => setIsCourseOpen(true)}
+                        className="w-full pl-14 pr-12 py-5 text-base font-bold rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950 focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500/50 outline-none transition-all dark:text-white placeholder:text-slate-200"
+                      />
+                      <div className="absolute inset-y-0 right-5 flex items-center pointer-events-none text-slate-300">
+                          <span className={`material-icons-outlined transition-transform duration-300 ${isCourseOpen ? 'rotate-180' : ''}`}>expand_more</span>
+                      </div>
+                    </div>
+
+                    {isCourseOpen && (
+                      <ul className="absolute z-20 mt-3 max-h-72 w-full overflow-auto rounded-[24px] border border-slate-100 bg-white p-2 shadow-2xl dark:bg-slate-900 dark:border-slate-800 scrollbar-hide animate-in fade-in zoom-in-95 duration-200">
+                        {courses.filter(c => 
                             (c.code || "").toLowerCase().includes(courseSearch.toLowerCase()) || 
                             (c.name || "").toLowerCase().includes(courseSearch.toLowerCase())
-                        ).map((course) => (
-                          <li
-                            key={course.id}
-                            className="cursor-pointer px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-slate-700"
-                            onClick={() => {
-                              setSelectedCourseId(course.code);
-                              setCourseSearch(`${course.code} — ${course.name}`);
-                              setIsCourseOpen(false);
-                            }}
-                          >
-                            <span className="font-semibold">{course.code}</span> — {course.name}
+                        ).length === 0 ? (
+                          <li className="px-6 py-10 text-center">
+                            <span className="text-xs font-black text-slate-300 uppercase tracking-widest italic">No Curriculum Records Matching Filter</span>
                           </li>
-                        ))
-                      )}
-                    </ul>
-                  )}
-                </div>
+                        ) : (
+                          courses.filter(c => 
+                              (c.code || "").toLowerCase().includes(courseSearch.toLowerCase()) || 
+                              (c.name || "").toLowerCase().includes(courseSearch.toLowerCase())
+                          ).map((course) => (
+                            <li
+                              key={course.id}
+                              className="cursor-pointer px-6 py-4 rounded-xl transition-all group/item hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center justify-between"
+                              onClick={() => {
+                                setSelectedCourseId(course.code);
+                                setCourseSearch(`${course.code} — ${course.name}`);
+                                setIsCourseOpen(false);
+                              }}
+                            >
+                              <div className="min-w-0">
+                                <span className="text-xs font-black text-slate-900 dark:text-white group-hover/item:text-teal-600 transition-colors uppercase tracking-tight truncate block">{course.name}</span>
+                                <p className="text-[10px] font-mono font-bold text-slate-400 mt-0.5">{course.code} • {course.credits} CU • {course.type}</p>
+                              </div>
+                              <span className="material-icons-outlined text-slate-200 group-hover/item:text-teal-500 opacity-0 group-hover/item:opacity-100 transition-all ml-4 shrink-0">add_task</span>
+                            </li>
+                          ))
+                        )}
+                      </ul>
+                    )}
+                  </div>
 
-                <div className="pt-4">
-                  <button
-                    type="submit"
-                    className="w-full rounded-lg bg-primary py-3 font-semibold text-white shadow-sm transition-colors hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
-                  >
-                    Enroll
-                  </button>
-                </div>
-              </form>
-            )}
+                  <div className="pt-6">
+                    <button
+                      type="submit"
+                      disabled={!selectedStudentId || !selectedCourseId}
+                      className="w-full h-16 rounded-[24px] bg-slate-900 dark:bg-teal-600 font-black text-xs uppercase tracking-[0.3em] text-white shadow-2xl shadow-slate-200 dark:shadow-teal-900/20 transition-all hover:bg-slate-800 dark:hover:bg-teal-700 active:scale-95 disabled:opacity-20 disabled:cursor-not-allowed disabled:shadow-none flex items-center justify-center gap-4 group"
+                    >
+                      <span>Commit Enrollment</span>
+                      <span className="material-icons-outlined text-lg transition-transform group-hover:translate-x-1">east</span>
+                    </button>
+                  </div>
+                </form>
+              )}
+            </div>
           </div>
         </main>
+
+        {/* Global UI Decoration */}
+        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-teal-500/[0.02] rounded-full blur-[120px] pointer-events-none -translate-y-1/2 translate-x-1/2 -z-10" />
+        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-indigo-500/[0.02] rounded-full blur-[100px] pointer-events-none translate-y-1/2 -translate-x-1/2 -z-10" />
       </div>
     </div>
   );

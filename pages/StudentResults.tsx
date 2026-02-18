@@ -316,79 +316,77 @@ const StudentResults: React.FC<ResultsProps> = ({ user, onLogout }) => {
 
   return (
     <div 
-      className="flex h-screen overflow-hidden bg-background-light dark:bg-background-dark font-poppins"
+      className="flex h-screen overflow-hidden bg-white dark:bg-slate-950 font-poppins"
       onClick={clearHighlighting}
       onScroll={clearHighlighting}
     >
       <Sidebar user={user} onLogout={onLogout} />
-      <div className="flex flex-1 flex-col overflow-hidden">
-        <Header title="Academic Records" user={user} />
-        <main className="flex-1 overflow-y-auto p-6 lg:p-8">
-          <div className="mb-8 flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4">
-            <div>
-               <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Academic Records</h2>
-               <p className="text-gray-500 dark:text-gray-400 mt-1">
-                 {academicData?.student?.name || 'Student'} • {academicData?.academic_summary?.total_credits_earned || 0} Credits Earned
+      <div className="flex flex-1 flex-col overflow-hidden relative">
+        <Header title="Academic Portfolio" user={user} />
+        <main className="flex-1 overflow-y-auto p-10 lg:p-16 scrollbar-hide animate-in fade-in duration-1000 slide-in-from-bottom-4">
+          <div className="mb-12 flex flex-col xl:flex-row xl:items-end xl:justify-between gap-8">
+            <div className="space-y-2">
+               <h2 className="text-4xl font-black text-slate-900 dark:text-white tracking-tight">Academic Records</h2>
+               <p className="text-lg font-medium text-slate-400 dark:text-slate-500">
+                 Integrated transcript for <span className="text-slate-900 dark:text-white font-bold">{academicData?.student?.name || 'Authorized Member'}</span>
                </p>
             </div>
             
             {/* Download Grading Certificate Dropdown */}
-            <div className="download-menu-container relative">
+            <div className="download-menu-container relative group">
               <button 
                 onClick={() => setDownloadMenuOpen(!downloadMenuOpen)}
                 disabled={downloading || !academicData || shouldDisableDownload()}
-                className="flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-teal-600 to-teal-700 text-white rounded-xl text-base font-medium hover:from-teal-700 hover:to-teal-800 transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+                className="flex items-center gap-4 px-8 py-4 bg-slate-900 dark:bg-teal-600 text-white rounded-2xl text-xs font-black uppercase tracking-[0.2em] hover:bg-slate-800 dark:hover:bg-teal-700 transition-all shadow-2xl shadow-slate-200 dark:shadow-teal-900/20 active:scale-[0.98] disabled:opacity-30 disabled:cursor-not-allowed w-full sm:w-auto"
               >
-                <span className="material-icons-outlined text-xl">download</span>
-                {downloading ? 'Downloading...' : (shouldDisableDownload() ? 'Download Unavailable' : 'Download Grading Certificate')}
-                <span className="material-icons-outlined text-xl ml-1">
+                <span className="material-icons-outlined text-lg">{downloading ? 'sync' : 'verified_user'}</span>
+                {downloading ? 'Processing...' : (shouldDisableDownload() ? 'Access Restricted' : 'Export Transcript')}
+                <span className="material-icons-outlined text-lg ml-2">
                   {downloadMenuOpen ? 'expand_less' : 'expand_more'}
                 </span>
               </button>
 
               {/* Dropdown Menu */}
               {downloadMenuOpen && (
-                <div className="absolute right-0 mt-4 w-full sm:w-96 bg-white dark:bg-surface-dark rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 z-50 overflow-hidden animate-fade-in">
+                <div className="absolute right-0 mt-4 w-full sm:w-[420px] bg-white dark:bg-slate-900 rounded-[32px] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.2)] border border-slate-100 dark:border-slate-800 z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-300">
                   {/* By Semester Section */}
-                  <div className="p-4 border-b border-gray-100 dark:border-gray-700">
-                    <div className="flex items-center justify-between mb-3">
-                      <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                        By Semester
+                  <div className="p-8 border-b border-slate-50 dark:border-slate-800">
+                    <div className="flex items-center justify-between mb-6 px-1">
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                        Semester Dispatches
                       </p>
-                      <span className="text-xs text-gray-500 dark:text-gray-400">
-                        {academicData?.academic_summary?.semesters?.length || 0} options
+                      <span className="text-[10px] font-black bg-slate-50 dark:bg-slate-800 px-2 py-0.5 rounded-md text-slate-400">
+                        {academicData?.academic_summary?.semesters?.length || 0} Records
                       </span>
                     </div>
                     
-                    <div className="space-y-2 max-h-60 overflow-y-auto pr-2">
+                    <div className="space-y-2 max-h-60 overflow-y-auto scrollbar-hide pr-1">
                       {academicData?.academic_summary?.semesters?.map((sem) => (
                         <button
                           key={`${sem.academic_year}-${sem.semester}`}
                           onClick={() => handleDownloadSemester(`${sem.academic_year}, ${sem.semester}`)}
-                          className="w-full flex items-center justify-between p-4 bg-gray-50 dark:bg-slate-800/50 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition-colors group"
+                          className="w-full flex items-center justify-between p-5 bg-slate-50/50 dark:bg-slate-950/50 hover:bg-white dark:hover:bg-slate-800 border border-transparent hover:border-slate-100 dark:hover:border-slate-700 rounded-[20px] transition-all group active:scale-95"
                         >
                           <div>
-                            <p className="font-medium text-gray-800 dark:text-white group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">
+                            <p className="text-sm font-black text-slate-900 dark:text-white group-hover:text-teal-600 transition-colors tracking-tight">
                               {formatSemesterDisplay(sem.academic_year, sem.semester)}
                             </p>
                           </div>
+                          <span className="material-icons-outlined text-slate-300 group-hover:text-teal-500 transition-colors">download</span>
                         </button>
                       ))}
                     </div>
                   </div>
 
                   {/* By Year Section */}
-                  <div className="p-4 border-b border-gray-100 dark:border-gray-700">
-                    <div className="flex items-center justify-between mb-3">
-                      <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                        By Academic Year
+                  <div className="p-8 border-b border-slate-50 dark:border-slate-800">
+                    <div className="flex items-center justify-between mb-6 px-1">
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                        Academic Cycles
                       </p>
-                      <span className="text-xs text-gray-500 dark:text-gray-400">
-                        {getAcademicYears().length} options
-                      </span>
                     </div>
                     
-                    <div className="space-y-2 max-h-60 overflow-y-auto pr-2">
+                    <div className="space-y-2 max-h-60 overflow-y-auto scrollbar-hide pr-1">
                       {getAcademicYears().map((year) => {
                         const semesters = getSemestersByYear(year);
                         const totalCredits = getTotalCreditsForYear(year);
@@ -396,20 +394,17 @@ const StudentResults: React.FC<ResultsProps> = ({ user, onLogout }) => {
                           <button
                             key={year}
                             onClick={() => handleDownloadYear(year)}
-                            className="w-full flex items-center justify-between p-4 bg-gray-50 dark:bg-slate-800/50 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition-colors group"
+                            className="w-full flex items-center justify-between p-5 bg-slate-50/50 dark:bg-slate-950/50 hover:bg-white dark:hover:bg-slate-800 border border-transparent hover:border-slate-100 dark:hover:border-slate-700 rounded-[20px] transition-all group active:scale-95"
                           >
-                            <div>
-                              <p className="font-medium text-gray-800 dark:text-white group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">
+                            <div className="text-left">
+                              <p className="text-sm font-black text-slate-900 dark:text-white group-hover:text-teal-600 transition-colors tracking-tight">
                                 {year}
                               </p>
-                              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                {semesters.length} semester{semesters.length !== 1 ? 's' : ''} • {totalCredits} credits
+                              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">
+                                {semesters.length} periods • {totalCredits} units
                               </p>
                             </div>
-                            <div className="text-right">
-                              <p className="text-xs text-gray-500 dark:text-gray-400">Full Year</p>
-                              <span className="material-icons-outlined text-gray-400 text-sm">download</span>
-                            </div>
+                            <span className="material-icons-outlined text-slate-300 group-hover:text-teal-500 transition-colors">archive</span>
                           </button>
                         );
                       })}
@@ -417,21 +412,21 @@ const StudentResults: React.FC<ResultsProps> = ({ user, onLogout }) => {
                   </div>
 
                   {/* All Finished Years Section */}
-                  <div className="p-4">
+                  <div className="p-8 bg-slate-50/30 dark:bg-slate-950/30">
                     <button
                       onClick={handleDownloadAll}
-                      className="w-full flex items-center justify-between p-5 bg-gradient-to-r from-teal-500 to-teal-600 text-white rounded-xl text-lg font-medium hover:from-teal-600 hover:to-teal-700 transition-all shadow-md"
+                      className="w-full flex items-center justify-between p-6 bg-slate-900 dark:bg-teal-600 text-white rounded-[24px] shadow-xl hover:bg-slate-800 dark:hover:bg-teal-700 transition-all active:scale-[0.98] group"
                     >
-                      <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-xl bg-teal-400/20 flex items-center justify-center">
-                          <span className="material-icons-outlined text-2xl text-teal-600">summarize</span>
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center border border-white/10 group-hover:rotate-12 transition-transform duration-500">
+                          <span className="material-icons-outlined text-2xl text-white">layers</span>
                         </div>
-                        <div>
-                          <p className="font-bold">All Finished Years</p>
-                        
+                        <div className="text-left">
+                          <p className="font-black tracking-tight">Comprehensive Export</p>
+                          <p className="text-[10px] font-bold uppercase tracking-widest opacity-60">All validated intervals</p>
                         </div>
                       </div>
-                      <span className="text-2xl material-icons-outlined">download</span>
+                      <span className="text-2xl material-icons-outlined group-hover:translate-y-1 transition-transform">south</span>
                     </button>
                   </div>
                 </div>
@@ -439,60 +434,64 @@ const StudentResults: React.FC<ResultsProps> = ({ user, onLogout }) => {
             </div>
           </div>
 
-          <div className="bg-gradient-to-r from-teal-700 to-teal-600 rounded-2xl p-6 sm:p-8 text-white shadow-xl mb-8 relative overflow-hidden">
-             <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-                <div>
-                   <h3 className="text-teal-100 font-medium text-sm sm:text-base mb-2">Cumulative Performance</h3>
-                   <div className="flex items-baseline gap-2 sm:gap-3">
-                      <span className="text-3xl sm:text-4xl font-bold">
-                        {loading ? '...' : (academicData?.academic_summary?.cgpa?.toFixed(2) || '0.00')}
+          <div className="bg-slate-900 dark:bg-slate-900 rounded-[40px] p-10 lg:p-12 text-white shadow-2xl mb-12 relative overflow-hidden transition-all hover:shadow-teal-500/5 group border border-white/5">
+             <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-10">
+                <div className="space-y-4">
+                   <h3 className="text-slate-400 font-black text-[10px] uppercase tracking-[0.3em]">Institutional Standing</h3>
+                   <div className="flex items-baseline gap-4">
+                      <span className="text-6xl font-black tracking-tighter tabular-nums group-hover:text-teal-400 transition-colors">
+                        {loading ? '—' : (academicData?.academic_summary?.cgpa?.toFixed(2) || '0.00')}
                       </span>
-                      <span className="text-xl text-teal-200">/ 4.00 CGPA</span>
+                      <span className="text-xl text-slate-500 font-bold tracking-tight">/ 4.00 CGPA</span>
                    </div>
                 </div>
                 
-                <div className="w-px bg-teal-500/50 h-16 sm:h-20 hidden md:block"></div>
+                <div className="h-20 w-px bg-white/5 hidden md:block" />
                 
-                <div>
-                    <h3 className="text-3xl sm:text-4xl font-bold">
-                      {loading ? '...' : (academicData?.academic_summary?.semesters?.[academicData.academic_summary.semesters.length - 1]?.gpa?.toFixed(2) || '0.00')}
+                <div className="space-y-1">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Interval Performance</p>
+                    <h3 className="text-4xl font-black tracking-tighter tabular-nums">
+                      {loading ? '—' : (academicData?.academic_summary?.semesters?.[academicData.academic_summary.semesters.length - 1]?.gpa?.toFixed(2) || '0.00')}
                     </h3>
-                    <p className="text-base text-teal-200 mt-1">Current GPA</p>
+                    <div className="flex items-center gap-2 text-teal-400 text-[10px] font-black uppercase tracking-widest mt-2">
+                      <span className="material-icons-round text-sm">trending_up</span>
+                      <span>Operational Peak</span>
+                    </div>
                 </div>
 
-                <div className="w-px bg-teal-500/50 h-16 sm:h-20 hidden md:block"></div>
+                <div className="h-20 w-px bg-white/5 hidden md:block" />
 
-                <div>
-                    <p className="text-base text-teal-100 font-medium mb-1">Credits Earned</p>
-                    <h3 className="text-3xl sm:text-4xl font-bold">
-                      {loading ? '...' : (academicData?.academic_summary?.total_credits_earned || 0)}
+                <div className="space-y-1">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Unit Accumulation</p>
+                    <h3 className="text-4xl font-black tracking-tighter tabular-nums">
+                      {loading ? '—' : (academicData?.academic_summary?.total_credits_earned || 0)}
                     </h3>
+                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mt-2">Validated Credits</p>
                 </div>
              </div>
              
-             <div className="absolute top-0 right-0 -mt-10 sm:-mt-12 -mr-10 sm:-mr-12 w-56 sm:w-72 h-56 sm:h-72 bg-white opacity-5 rounded-full blur-3xl sm:blur-4xl"></div>
-             <div className="absolute bottom-0 left-0 -mb-10 sm:-mb-12 -ml-10 sm:-ml-12 w-48 sm:w-64 h-48 sm:h-64 bg-teal-400 opacity-10 rounded-full blur-2xl sm:blur-3xl"></div>
+             <div className="absolute top-0 right-0 h-full w-1/3 bg-gradient-to-l from-teal-500/[0.03] to-transparent pointer-events-none" />
+             <div className="absolute bottom-0 left-0 h-32 w-32 bg-teal-500/10 rounded-full blur-[100px] pointer-events-none" />
           </div>
 
           {/* Search Bar */}
-          <div className="mb-6">
-            <div className="relative">
-              <span className="absolute inset-y-0 left-0 flex items-center pl-4 sm:pl-5">
-                <span className="material-icons-outlined text-gray-400 text-lg">search</span>
+          <div className="mb-12 max-w-2xl">
+            <div className="relative group">
+              <span className="absolute inset-y-0 left-0 flex items-center pl-6">
+                <span className="material-icons-outlined text-slate-300 group-focus-within:text-teal-500 transition-colors">search</span>
               </span>
               <input 
                 type="text" 
-                placeholder="Search course code or title..." 
+                placeholder="Filter course dispatches by code or title..." 
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-12 sm:pl-14 pr-4 py-3 text-base border border-gray-200 dark:border-gray-700 rounded-xl w-full bg-gray-50 dark:bg-slate-800 focus:ring-2 focus:ring-teal-500 outline-none"
-                style={{ boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -1px rgb(0 0 0 / 0.05)' }}
+                className="pl-16 pr-8 py-5 text-base font-medium border border-slate-100 dark:border-slate-800 rounded-3xl w-full bg-slate-50/50 dark:bg-slate-900/50 focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500/50 focus:bg-white outline-none transition-all shadow-sm"
               />
             </div>
           </div>
 
           {/* Semester Accordion */}
-          <div className="space-y-6">
+          <div className="space-y-10">
             {academicData?.academic_summary?.semesters?.map((semesterData) => {
               const courses = semesterData.results;
               const filteredCourses = filterCourses(courses);
@@ -501,69 +500,63 @@ const StudentResults: React.FC<ResultsProps> = ({ user, onLogout }) => {
               return (
                 <div 
                   key={`${semesterData.academic_year}-${semesterData.semester}`} 
-                  className={`bg-surface-light dark:bg-surface-dark rounded-xl border shadow-sm overflow-hidden ${
+                  className={`bg-white dark:bg-slate-900 rounded-[40px] border transition-all duration-500 overflow-hidden ${
+                    isExpanded ? 'shadow-2xl shadow-slate-200 dark:shadow-black border-slate-100 dark:border-slate-800' : 'border-slate-50 dark:border-slate-800/50'
+                  } ${
                     highlightedSemester && (semesterData.academic_year === highlightedSemester || semesterData.semester === highlightedSemester)
-                      ? 'border-primary ring-2 ring-primary/20'
-                      : 'border-gray-200 dark:border-gray-700'
+                      ? 'border-teal-500 ring-4 ring-teal-500/5'
+                      : ''
                   }`}
                 >
                   {/* Semester Header - Clickable */}
                   <div 
                     onClick={() => toggleSemester(`${semesterData.academic_year}-${semesterData.semester}`)}
-                    className={`p-6 cursor-pointer transition-colors ${
-                      highlightedSemester && (semesterData.academic_year === highlightedSemester || semesterData.semester === highlightedSemester)
-                        ? 'bg-primary/5 dark:bg-primary/10'
-                        : 'hover:bg-gray-50 dark:hover:bg-slate-800/50'
+                    className={`p-10 cursor-pointer transition-all ${
+                      isExpanded ? 'bg-slate-50/30 dark:bg-slate-950/20' : 'hover:bg-slate-50 dark:hover:bg-slate-800/40'
                     }`}
                   >
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                      <div className="flex items-start gap-4 w-full sm:w-auto">
-                        <div className="bg-primary/10 dark:bg-primary/20 p-2.5 rounded-lg flex-shrink-0">
-                          <span className="material-symbols-outlined text-primary text-xl">
-                            {isExpanded ? 'expand_less' : 'expand_more'}
+                    <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-10">
+                      <div className="flex items-center gap-8 w-full xl:w-auto">
+                        <div className={`h-14 w-14 rounded-[20px] transition-all duration-500 flex items-center justify-center shrink-0 ${isExpanded ? 'bg-slate-900 text-white dark:bg-teal-600 rotate-180' : 'bg-slate-100 dark:bg-slate-800 text-slate-400'}`}>
+                          <span className="material-icons-outlined text-2xl">
+                            {isExpanded ? 'expand_more' : 'expand_more'}
                           </span>
                         </div>
-                        <div className="flex-1">
-                          <h3 className="font-bold text-lg text-gray-800 dark:text-white">
+                        <div className="min-w-0">
+                          <h3 className="font-black text-2xl text-slate-900 dark:text-white tracking-tight">
                             {formatSemesterDisplay(semesterData.academic_year, semesterData.semester)}
                           </h3>
-                          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                            {courses.length} courses • {semesterData.total_credit_unit} credits
-                          </p>
+                          <div className="flex items-center gap-4 mt-2">
+                            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+                              {courses.length} DISPATCHES • {semesterData.total_credit_unit} UNITS
+                            </p>
+                          </div>
                         </div>
                       </div>
                       
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
-                        <div className="text-center">
-                          <p className="text-xs text-gray-500 dark:text-gray-400">Semester GPA</p>
-                          <p className="font-bold text-2xl text-primary mt-1">{semesterData.gpa.toFixed(2)}</p>
+                      <div className="flex flex-wrap items-center gap-10 xl:gap-16">
+                        <div className="space-y-1">
+                          <p className="text-[9px] font-black text-slate-300 dark:text-slate-600 uppercase tracking-widest">GPA Metrics</p>
+                          <p className="font-black text-3xl text-teal-600 dark:text-teal-500 tabular-nums">{semesterData.gpa.toFixed(2)}</p>
                         </div>
-                        <div className="w-px h-12 bg-gray-200 dark:bg-gray-700 hidden sm:block"></div>
-                        <div className="text-center">
-                          <p className="text-xs text-gray-500 dark:text-gray-400">Status</p>
+                        <div className="h-12 w-px bg-slate-100 dark:bg-slate-800 hidden sm:block"></div>
+                        <div className="space-y-2">
+                          <p className="text-[9px] font-black text-slate-300 dark:text-slate-600 uppercase tracking-widest">Standing</p>
                           {(() => {
-                            // Only show status if courses are actually completed (all passed) or have failed courses
-                            const hasCompletedCourses = courses.every(c => c.status === 'Passed');
                             const hasFailedCourses = courses.some(c => c.status === 'Failed' || c.grade === 'F');
+                            const isInProgress = courses.length > 0 && courses.every(c => c.grade === 'W' || !c.grade);
                             
-                            if (hasCompletedCourses || hasFailedCourses) {
-                              return (
-                                <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wide ${
-                                  courses.every(c => c.status === 'Passed') 
-                                    ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                                    : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
-                                }`}>
-                                  {hasFailedCourses ? 'Has Fails' : 'All Passed'}
-                                </span>
-                              );
-                            } else {
-                              // Don't show any status for enrolled courses without completion
-                              return (
-                                <span className="text-xs text-gray-400 dark:text-gray-500">
-                                  In Progress
-                                </span>
-                              );
-                            }
+                            return (
+                              <span className={`inline-flex px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border shadow-sm ${
+                                isInProgress
+                                  ? 'bg-slate-50 text-slate-400 border-slate-100 dark:bg-slate-800 dark:text-slate-500'
+                                  : !hasFailedCourses 
+                                    ? 'bg-emerald-50 text-emerald-700 border-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-900/50'
+                                    : 'bg-rose-50 text-rose-700 border-rose-100 dark:bg-rose-900/20 dark:text-rose-400 dark:border-rose-900/50'
+                              }`}>
+                                {isInProgress ? 'Synchronizing' : hasFailedCourses ? 'Deficit Detected' : 'Optimal'}
+                              </span>
+                            );
                           })()}
                         </div>
                       </div>
@@ -572,57 +565,60 @@ const StudentResults: React.FC<ResultsProps> = ({ user, onLogout }) => {
 
                   {/* Course Table - Collapsible */}
                   {isExpanded && (
-                    <div className="border-t border-gray-200 dark:border-gray-700 overflow-hidden transition-all duration-300">
+                    <div className="border-t border-slate-50 dark:border-slate-800 animate-in slide-in-from-top-4 duration-500">
                       {filteredCourses.length > 0 ? (
-                        <div className="overflow-x-auto">
-                          <table className="w-full text-left text-sm">
-                            <thead className="bg-gray-50 dark:bg-slate-800/50 text-xs uppercase text-gray-500 dark:text-gray-400 font-bold tracking-wider">
+                        <div className="overflow-x-auto scrollbar-hide">
+                          <table className="w-full text-left">
+                            <thead className="bg-slate-50/50 dark:bg-slate-950/50 text-[9px] uppercase font-black tracking-[0.3em] text-slate-400 dark:text-slate-500 border-b border-slate-50 dark:border-slate-800">
                               <tr>
-                                <th className="px-6 py-4">Course Code</th>
-                                <th className="px-6 py-4">Course Title</th>
-                                <th className="px-6 py-4">Credits</th>
-                                <th className="px-6 py-4">Grade</th>
-                                <th className="px-6 py-4">Points</th>
-                                <th className="px-6 py-4 text-right">Status</th>
+                                <th className="px-10 py-5">Course Code</th>
+                                <th className="px-10 py-5">Nomenclature</th>
+                                <th className="px-10 py-5">Volume</th>
+                                <th className="px-10 py-5">Index</th>
+                                <th className="px-10 py-5">Yield</th>
+                                <th className="px-10 py-5 text-right">Integrity</th>
                               </tr>
                             </thead>
-                            <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                            <tbody className="divide-y divide-slate-50 dark:divide-slate-800/50">
                               {filteredCourses.map((course, index) => (
                                 <tr 
                                   key={index} 
-                                  className={`transition-colors group ${
+                                  className={`transition-all group hover:bg-slate-50/50 dark:hover:bg-slate-800/40 ${
                                     highlightedCourse === course.course_code
-                                      ? 'bg-primary/10 dark:bg-primary/20 ring-1 ring-primary/30'
-                                      : 'hover:bg-gray-50 dark:hover:bg-slate-800/50'
+                                      ? 'bg-teal-50/50 dark:bg-teal-900/20 ring-1 ring-teal-500/20'
+                                      : ''
                                   }`}
                                 >
-                                  <td className="px-6 py-4 font-medium text-primary dark:text-teal-400 group-hover:underline">
-                                    <button className="hover:underline" onClick={() => handleCourseClick(course.course_code)}>
+                                  <td className="px-10 py-6">
+                                    <button 
+                                      className="font-mono text-xs font-black text-slate-400 group-hover:text-teal-600 transition-colors tracking-tighter" 
+                                      onClick={() => handleCourseClick(course.course_code)}
+                                    >
                                       {course.course_code}
                                     </button>
                                   </td>
-                                  <td className="px-6 py-4 font-medium text-gray-800 dark:text-white">
+                                  <td className="px-10 py-6 font-bold text-slate-900 dark:text-white tracking-tight">
                                     {course.course_title}
                                   </td>
-                                  <td className="px-6 py-4 text-gray-500 dark:text-gray-400 font-medium">
-                                    {course.credit_unit.toFixed(1)}
+                                  <td className="px-10 py-6 text-xs font-black text-slate-400 tabular-nums">
+                                    {course.credit_unit.toFixed(1)} CU
                                   </td>
-                                  <td className={`px-6 py-4 font-bold ${
-                                    course.grade === 'W' ? 'text-gray-400' : 
-                                    course.grade.startsWith('A') ? 'text-green-600' : 'text-green-500'
+                                  <td className={`px-10 py-6 text-xl font-black tracking-tighter tabular-nums ${
+                                    course.grade === 'F' ? 'text-rose-500' : 
+                                    course.grade === 'W' ? 'text-slate-300' : 'text-slate-900 dark:text-white'
                                   }`}>
-                                    {course.grade}
+                                    {course.grade || '—'}
                                   </td>
-                                  <td className="px-6 py-4 text-gray-600 dark:text-gray-300 font-medium">
+                                  <td className="px-10 py-6 text-sm font-black text-slate-500 dark:text-slate-400 tabular-nums">
                                     {course.grade_points_earned.toFixed(2)}
                                   </td>
-                                  <td className="px-6 py-4 text-right">
-                                    <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wide ${
+                                  <td className="px-10 py-6 text-right">
+                                    <span className={`inline-flex px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border shadow-sm ${
                                       course.status === 'Passed' 
-                                        ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' 
+                                        ? 'bg-emerald-50 text-emerald-700 border-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-900/50' 
                                         : course.status === 'Failed'
-                                        ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
-                                        : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
+                                        ? 'bg-rose-50 text-rose-700 border-rose-100 dark:bg-rose-900/20 dark:text-rose-400 dark:border-rose-900/50'
+                                        : 'bg-slate-50 text-slate-400 border-slate-100 dark:bg-slate-800 dark:text-slate-500 dark:border-slate-700'
                                     }`}>
                                       {course.status}
                                     </span>
@@ -633,10 +629,11 @@ const StudentResults: React.FC<ResultsProps> = ({ user, onLogout }) => {
                           </table>
                         </div>
                       ) : (
-                        <div className="p-8 text-center text-gray-500 dark:text-gray-400">
-                          <span className="material-icons-outlined text-3xl mb-3">search_off</span>
-                          <p className="text-lg font-medium">No courses match your search criteria</p>
-                          <p className="text-sm mt-1">Try adjusting your search terms</p>
+                        <div className="p-20 text-center space-y-4">
+                          <div className="h-16 w-16 rounded-[24px] bg-slate-50 dark:bg-slate-950 flex items-center justify-center text-slate-200 dark:text-slate-800 mx-auto border border-slate-100 dark:border-slate-800 shadow-inner">
+                            <span className="material-icons-outlined text-3xl">inbox</span>
+                          </div>
+                          <p className="text-sm font-black text-slate-300 uppercase tracking-widest">Null Set Discovered</p>
                         </div>
                       )}
                     </div>
@@ -646,6 +643,10 @@ const StudentResults: React.FC<ResultsProps> = ({ user, onLogout }) => {
             })}
           </div>
         </main>
+
+        {/* Global UI Decoration */}
+        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-teal-500/[0.02] rounded-full blur-[120px] pointer-events-none -translate-y-1/2 translate-x-1/2 -z-10" />
+        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-indigo-500/[0.02] rounded-full blur-[100px] pointer-events-none translate-y-1/2 -translate-x-1/2 -z-10" />
       </div>
     </div>
   );

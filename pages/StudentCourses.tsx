@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
+import { DetailedCardGridSkeleton, Skeleton } from '../components/Skeleton';
 import { User, CurrentCoursesResponse, DropRecommendationResponse } from '../types';
 import { api } from '../lib/api';
 
@@ -15,6 +16,7 @@ const StudentCourses: React.FC<CoursesProps> = ({ user, onLogout }) => {
   const [data, setData] = useState<CurrentCoursesResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [downloadingSchedule, setDownloadingSchedule] = useState(false);
   const [showTradeOff, setShowTradeOff] = useState(false);
   const [selectedToDrop, setSelectedToDrop] = useState<string[]>([]);
   const [selectedElective, setSelectedElective] = useState<string | null>(null);
@@ -173,12 +175,36 @@ const StudentCourses: React.FC<CoursesProps> = ({ user, onLogout }) => {
     }
   };
 
+  const handleDownloadSchedule = async () => {
+    try {
+      setDownloadingSchedule(true);
+      const { blob, filename } = await api.studentCurrentCoursesPdf();
+
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = decodeURIComponent(filename || 'current_schedule.pdf');
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (err: any) {
+      alert(err?.message || 'Failed to download schedule. Please try again.');
+    } finally {
+      setDownloadingSchedule(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex h-screen overflow-hidden bg-background-light dark:bg-background-dark font-poppins">
         <Sidebar user={user} onLogout={onLogout} />
-        <div className="flex flex-1 flex-col overflow-hidden items-center justify-center">
-           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        <div className="flex flex-1 flex-col overflow-hidden p-6 lg:p-8 space-y-6">
+          <div className="flex justify-between items-center">
+            <Skeleton className="h-10 w-56" />
+            <Skeleton className="h-16 w-64 rounded-xl" />
+          </div>
+          <DetailedCardGridSkeleton count={4} />
         </div>
       </div>
     );
@@ -211,227 +237,252 @@ const StudentCourses: React.FC<CoursesProps> = ({ user, onLogout }) => {
   );
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background-light dark:bg-background-dark font-poppins relative">
+    <div className="flex h-screen overflow-hidden bg-white dark:bg-slate-950 font-poppins relative">
       <Sidebar user={user} onLogout={onLogout} />
-      <div className={`flex flex-1 flex-col overflow-hidden transition-all duration-500 ${isConflict ? 'blur-[8px] pointer-events-none' : ''}`}>
+      <div className={`flex flex-1 flex-col overflow-hidden transition-all duration-700 ${isConflict ? 'blur-2xl scale-[0.98] pointer-events-none' : ''}`}>
         <Header title="My Courses" user={user} />
-        <main className="flex-1 overflow-y-auto p-6 lg:p-8">
-          <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-6">
-            <div>
-              <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Current Schedule</h2>
-              <p className="text-gray-500 dark:text-gray-400 mt-1">{data.semester_name}</p>
+        <main className="flex-1 overflow-y-auto p-10 lg:p-12 animate-in fade-in duration-1000 slide-in-from-bottom-4 scrollbar-hide max-w-[1600px] mx-auto w-full">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-8">
+            <div className="space-y-2">
+              <h2 className="text-4xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">Academic Load</h2>
+              <p className="text-lg font-medium text-slate-400 dark:text-slate-500">{data.semester_name} • Current Inventory</p>
             </div>
-            <div className="bg-surface-light dark:bg-surface-dark px-6 py-3 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm flex items-center gap-6">
-              <div>
-                <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Total Credits</p>
-                <div className="flex items-baseline gap-1">
-                    <span className="text-2xl font-bold text-primary">{data.total_credits}</span>
-                    <span className="text-sm text-gray-500 font-medium">/ {data.max_credits} Max</span>
+            <div className="bg-slate-50/50 dark:bg-slate-900/50 px-8 py-5 rounded-[32px] border border-slate-100 dark:border-slate-800 shadow-sm flex items-center gap-10">
+              <div className="space-y-1">
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Credit Volume</p>
+                <div className="flex items-baseline gap-2">
+                    <span className="text-3xl font-black text-teal-600 tabular-nums">{data.total_credits}</span>
+                    <span className="text-[10px] font-black text-slate-300 dark:text-slate-600 uppercase">Limit: {data.max_credits}</span>
                 </div>
               </div>
-              <div className="w-px h-10 bg-gray-200 dark:bg-gray-700"></div>
-              <div>
-                <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Courses</p>
-                <span className="text-2xl font-bold text-gray-800 dark:text-white">{data.courses_count}</span>
+              <div className="w-px h-10 bg-slate-200 dark:bg-slate-800"></div>
+              <div className="space-y-1">
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Registrations</p>
+                <span className="text-3xl font-black text-slate-900 dark:text-white tabular-nums">{data.courses_count}</span>
               </div>
             </div>
           </div>
 
           {data.total_credits > data.max_credits && (
-            <div className="mb-8 bg-orange-50 dark:bg-orange-950/20 border-l-4 border-orange-500 p-4 rounded-r-xl shadow-sm">
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <span className="material-icons-outlined text-orange-600">warning</span>
+            <div className="mb-12 bg-rose-50 dark:bg-rose-950/20 border border-rose-100 dark:border-rose-900/40 p-6 rounded-[32px] shadow-sm animate-in slide-in-from-top-4 duration-500">
+                <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+                    <div className="flex items-center gap-5">
+                        <div className="h-12 w-12 rounded-2xl bg-rose-100 dark:bg-rose-900/40 flex items-center justify-center text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800">
+                          <span className="material-icons-outlined text-2xl">warning_amber</span>
+                        </div>
                         <div>
-                            <p className="text-orange-900 dark:text-orange-200 font-bold">Credit Limit Exceeded</p>
-                            <p className="text-orange-700 dark:text-orange-300 text-sm">
-                                You are over the {data.max_credits}-credit limit by <span className="font-bold">{data.total_credits - data.max_credits} credits</span>. Please drop some courses.
+                            <p className="text-rose-900 dark:text-rose-200 text-lg font-black tracking-tight">Capacity Protocol Breach</p>
+                            <p className="text-rose-700/70 dark:text-rose-400/70 text-sm font-medium">
+                                System indicates an excess of <span className="font-black text-rose-600">{data.total_credits - data.max_credits} credits</span>. Adjustment required.
                             </p>
                         </div>
                     </div>
                     <button 
                         onClick={() => setShowTradeOff(true)}
-                        className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white text-sm font-bold rounded-lg transition-colors shadow-sm uppercase tracking-wider"
+                        className="px-8 py-3.5 bg-rose-600 hover:bg-rose-700 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl transition-all active:scale-[0.98] shadow-lg shadow-rose-500/20"
                     >
-                        Resolve Conflict
+                        Resolve Protocol
                     </button>
                 </div>
             </div>
           )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
             {data.courses.map((course, index) => (
               <div 
                 key={index} 
                 onClick={() => handleCourseClick(course.code)}
-                className="group bg-surface-light dark:bg-surface-dark rounded-xl border border-gray-200 dark:border-gray-700 p-5 shadow-sm hover:shadow-md transition-all hover:border-primary/50 cursor-pointer"
+                className="group bg-white dark:bg-slate-900 rounded-[32px] border border-slate-100 dark:border-slate-800 p-8 shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all relative overflow-hidden cursor-pointer"
               >
-                <div className="flex justify-between items-start mb-4">
-                  <span className={`px-2.5 py-1 rounded text-xs font-bold uppercase ${
-                    course.tag === 'MAJOR' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' :
-                    course.tag === 'CORE' ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300' :
-                    'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300'
+                <div className="absolute top-0 right-0 h-24 w-24 bg-teal-500/[0.03] rounded-bl-full transform translate-x-4 -translate-y-4 group-hover:scale-110 transition-transform duration-700" />
+                
+                <div className="flex justify-between items-start mb-8 relative z-10">
+                  <span className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-[0.2em] border ${
+                    course.tag === 'MAJOR' ? 'bg-blue-50 text-blue-600 border-blue-100 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800' :
+                    course.tag === 'CORE' ? 'bg-purple-50 text-purple-600 border-purple-100 dark:bg-purple-900/20 dark:text-purple-400 dark:border-purple-800' :
+                    'bg-amber-50 text-amber-600 border-amber-100 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800'
                   }`}>
                     {course.tag}
                   </span>
                   <div className="text-right">
-                    <span className="block text-lg font-bold text-gray-800 dark:text-white">{course.credits}</span>
-                    <span className="text-[10px] text-gray-400 uppercase font-semibold">Credits</span>
+                    <span className="block text-2xl font-black text-slate-900 dark:text-white tabular-nums tracking-tighter">{course.credits}</span>
+                    <span className="text-[9px] font-black text-slate-300 dark:text-slate-600 uppercase tracking-widest">Units</span>
                   </div>
                 </div>
                 
-                <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-1 group-hover:text-primary transition-colors">{course.title}</h3>
-                <p className="text-sm text-gray-500 font-mono mb-4">{course.code}</p>
-                
-                <div className="space-y-3 pt-4 border-t border-gray-100 dark:border-gray-800">
-                  <div className="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-300">
-                    <span className="material-icons-outlined text-gray-400">person</span>
-                    {course.instructor}
-                  </div>
-                  <div className="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-300">
-                    <span className="material-icons-outlined text-gray-400">location_on</span>
-                    {course.location}
+                <div className="relative z-10">
+                  <h3 className="text-xl font-black text-slate-900 dark:text-white mb-2 group-hover:text-teal-600 transition-colors tracking-tight leading-tight">{course.title}</h3>
+                  <p className="text-xs font-bold text-slate-400 dark:text-slate-500 font-mono uppercase tracking-[0.2em] mb-8">{course.code}</p>
+                  
+                  <div className="space-y-4 pt-6 border-t border-slate-50 dark:border-slate-800/50">
+                    <div className="flex items-center gap-4 text-xs font-bold text-slate-500 dark:text-slate-400">
+                      <div className="h-8 w-8 rounded-xl bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-400">
+                        <span className="material-icons-outlined text-sm">person</span>
+                      </div>
+                      <span className="truncate uppercase tracking-wider">{course.instructor}</span>
+                    </div>
+                    <div className="flex items-center gap-4 text-xs font-bold text-slate-500 dark:text-slate-400">
+                      <div className="h-8 w-8 rounded-xl bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-400">
+                        <span className="material-icons-outlined text-sm">sensors</span>
+                      </div>
+                      <span className="truncate uppercase tracking-wider">{course.location}</span>
+                    </div>
                   </div>
                 </div>
               </div>
             ))}
           </div>
 
-          <div className="mt-8 bg-primary/5 dark:bg-primary/10 border border-primary/10 dark:border-primary/20 rounded-xl p-6 flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
-                <div className="bg-white dark:bg-surface-dark p-3 rounded-full shadow-sm text-primary">
-                    <span className="material-icons-outlined">print</span>
+          <div className="mt-12 bg-slate-900 dark:bg-teal-600 rounded-[40px] p-10 flex flex-col md:flex-row items-center justify-between gap-8 shadow-2xl relative overflow-hidden group">
+            <div className="absolute top-0 right-0 h-full w-1/2 bg-white/[0.02] transform skew-x-12 translate-x-20 pointer-events-none" />
+            <div className="flex items-center gap-8 relative z-10 text-center md:text-left">
+                <div className="h-16 w-16 bg-white/10 backdrop-blur-md rounded-[24px] flex items-center justify-center text-white border border-white/10 transform transition-transform duration-700 group-hover:rotate-12">
+                    <span className="material-icons-outlined text-3xl">print</span>
                 </div>
                 <div>
-                    <h4 className="font-bold text-gray-800 dark:text-white">Need a copy of your schedule?</h4>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Download a printable PDF version for your records.</p>
+                    <h4 className="text-2xl font-black text-white tracking-tight mb-1">Schedule Export</h4>
+                    <p className="text-sm font-medium text-white/60">Generate a high-fidelity cryptographic ledger of your current courses.</p>
                 </div>
             </div>
-            <button className="px-6 py-2.5 bg-primary hover:bg-primary-hover text-white font-medium rounded-lg shadow-sm transition-colors whitespace-nowrap">
-                Download Schedule
+            <button
+              onClick={handleDownloadSchedule}
+              disabled={downloadingSchedule}
+              className={`px-10 py-4 text-[10px] font-black uppercase tracking-[0.3em] rounded-2xl transition-all shadow-xl active:scale-[0.98] whitespace-nowrap relative z-10 ${
+                downloadingSchedule
+                  ? 'bg-white/10 text-white/40 cursor-not-allowed'
+                  : 'bg-white text-slate-900 hover:bg-slate-50 hover:shadow-white/10'
+              }`}
+            >
+                {downloadingSchedule ? 'SYCHRONIZING...' : 'Download PDF Manifest'}
             </button>
           </div>
         </main>
       </div>
 
       {isConflict && !showTradeOff && (
-        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white/5 backdrop-blur-sm pointer-events-auto">
-            <div className="bg-white dark:bg-surface-dark p-10 rounded-3xl shadow-2xl border border-gray-100 dark:border-gray-800 text-center max-w-lg mx-4 flex flex-col items-center gap-6 animate-in zoom-in-90 duration-300">
-                <div className="w-20 h-20 bg-[#077d8a]/10 rounded-full flex items-center justify-center">
-                    <span className="material-icons-outlined text-[#077d8a] text-5xl">priority_high</span>
+        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white/40 dark:bg-slate-950/40 backdrop-blur-3xl pointer-events-auto">
+            <div className="bg-white dark:bg-slate-900 p-12 rounded-[48px] shadow-2xl border border-slate-100 dark:border-slate-800 text-center max-w-lg mx-4 flex flex-col items-center gap-10 animate-in zoom-in-95 duration-500">
+                <div className="w-24 h-24 bg-rose-50 dark:bg-rose-900/20 rounded-[32px] flex items-center justify-center border border-rose-100 dark:border-rose-800 shadow-inner">
+                    <span className="material-icons-outlined text-rose-500 text-5xl animate-pulse">lock</span>
                 </div>
                 <div>
-                    <h3 className="text-2xl font-bold text-[#333333] dark:text-white font-poppins">Action Required</h3>
-                    <p className="text-gray-500 dark:text-gray-400 mt-2">
-                        Your credit load (<span className="text-red-500 font-bold">{data.total_credits}</span>) exceeds the university limit of <span className="font-bold">{data.max_credits}</span>.
+                    <h3 className="text-3xl font-black text-slate-900 dark:text-white font-poppins tracking-tight">Access Restricted</h3>
+                    <p className="text-slate-500 dark:text-slate-400 mt-4 leading-relaxed font-medium">
+                        Your credit volume (<span className="text-rose-500 font-black tabular-nums">{data.total_credits}</span>) violates the institutional ceiling of <span className="font-black tabular-nums">{data.max_credits}</span>.
                     </p>
-                    <p className="text-xs text-gray-400 mt-1 uppercase tracking-widest font-bold">Schedule is locked until resolved</p>
+                    <p className="text-[10px] text-slate-300 dark:text-slate-600 mt-4 uppercase tracking-[0.4em] font-black">Authentication Shield Engaged</p>
                 </div>
                 <button 
                     onClick={() => setShowTradeOff(true)}
-                    className="w-full py-4 bg-[#077d8a] hover:bg-[#066a75] text-white font-bold rounded-xl shadow-lg transition-all transform hover:scale-[1.02] uppercase tracking-wider"
+                    className="w-full py-5 bg-slate-900 dark:bg-teal-600 text-white text-xs font-black uppercase tracking-[0.2em] rounded-[24px] shadow-2xl hover:bg-slate-800 dark:hover:bg-teal-700 transition-all active:scale-[0.98]"
                 >
-                    Resolve Conflict Now
+                    Initiate Resolution
                 </button>
             </div>
         </div>
       )}
 
       {showTradeOff && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-xl p-4 animate-in fade-in zoom-in-95 duration-300">
-            <div className="bg-white dark:bg-surface-dark w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden border border-[#077d8a]/20">
-                <div className="bg-[#077d8a] px-8 py-6 text-white flex justify-between items-center border-b border-[#077d8a]/10">
-                    <div>
-                        <h3 className="text-xl font-bold font-poppins flex items-center gap-2">
-                            <span className="material-icons-outlined">warning</span>
-                            Resolve Credit Conflict
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/40 backdrop-blur-2xl p-4 animate-in fade-in duration-500">
+            <div className="bg-white dark:bg-slate-900 w-full max-w-2xl rounded-[40px] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.2)] overflow-hidden border border-slate-100 dark:border-slate-800 animate-in zoom-in-95 duration-500">
+                <div className="bg-slate-50/50 dark:bg-slate-950/50 px-10 py-10 flex justify-between items-center border-b border-slate-100 dark:border-slate-800">
+                    <div className="space-y-1">
+                        <h3 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-3">
+                            <span className="material-icons-outlined text-rose-500">troubleshoot</span>
+                            Conflict Engine
                         </h3>
-                        <p className="text-white/80 text-sm mt-1 font-medium">Please drop courses to reach the {data.max_credits} limit.</p>
+                        <p className="text-slate-400 dark:text-slate-500 text-sm font-medium tracking-tight">Equilibrate load to institutional {data.max_credits} ceiling.</p>
                     </div>
                     <button
                         onClick={fetchDropRecommendation}
                         disabled={dropRecommendationLoading}
-                        className={`px-3 py-2 rounded-[6px] text-xs font-bold uppercase tracking-wider ${
+                        className={`h-12 px-6 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 border ${
                             dropRecommendationLoading
-                                ? 'bg-white/20 text-white/60 cursor-not-allowed'
-                                : 'bg-white/20 hover:bg-white/30 text-white'
+                                ? 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed'
+                                : 'bg-white dark:bg-slate-800 text-teal-600 border-slate-200 dark:border-slate-700 hover:bg-slate-50'
                         }`}
                     >
-                        {dropRecommendationLoading ? 'Thinking...' : 'Refresh AI'}
+                        {dropRecommendationLoading ? 'CALCULATING...' : 'AI RE-SYNTHESIS'}
                     </button>
                 </div>
                 
 
-                <div className="p-8 max-h-[60vh] overflow-y-auto bg-[#f5f5f5] dark:bg-background-dark">
-                    <div className="mb-4 bg-white dark:bg-white/5 rounded-[6px] border border-[#b7d8d0] dark:border-[#1f6f5f]/40 p-4">
-                        <div className="flex items-center gap-2 mb-2">
-                            <span className="material-icons-outlined text-[#1f6f5f] text-sm">smart_toy</span>
-                            <p className="text-sm font-bold text-[#1f6f5f]">AI Drop Recommendation</p>
+                <div className="p-10 max-h-[60vh] overflow-y-auto bg-white dark:bg-slate-900 scrollbar-hide">
+                    <div className="mb-10 bg-teal-50/30 dark:bg-teal-900/10 rounded-[24px] border border-teal-100/50 dark:border-teal-900/20 p-6 transition-all hover:bg-teal-50/50">
+                        <div className="flex items-center gap-3 mb-4">
+                            <div className="h-8 w-8 rounded-xl bg-teal-500 flex items-center justify-center text-white">
+                              <span className="material-icons-outlined text-sm">auto_awesome</span>
+                            </div>
+                            <p className="text-[10px] font-black text-teal-700 dark:text-teal-400 uppercase tracking-widest">Neural Guidance Output</p>
                         </div>
                         {dropRecommendationLoading && (
-                            <div className="space-y-2">
-                                <p className="text-xs text-[#1f6f5f]">AI is thinking and selecting optimal courses to drop...</p>
-                                <div className="animate-pulse h-3 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
-                                <div className="animate-pulse h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+                            <div className="space-y-4">
+                                <div className="h-2 bg-teal-200/30 dark:bg-teal-800/30 rounded-full w-3/4 animate-pulse"></div>
+                                <div className="h-2 bg-teal-200/30 dark:bg-teal-800/30 rounded-full w-1/2 animate-pulse"></div>
                             </div>
                         )}
                         {!dropRecommendationLoading && dropRecommendationError && (
-                            <p className="text-xs text-[#e74c3c]">{dropRecommendationError}</p>
+                            <p className="text-xs font-bold text-rose-500 italic">{dropRecommendationError}</p>
                         )}
                         {!dropRecommendationLoading && !dropRecommendationError && dropRecommendation && (
-                            <div>
-                                <p className="text-xs text-[#35574f] dark:text-green-200">{dropRecommendation.message}</p>
-                                <p className="text-[11px] text-gray-500 mt-1">
-                                    Current: {dropRecommendation.current_total_credits} | Limit: {dropRecommendation.credit_limit} | Need to drop: {dropRecommendation.credits_to_drop}
-                                </p>
+                            <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+                                <p className="text-sm font-bold text-teal-900 dark:text-teal-200 leading-relaxed italic">"{dropRecommendation.message}"</p>
+                                <div className="mt-6 flex flex-wrap gap-4">
+                                  <div className="px-3 py-1.5 bg-white dark:bg-slate-950 rounded-xl border border-teal-100/50 dark:border-teal-900/50">
+                                    <p className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">Delta Requirement</p>
+                                    <p className="text-xs font-black text-teal-600">-{dropRecommendation.credits_to_drop} Units</p>
+                                  </div>
+                                </div>
                             </div>
                         )}
                     </div>
-                    <div className="space-y-6">
+                    
+                    <div className="space-y-10">
                         {/* Electives Section */}
                         {(() => {
-                            // Filter electives to include available choices OR forced retakes (though retakes likely won't be choices)
-                            // We typically want to show all electives so user can see what's happening
                             const electives = data.courses.filter(c => c.tag?.toUpperCase() === 'ELECTIVE');
                             if (electives.length > 1) {
                                 return (
-                                    <div className="bg-white dark:bg-white/5 p-4 rounded-xl border border-gray-200 dark:border-gray-700">
-                                        <h4 className="font-bold text-[#333333] dark:text-white mb-3 flex items-center gap-2">
-                                            <span className="material-icons-outlined text-sm bg-[#0d4a8f] text-white p-1 rounded-full">stars</span>
-                                            Choose One Elective to Keep
-                                        </h4>
-                                        <div className="space-y-2">
+                                    <div className="space-y-6">
+                                        <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.3em] ml-1">Specialization Electives</h4>
+                                        <div className="grid grid-cols-1 gap-3">
                                             {electives.map(course => (
-                                                <label key={course.code} className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
+                                                <label key={course.code} className={`flex items-center gap-5 p-5 rounded-[24px] border transition-all cursor-pointer group/label ${
                                                     course.is_retake 
-                                                        ? 'bg-gray-100 border-gray-200 opacity-70 cursor-not-allowed'
+                                                        ? 'bg-slate-50 border-slate-100 opacity-40 cursor-not-allowed'
                                                     : selectedElective === course.code 
-                                                        ? 'bg-[#0d4a8f]/5 border-[#0d4a8f] ring-1 ring-[#0d4a8f]' 
-                                                        : 'border-gray-200 dark:border-gray-700 hover:border-[#0d4a8f]/50'
+                                                        ? 'bg-teal-50/50 border-teal-500 ring-4 ring-teal-500/5' 
+                                                        : 'bg-white dark:bg-slate-950 border-slate-100 dark:border-slate-800 hover:border-teal-500/30'
                                                 }`}>
-                                                    <input 
-                                                        type="radio" 
-                                                        name="elective_choice"
-                                                        className="w-4 h-4 text-[#0d4a8f] focus:ring-[#0d4a8f]"
-                                                        checked={selectedElective === course.code}
-                                                        disabled={course.is_retake} 
-                                                        onChange={() => !course.is_retake && handleElectiveSelect(course.code)}
-                                                    />
-                                                    <div className="flex-1">
-                                                        <div className="flex justify-between">
-                                                            <span className="font-bold text-sm text-[#333333] dark:text-white">{course.title}</span>
-                                                            <span className="text-xs font-bold text-[#0d4a8f]">{course.credits} Cr</span>
+                                                    <div className="relative">
+                                                      <input 
+                                                          type="radio" 
+                                                          name="elective_choice"
+                                                          className="sr-only"
+                                                          checked={selectedElective === course.code}
+                                                          disabled={course.is_retake} 
+                                                          onChange={() => !course.is_retake && handleElectiveSelect(course.code)}
+                                                      />
+                                                      <div className={`h-6 w-6 rounded-full border-2 transition-all flex items-center justify-center ${selectedElective === course.code ? 'border-teal-500 bg-teal-500' : 'border-slate-200 dark:border-slate-700'}`}>
+                                                        {selectedElective === course.code && <div className="h-2 w-2 rounded-full bg-white shadow-sm" />}
+                                                      </div>
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="flex justify-between items-start mb-1">
+                                                            <span className="font-black text-sm text-slate-900 dark:text-white tracking-tight truncate mr-4">{course.title}</span>
+                                                            <span className="text-[10px] font-black text-teal-600 bg-teal-50 dark:bg-teal-950 px-2 py-0.5 rounded-md uppercase tracking-tighter whitespace-nowrap">{course.credits} UNITS</span>
                                                         </div>
-                                                        <p className="text-xs text-gray-500">{course.code}</p>
-                                                        {dropReasonByCode.has(course.code) && (
-                                                            <p className="text-[11px] text-[#1f6f5f] mt-1">{dropReasonByCode.get(course.code)}</p>
-                                                        )}
-                                                        {course.is_retake && <p className="text-[10px] text-red-500 font-bold uppercase mt-1">Retake - Cannot Drop</p>}
+                                                        <div className="flex items-center gap-3">
+                                                          <p className="text-[10px] font-bold text-slate-400 font-mono tracking-widest">{course.code}</p>
+                                                          {dropReasonByCode.has(course.code) && (
+                                                              <p className="text-[9px] font-black text-teal-600/70 uppercase tracking-tighter">Guidance Match</p>
+                                                          )}
+                                                        </div>
+                                                        {course.is_retake && <p className="text-[9px] text-rose-500 font-black uppercase tracking-widest mt-2">Core Retake Policy Active</p>}
                                                     </div>
                                                 </label>
                                             ))}
                                         </div>
-                                        <p className="text-[10px] text-gray-400 mt-2 italic">* Selecting one will automatically mark others for dropping (except Retakes).</p>
                                     </div>
                                 );
                             }
@@ -439,9 +490,9 @@ const StudentCourses: React.FC<CoursesProps> = ({ user, onLogout }) => {
                         })()}
 
                         {/* Other Courses */}
-                        <div>
-                             <h4 className="font-bold text-gray-400 text-xs uppercase tracking-widest mb-3">Core & Major Courses</h4>
-                             <div className="space-y-3">
+                        <div className="space-y-6">
+                             <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.3em] ml-1">Foundation & Core Hierarchy</h4>
+                             <div className="grid grid-cols-1 gap-3">
                                 {data.courses
                                     .filter(c => c.tag?.toUpperCase() !== 'ELECTIVE' || (data.courses.filter(e => e.tag?.toUpperCase() === 'ELECTIVE').length <= 1))
                                     .map((course) => {
@@ -450,44 +501,38 @@ const StudentCourses: React.FC<CoursesProps> = ({ user, onLogout }) => {
                                         <div 
                                             key={course.code} 
                                             onClick={() => !course.is_retake && handleToggleSelection(course.code)}
-                                            className={`flex items-center justify-between p-4 rounded-xl border transition-all cursor-pointer ${
+                                            className={`flex items-center justify-between p-5 rounded-[24px] border transition-all cursor-pointer group/row ${
                                                 course.is_retake 
-                                                ? 'bg-gray-100 border-gray-200 opacity-70 cursor-not-allowed' 
+                                                ? 'bg-slate-50 dark:bg-slate-950 border-slate-100 dark:border-slate-800 opacity-40 cursor-not-allowed' 
                                                 : isSelected 
-                                                ? 'bg-red-50 border-red-200 shadow-sm' 
-                                                : 'bg-white border-transparent hover:border-[#077d8a]/50 shadow-sm'
+                                                ? 'bg-rose-50/50 border-rose-500 ring-4 ring-rose-500/5' 
+                                                : 'bg-white dark:bg-slate-950 border-slate-100 dark:border-slate-800 hover:border-teal-500/30 shadow-sm'
                                             }`}
                                         >
-                                            <div className="flex items-center gap-4">
-                                                <div className={`flex items-center justify-center w-6 h-6 rounded border-2 transition-colors ${
-                                                    course.is_retake ? 'bg-gray-300 border-gray-300' :
-                                                    isSelected ? 'bg-red-500 border-red-500' : 'border-gray-300'
+                                            <div className="flex items-center gap-5 flex-1 min-w-0">
+                                                <div className={`flex items-center justify-center w-6 h-6 rounded-xl border-2 transition-all ${
+                                                    course.is_retake ? 'border-slate-200 bg-slate-100' :
+                                                    isSelected ? 'bg-rose-500 border-rose-500 shadow-lg shadow-rose-500/20' : 'border-slate-200 dark:border-slate-700'
                                                 }`}>
-                                                    {isSelected && <span className="material-icons-outlined text-white text-sm">check</span>}
-                                                    {course.is_retake && <span className="material-icons-outlined text-gray-500 text-sm">lock</span>}
+                                                    {isSelected && <span className="material-icons-outlined text-white text-xs">close</span>}
+                                                    {course.is_retake && <span className="material-icons-outlined text-slate-400 text-xs">lock</span>}
                                                 </div>
-                                                <div>
-                                                    <p className={`font-bold font-poppins ${isSelected ? 'text-red-700' : 'text-gray-800 dark:text-white'}`}>
+                                                <div className="min-w-0">
+                                                    <p className={`text-sm font-black tracking-tight truncate ${isSelected ? 'text-rose-900 dark:text-rose-200' : 'text-slate-900 dark:text-white'}`}>
                                                         {course.title}
                                                     </p>
-                                                    <div className="flex items-center gap-2 mt-0.5">
-                                                        <span className="text-[10px] font-mono text-gray-400 uppercase tracking-widest">{course.code}</span>
-                                                        <span className="{`text-xs font-bold ${course.tag === 'ELECTIVE' ? 'text-purple-600' : 'text-[#333333] dark:text-gray-200'}`}">{course.credits} Credits</span>
-                                                        {course.is_retake && (
-                                                            <span className="px-2 py-0.5 bg-orange-100 text-orange-700 text-[10px] font-bold rounded uppercase tracking-tighter ml-2">Cannot Drop</span>
-                                                        )}
-                                                        <span className="px-1.5 py-0.5 rounded text-[10px] font-bold uppercase bg-gray-100 text-gray-500">{course.tag}</span>
+                                                    <div className="flex items-center gap-3 mt-1.5">
+                                                        <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest">{course.code}</span>
+                                                        <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-tighter">{course.credits} UNITS</span>
+                                                        <span className="px-1.5 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest bg-slate-100 dark:bg-slate-800 text-slate-500">{course.tag}</span>
                                                         {dropReasonByCode.has(course.code) && (
-                                                            <span className="px-1.5 py-0.5 rounded text-[10px] font-bold uppercase bg-[#eaf6f3] text-[#1f6f5f]">AI Suggested</span>
+                                                            <span className="px-1.5 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest bg-teal-50 dark:bg-teal-900/40 text-teal-600">Guidance Apex</span>
                                                         )}
                                                     </div>
-                                                    {dropReasonByCode.has(course.code) && (
-                                                        <p className="text-[11px] text-[#1f6f5f] mt-1">{dropReasonByCode.get(course.code)}</p>
-                                                    )}
                                                 </div>
                                             </div>
                                             {isSelected && (
-                                                <span className="text-[10px] font-bold text-red-600 uppercase tracking-widest bg-red-100 px-2 py-1 rounded">Marked for drop</span>
+                                                <span className="text-[9px] font-black text-rose-600 uppercase tracking-[0.2em] bg-rose-100 px-3 py-1.5 rounded-xl ml-4 whitespace-nowrap">Marked for Deletion</span>
                                             )}
                                         </div>
                                     );
@@ -497,37 +542,37 @@ const StudentCourses: React.FC<CoursesProps> = ({ user, onLogout }) => {
                     </div>
                 </div>
 
-                <div className="p-6 bg-white dark:bg-surface-dark border-t border-gray-100 dark:border-gray-700 flex flex-col sm:flex-row justify-between items-center gap-4">
-                    <div className="flex items-center gap-6">
-                        <div>
-                            <p className="text-[10px] text-gray-400 uppercase font-black tracking-widest">Calculated Load</p>
-                            <p className={`text-2xl font-bold font-poppins transition-colors ${
+                <div className="p-10 bg-slate-50/50 dark:bg-slate-950/50 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row justify-between items-center gap-8">
+                    <div className="flex items-center gap-10">
+                        <div className="space-y-1">
+                            <p className="text-[9px] text-slate-400 dark:text-slate-500 uppercase font-black tracking-[0.3em]">Projected Load</p>
+                            <p className={`text-3xl font-black tabular-nums tracking-tighter transition-colors ${
                                 (data.total_credits - data.courses.filter(c => selectedToDrop.includes(c.code)).reduce((s,c)=>s+c.credits,0)) <= data.max_credits 
-                                ? 'text-[#27ae60]' 
-                                : 'text-[#e74c3c]'
+                                ? 'text-emerald-600' 
+                                : 'text-rose-600'
                             }`}>
                                 {data.total_credits - data.courses.filter(c => selectedToDrop.includes(c.code)).reduce((s,c)=>s+c.credits,0)}
-                                <span className="text-sm text-gray-400 font-medium ml-1">/ {data.max_credits} Max</span>
+                                <span className="text-sm text-slate-300 dark:text-slate-600 font-bold ml-2">/ {data.max_credits} MAX</span>
                             </p>
                         </div>
-                        <div className="h-10 w-px bg-gray-100"></div>
-                        <div>
-                            <p className="text-[10px] text-gray-400 uppercase font-black tracking-widest">Dropping</p>
-                            <p className="text-2xl font-bold font-poppins text-red-500">
-                                {data.courses.filter(c => selectedToDrop.includes(c.code)).reduce((s,c)=>s+c.credits,0)}
+                        <div className="h-12 w-px bg-slate-200 dark:bg-slate-800 hidden sm:block"></div>
+                        <div className="space-y-1">
+                            <p className="text-[9px] text-slate-400 dark:text-slate-500 uppercase font-black tracking-[0.3em]">Delta Volume</p>
+                            <p className="text-3xl font-black text-rose-500 tabular-nums tracking-tighter">
+                                -{data.courses.filter(c => selectedToDrop.includes(c.code)).reduce((s,c)=>s+c.credits,0)}
                             </p>
                         </div>
                     </div>
                     <button 
                         onClick={handleBulkDrop}
                         disabled={selectedToDrop.length === 0}
-                        className={`px-10 py-3 rounded-xl font-bold uppercase tracking-widest transition-all shadow-lg ${
+                        className={`px-12 py-4 rounded-[20px] text-[10px] font-black uppercase tracking-[0.2em] transition-all shadow-2xl active:scale-[0.98] ${
                             selectedToDrop.length > 0
-                            ? 'bg-[#077d8a] text-white hover:bg-[#066a75]'
-                            : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                            ? 'bg-slate-900 dark:bg-teal-600 text-white hover:bg-slate-800 dark:hover:bg-teal-700 shadow-teal-500/20'
+                            : 'bg-slate-200 dark:bg-slate-800 text-slate-400 cursor-not-allowed shadow-none'
                         }`}
                     >
-                        Confirm Drops
+                        Commit Adjustments
                     </button>
                 </div>
             </div>

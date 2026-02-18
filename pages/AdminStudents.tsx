@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
+import { TableSkeletonRows } from '../components/Skeleton';
 import { User } from '../types';
 
 interface StudentsProps {
@@ -346,108 +347,128 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background-light dark:bg-background-dark">
+    <div className="flex h-screen overflow-hidden bg-white dark:bg-slate-950">
       <Sidebar user={user} onLogout={onLogout} />
       <div className="flex flex-1 flex-col overflow-hidden">
         <Header title="Students Directory" user={user} />
-        <main className="flex-1 overflow-y-auto p-6">
+        <main className="flex-1 overflow-y-auto p-8 animate-in fade-in duration-700 slide-in-from-bottom-4 scrollbar-hide">
           {/* Filters Row */}
-          <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div className="flex flex-1 flex-wrap items-center gap-3">
+          <div className="mb-10 flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
+            <div className="flex flex-1 flex-wrap items-end gap-4">
               {/* Search */}
-              <div className="relative">
-                <span className="absolute inset-y-0 left-0 flex items-center pl-3">
-                  <span className="material-icons-outlined text-gray-400">search</span>
-                </span>
-                <input 
-                  className="w-full md:w-64 rounded-lg border border-border-light bg-surface-light py-2 pl-10 pr-4 text-sm focus:border-primary outline-none dark:border-border-dark dark:bg-surface-dark dark:text-gray-200" 
-                  placeholder="Search by name, ID..." 
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
+              <div className="space-y-1.5 flex-1 min-w-[300px] max-w-md">
+                <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Search Directory</label>
+                <div className="relative group">
+                  <span className="absolute inset-y-0 left-0 flex items-center pl-4">
+                    <span className="material-icons-outlined text-slate-400 group-focus-within:text-teal-500 transition-colors">search</span>
+                  </span>
+                  <input 
+                    className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 py-3 pl-12 pr-4 text-sm font-medium focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500/50 outline-none transition-all dark:text-white placeholder:text-slate-400" 
+                    placeholder="Search name, ID or email..." 
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </div>
               </div>
 
-              {/* Year Filter */}
-              <select 
-                value={year}
-                onChange={(e) => {
-                  const newYear = e.target.value ? Number(e.target.value) : '';
-                  setYear(newYear);
-                  // Reset major when year changes
-                  if (typeof newYear === 'number') {
-                    if (newYear <= 2) {
-                      setMajor('');
-                    } else if (newYear === 3) {
-                      setMajor('CS');
-                    } else {
-                      setMajor('SE');
-                    }
-                  } else {
-                    setMajor('');
-                  }
-                }}
-                className="rounded-lg border border-border-light bg-surface-light py-2 pl-3 pr-8 text-sm outline-none dark:border-border-dark dark:bg-surface-dark dark:text-gray-200"
-              >
-                <option value="">All Years</option>
-                <option value="1">1st Year</option>
-                <option value="2">2nd Year</option>
-                <option value="3">3rd Year</option>
-                <option value="4">4th Year</option>
-                <option value="5">5th Year</option>
-              </select>
+              <div className="flex flex-wrap items-end gap-3">
+                {/* Year Filter */}
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Year</label>
+                  <select 
+                    value={year}
+                    onChange={(e) => {
+                      const newYear = e.target.value ? Number(e.target.value) : '';
+                      setYear(newYear);
+                      // Reset major when year changes
+                      if (typeof newYear === 'number') {
+                        if (newYear <= 2) {
+                          setMajor('');
+                        } else if (newYear === 3) {
+                          setMajor('CS');
+                        } else {
+                          setMajor('SE');
+                        }
+                      } else {
+                        setMajor('');
+                      }
+                    }}
+                    className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-2.5 pl-3 pr-8 text-xs font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-teal-500/20 transition-all cursor-pointer"
+                  >
+                    <option value="">All Years</option>
+                    <option value="1">1st Year</option>
+                    <option value="2">2nd Year</option>
+                    <option value="3">3rd Year</option>
+                    <option value="4">4th Year</option>
+                    <option value="5">5th Year</option>
+                  </select>
+                </div>
 
-              {/* Semester Filter */}
-              <select 
-                value={semester}
-                onChange={(e) => setSemester(e.target.value ? Number(e.target.value) : '')}
-                className="rounded-lg border border-border-light bg-surface-light py-2 pl-3 pr-8 text-sm outline-none dark:border-border-dark dark:bg-surface-dark dark:text-gray-200"
-              >
-                <option value="">All Semesters</option>
-                <option value="1">1st Semester</option>
-                <option value="2">2nd Semester</option>
-              </select>
+                {/* Semester Filter */}
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Sem</label>
+                  <select 
+                    value={semester}
+                    onChange={(e) => setSemester(e.target.value ? Number(e.target.value) : '')}
+                    className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-2.5 pl-3 pr-8 text-xs font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-teal-500/20 transition-all cursor-pointer"
+                  >
+                    <option value="">All</option>
+                    <option value="1">1st</option>
+                    <option value="2">2nd</option>
+                  </select>
+                </div>
 
-              {/* Section Filter (shown for years 1-3) */}
-              {showSection && (
-                <select 
-                  value={sectionFilter}
-                  onChange={(e) => setSectionFilter(e.target.value)}
-                  className="rounded-lg border border-border-light bg-surface-light py-2 pl-3 pr-8 text-sm outline-none dark:border-border-dark dark:bg-surface-dark dark:text-gray-200"
-                >
-                  <option value="">All Sections</option>
-                  <option value="A">Section A</option>
-                  <option value="B">Section B</option>
-                  <option value="C">Section C</option>
-                </select>
-              )}
+                {/* Section Filter */}
+                {showSection && (
+                  <div className="space-y-1.5 animate-in fade-in slide-in-from-left-2">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Section</label>
+                    <select 
+                      value={sectionFilter}
+                      onChange={(e) => setSectionFilter(e.target.value)}
+                      className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-2.5 pl-3 pr-8 text-xs font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-teal-500/20 transition-all cursor-pointer"
+                    >
+                      <option value="">All</option>
+                      <option value="A">A</option>
+                      <option value="B">B</option>
+                      <option value="C">C</option>
+                    </select>
+                  </div>
+                )}
 
-              {/* Major Filter (shown for years 3-5) */}
-              {showMajorFilter && (
-                <select 
-                  value={major}
-                  onChange={(e) => setMajor(e.target.value)}
-                  className="rounded-lg border border-border-light bg-surface-light py-2 pl-3 pr-8 text-sm outline-none dark:border-border-dark dark:bg-surface-dark dark:text-gray-200"
-                >
-                  <option value="">All Majors</option>
-                  {majorOptions.map((m) => (
-                    <option key={m} value={m}>{m}</option>
-                  ))}
-                </select>
-              )}
+                {/* Major Filter */}
+                {showMajorFilter && (
+                  <div className="space-y-1.5 animate-in fade-in slide-in-from-left-2">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Major</label>
+                    <select 
+                      value={major}
+                      onChange={(e) => setMajor(e.target.value)}
+                      className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-2.5 pl-3 pr-8 text-xs font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-teal-500/20 transition-all cursor-pointer"
+                    >
+                      <option value="">All Majors</option>
+                      {majorOptions.map((m) => (
+                        <option key={m} value={m}>{m}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
 
-              {/* Status Filter */}
-              <select 
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="rounded-lg border border-border-light bg-surface-light py-2 pl-3 pr-8 text-sm outline-none dark:border-border-dark dark:bg-surface-dark dark:text-gray-200"
-              >
-                <option value="">All Status</option>
-                <option value="Active">Active</option>
-                <option value="Probation">Probation</option>
-                <option value="Suspended">Suspended</option>
-                <option value="Graduated">Graduated</option>
-              </select>
+                {/* Status Filter */}
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Status</label>
+                  <select 
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value)}
+                    className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-2.5 pl-3 pr-8 text-xs font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-teal-500/20 transition-all cursor-pointer"
+                  >
+                    <option value="">All Status</option>
+                    <option value="Active">Active</option>
+                    <option value="Probation">Probation</option>
+                    <option value="Suspended">Suspended</option>
+                    <option value="Graduated">Graduated</option>
+                  </select>
+                </div>
+              </div>
             </div>
 
             {/* Action Buttons */}
@@ -462,19 +483,19 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
               <button 
                 onClick={() => fileInputRef.current?.click()}
                 disabled={importing}
-                className="flex items-center rounded-lg border border-primary bg-surface-light px-4 py-2 text-sm font-medium text-primary hover:bg-gray-50 dark:bg-surface-dark dark:hover:bg-slate-800 transition-colors disabled:opacity-50"
+                className="flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-5 py-3 text-sm font-bold text-slate-700 dark:text-white hover:bg-slate-50 dark:hover:bg-slate-800 transition-all shadow-sm active:scale-[0.98]"
               >
-                <span className="material-icons-outlined mr-2 text-base">table_view</span>
-                {importing ? 'Importing...' : 'Import from Excel'}
+                <span className="material-icons-outlined text-lg">{importing ? 'sync' : 'upload_file'}</span>
+                {importing ? 'Processing...' : 'Bulk Import'}
               </button>
               <button 
                 onClick={() => {
                   resetForm();
                   setShowAddModal(true);
                 }}
-                className="flex items-center rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-hover"
+                className="flex items-center gap-2 rounded-2xl bg-teal-600 px-6 py-3 text-sm font-bold text-white hover:bg-teal-700 transition-all shadow-md active:scale-[0.98]"
               >
-                <span className="material-icons-outlined mr-2 text-base">add</span>
+                <span className="material-icons-outlined text-lg">person_add</span>
                 Add Student
               </button>
             </div>
@@ -482,95 +503,108 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
 
           {/* Status Message */}
           {message && (
-            <div className={`mb-4 p-3 rounded-lg text-sm ${message.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+            <div className={`mb-8 p-4 rounded-2xl text-sm font-bold animate-in fade-in slide-in-from-top-2 flex items-center gap-3 ${message.type === 'success' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-900/40' : 'bg-rose-50 text-rose-700 border border-rose-100 dark:bg-rose-950/30 dark:text-rose-400 dark:border-rose-900/40'}`}>
+              <span className="material-icons-outlined text-[20px]">{message.type === 'success' ? 'verified' : 'error_outline'}</span>
               {message.text}
             </div>
           )}
 
           {/* Students Table */}
-          <div className="rounded-xl bg-surface-light shadow-sm dark:bg-surface-dark overflow-hidden">
-             <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm text-gray-500 dark:text-gray-400">
-                  <thead className="bg-gray-50 text-xs uppercase text-gray-700 dark:bg-slate-800 dark:text-gray-300">
+          <div className="rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden transition-all hover:shadow-md">
+             <div className="overflow-x-auto scrollbar-hide">
+                <table className="w-full text-left text-sm">
+                  <thead className="bg-slate-50/50 dark:bg-slate-950/50 text-[10px] uppercase font-bold tracking-widest text-slate-400 dark:text-slate-500 border-b border-slate-100 dark:border-slate-800">
                     <tr>
-                      <th className="px-6 py-4 font-semibold">Student ID</th>
-                      <th className="px-6 py-4 font-semibold">Name</th>
-                      <th className="px-6 py-4 font-semibold">Major</th>
-                      <th className="px-6 py-4 font-semibold">Year / Sem</th>
-                      <th className="px-6 py-4 font-semibold">Section</th>
-                      <th className="px-6 py-4 font-semibold">Total Credits</th>
-                      <th className="px-6 py-4 font-semibold">Status</th>
-                      <th className="px-6 py-4 text-right font-semibold">Actions</th>
+                      <th className="px-8 py-5">ID</th>
+                      <th className="px-8 py-5">Student Identity</th>
+                      <th className="px-8 py-5">Major</th>
+                      <th className="px-8 py-5 text-center">Year/Sem</th>
+                      <th className="px-8 py-5 text-center">Section</th>
+                      <th className="px-8 py-5">Progress</th>
+                      <th className="px-8 py-5">Status</th>
+                      <th className="px-8 py-5 text-right">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-border-light dark:divide-border-dark">
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
                     {loading ? (
-                      <tr>
-                        <td colSpan={8} className="px-6 py-8 text-center text-gray-500">Loading...</td>
-                      </tr>
+                      <TableSkeletonRows rows={8} cols={8} />
                     ) : students.length === 0 ? (
                       <tr>
-                        <td colSpan={8} className="px-6 py-8 text-center text-gray-500">No students found</td>
+                        <td colSpan={8} className="px-8 py-20 text-center text-slate-400 italic">No records found matching your filters</td>
                       </tr>
                     ) : (
                       students.map((s) => (
                         <tr 
                           key={s.id} 
                           onClick={() => handleStudentClick(s.user_id)}
-                          className="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer"
+                          className="group hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-all cursor-pointer"
                         >
-                          <td className="px-6 py-4 font-mono text-gray-900 dark:text-white">{s.user_id}</td>
-                          <td className="px-6 py-4">
-                            <div className="flex items-center">
-                              <div className={`h-8 w-8 rounded-full flex items-center justify-center font-bold text-xs mr-3 ${getAvatarColor(s.name)} dark:bg-opacity-20`}>
+                          <td className="px-8 py-5 font-bold text-xs text-slate-400 dark:text-slate-500 uppercase tracking-tighter">{s.user_id}</td>
+                          <td className="px-8 py-5">
+                            <div className="flex items-center gap-4">
+                              <div className={`h-10 w-10 rounded-full flex items-center justify-center font-bold text-xs border-2 border-white dark:border-slate-800 shadow-sm ${getAvatarColor(s.name)} dark:bg-opacity-20 transform group-hover:scale-110 transition-transform`}>
                                 {getInitials(s.name)}
                               </div>
                               <div>
-                                <div className="font-medium text-gray-900 dark:text-white">{s.name}</div>
-                                <div className="text-xs text-gray-500">{s.email}</div>
+                                <div className="font-bold text-slate-900 dark:text-white group-hover:text-teal-600 transition-colors">{s.name}</div>
+                                <div className="text-[11px] font-medium text-slate-400 truncate max-w-[180px]">{s.email}</div>
                               </div>
                             </div>
                           </td>
-                          <td className="px-6 py-4">{s.major}</td>
-                          <td className="px-6 py-4">
-                            <span className="font-medium">Year {s.year}</span>
-                            <span className="text-xs text-gray-400 ml-1">/ Sem {s.semester}</span>
+                          <td className="px-8 py-5">
+                            <span className="px-2 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] font-bold uppercase tracking-widest border border-slate-200 dark:border-slate-700">
+                              {s.major}
+                            </span>
                           </td>
-                          <td className="px-6 py-4">{s.section ?? '-'}</td>
-                          <td className="px-6 py-4">
-                            <span className="font-medium">{s.total_credits}</span> 
-                            <span className="text-xs text-gray-400">/ {s.required_credits}</span>
+                          <td className="px-8 py-5 text-center">
+                            <div className="text-sm font-bold text-slate-700 dark:text-slate-300">{s.year}</div>
+                            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Sem {s.semester}</div>
                           </td>
-                          <td className="px-6 py-4">
-                             <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                               s.status === 'Active' ? 'bg-green-100 text-green-800' : 
-                               s.status === 'Probation' ? 'bg-yellow-100 text-yellow-800' :
-                               s.status === 'Graduated' ? 'bg-blue-100 text-blue-800' :
-                               'bg-red-100 text-red-800'
-                             } dark:bg-opacity-20`}>
+                          <td className="px-8 py-5 text-center font-bold text-slate-600 dark:text-slate-400">{s.section ?? '—'}</td>
+                          <td className="px-8 py-5">
+                            <div className="flex flex-col gap-1.5 min-w-[100px]">
+                              <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-tighter text-slate-400">
+                                <span>Credits</span>
+                                <span>{s.total_credits} / {s.required_credits}</span>
+                              </div>
+                              <div className="h-1 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                                <div 
+                                  className="h-full bg-teal-500 transition-all duration-1000" 
+                                  style={{ width: `${Math.min(100, (s.total_credits / (s.required_credits || 1)) * 100)}%` }} 
+                                />
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-8 py-5">
+                             <span className={`inline-flex rounded-lg px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest border ${
+                               s.status === 'Active' ? 'bg-emerald-50 text-emerald-700 border-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800' : 
+                               s.status === 'Probation' ? 'bg-amber-50 text-amber-700 border-amber-100 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800' :
+                               s.status === 'Graduated' ? 'bg-indigo-50 text-indigo-700 border-indigo-100 dark:bg-indigo-900/20 dark:text-indigo-400 dark:border-indigo-800' :
+                               'bg-rose-50 text-rose-700 border-rose-100 dark:bg-rose-900/20 dark:text-rose-400 dark:border-rose-800'
+                             }`}>
                               {s.status}
                             </span>
                           </td>
-                          <td className="px-6 py-4 text-right">
-                            <div className="flex items-center justify-end space-x-2">
+                          <td className="px-8 py-5 text-right">
+                            <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                               <button 
                                   onClick={(e) => { e.stopPropagation(); handleStudentClick(s.user_id); }}
-                                  className="rounded p-1 text-gray-400 hover:text-primary"
-                                  title="View"
+                                  className="p-2 rounded-xl text-slate-400 hover:text-teal-600 hover:bg-teal-50 dark:hover:bg-teal-900/20 transition-all"
+                                  title="View Profile"
                               >
                                   <span className="material-icons-outlined text-lg">visibility</span>
                               </button>
                               <button 
                                   onClick={(e) => { e.stopPropagation(); openEditModal(s); }} 
-                                  className="rounded p-1 text-gray-400 hover:text-blue-600"
-                                  title="Edit"
+                                  className="p-2 rounded-xl text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-all"
+                                  title="Edit Records"
                               >
                                   <span className="material-icons-outlined text-lg">edit</span>
                               </button>
                               <button 
                                   onClick={(e) => { e.stopPropagation(); handleDeleteStudent(s); }} 
-                                  className="rounded p-1 text-gray-400 hover:text-red-600"
-                                  title="Delete"
+                                  className="p-2 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-all"
+                                  title="Delete Student"
                               >
                                   <span className="material-icons-outlined text-lg">delete</span>
                               </button>
@@ -582,24 +616,24 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
                   </tbody>
                 </table>
              </div>
-             <div className="flex items-center justify-between border-t border-border-light px-6 py-4 dark:border-border-dark">
-               <div className="text-sm text-gray-500">
-                 Showing {students.length > 0 ? ((currentPage - 1) * pageSize) + 1 : 0} to {((currentPage - 1) * pageSize) + students.length} results
+             <div className="flex items-center justify-between border-t border-slate-100 dark:border-slate-800 px-8 py-6 bg-slate-50/30 dark:bg-slate-950/30">
+               <div className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">
+                 Page {currentPage} — Showing {students.length} of global results
                </div>
-               <div className="flex gap-2">
+               <div className="flex gap-3">
                  <button 
                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                   className="rounded-lg border border-border-light px-3 py-1 text-sm font-medium text-gray-500 disabled:opacity-50 hover:bg-gray-50 dark:hover:bg-slate-800" 
+                   className="flex items-center gap-2 rounded-xl border border-slate-200 dark:border-slate-800 px-4 py-2 text-xs font-bold text-slate-600 dark:text-slate-300 disabled:opacity-30 hover:bg-white dark:hover:bg-slate-900 transition-all shadow-sm" 
                    disabled={currentPage === 1}
                  >
-                   Previous
+                   <span className="material-icons-outlined text-sm">west</span> Prev
                  </button>
                  <button 
                    onClick={() => setCurrentPage(p => p + 1)}
-                   className="rounded-lg border border-border-light px-3 py-1 text-sm font-medium text-gray-500 disabled:opacity-50 hover:bg-gray-50 dark:hover:bg-slate-800"
+                   className="flex items-center gap-2 rounded-xl border border-slate-200 dark:border-slate-800 px-4 py-2 text-xs font-bold text-slate-600 dark:text-slate-300 disabled:opacity-30 hover:bg-white dark:hover:bg-slate-900 transition-all shadow-sm"
                    disabled={students.length < pageSize}
                  >
-                   Next
+                   Next <span className="material-icons-outlined text-sm">east</span>
                  </button>
                </div>
              </div>
@@ -609,139 +643,135 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
 
       {/* Add Student Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-slate-800 rounded-lg shadow-xl p-6 w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
-            <h3 className="text-lg font-semibold mb-4 text-slate-800 dark:text-white">Add New Student</h3>
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Student ID *</label>
+        <div className="fixed inset-0 bg-slate-950/40 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-in fade-in duration-300">
+          <div className="bg-white dark:bg-slate-900 rounded-[32px] shadow-2xl p-10 w-full max-w-2xl border border-slate-200 dark:border-slate-800 max-h-[90vh] overflow-y-auto scrollbar-hide animate-in zoom-in-95 duration-300">
+            <div className="flex items-center justify-between mb-8">
+              <div className="space-y-1">
+                <h3 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">Create Student Record</h3>
+                <p className="text-xs font-medium text-slate-400 uppercase tracking-widest">New institutional identity</p>
+              </div>
+              <button onClick={() => setShowAddModal(false)} className="h-10 w-10 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
+                <span className="material-icons-outlined">close</span>
+              </button>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="space-y-6">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Student ID *</label>
                   <input
                     type="text"
                     value={formData.user_id}
                     onChange={(e) => setFormData(prev => ({ ...prev, user_id: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-slate-700 dark:text-white"
+                    className="w-full px-5 py-3.5 border border-slate-200 dark:border-slate-800 rounded-2xl focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500/50 outline-none transition-all dark:bg-slate-950 dark:text-white font-bold text-sm"
                     placeholder="e.g. TNT-9001"
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Full Name *</label>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Full Name *</label>
                   <input
                     type="text"
                     value={formData.name}
                     onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-slate-700 dark:text-white"
+                    className="w-full px-5 py-3.5 border border-slate-200 dark:border-slate-800 rounded-2xl focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500/50 outline-none transition-all dark:bg-slate-950 dark:text-white font-bold text-sm"
                     placeholder="John Doe"
                   />
                 </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Email *</label>
-                <input
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-slate-700 dark:text-white"
-                  placeholder="john.doe@uni.edu"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Year</label>
-                  <select
-                    value={formData.year}
-                    onChange={(e) => setFormData(prev => ({ ...prev, year: Number(e.target.value) }))}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-slate-700 dark:text-white"
-                  >
-                    <option value={1}>1st Year</option>
-                    <option value={2}>2nd Year</option>
-                    <option value={3}>3rd Year</option>
-                    <option value={4}>4th Year</option>
-                    <option value={5}>5th Year</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Semester</label>
-                  <select
-                    value={formData.semester}
-                    onChange={(e) => setFormData(prev => ({ ...prev, semester: Number(e.target.value) }))}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-slate-700 dark:text-white"
-                  >
-                    <option value={1}>1st Semester</option>
-                    <option value={2}>2nd Semester</option>
-                  </select>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Major</label>
-                  <select
-                    value={formData.major}
-                    onChange={(e) => setFormData(prev => ({ ...prev, major: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-slate-700 dark:text-white"
-                  >
-                    {getMajorOptionsForForm(formData.major).map((m) => (
-                      <option key={m.id} value={m.id}>{m.id} – {m.major_name}</option>
-                    ))}
-                  </select>
-                </div>
-                {formData.year >= 1 && formData.year <= 3 && (
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Section</label>
-                    <select
-                      value={formData.section}
-                      onChange={(e) => setFormData(prev => ({ ...prev, section: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-slate-700 dark:text-white"
-                    >
-                      <option value="">No Section</option>
-                      <option value="A">Section A</option>
-                      <option value="B">Section B</option>
-                      <option value="C">Section C</option>
-                    </select>
-                  </div>
-                )}
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Status</label>
-                  <select
-                    value={formData.status}
-                    onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-slate-700 dark:text-white"
-                  >
-                    <option value="Active">Active</option>
-                    <option value="Probation">Probation</option>
-                    <option value="Suspended">Suspended</option>
-                    <option value="Graduated">Graduated</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Total Credits</label>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Primary Email *</label>
                   <input
-                    type="number"
-                    value={formData.total_credits}
-                    onChange={(e) => setFormData(prev => ({ ...prev, total_credits: Number(e.target.value) }))}
-                    min={0}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-slate-700 dark:text-white"
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                    className="w-full px-5 py-3.5 border border-slate-200 dark:border-slate-800 rounded-2xl focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500/50 outline-none transition-all dark:bg-slate-950 dark:text-white font-bold text-sm"
+                    placeholder="john.doe@uni.edu"
                   />
                 </div>
               </div>
-              <div className="text-sm text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-700 p-3 rounded-md">
-                <span className="font-medium">Note:</span> Default password will be set to <code className="bg-slate-200 dark:bg-slate-600 px-1 rounded">{formData.user_id || '<StudentID>'}@123</code>
+
+              <div className="space-y-6">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Year</label>
+                    <select
+                      value={formData.year}
+                      onChange={(e) => setFormData(prev => ({ ...prev, year: Number(e.target.value) }))}
+                      className="w-full px-5 py-3.5 border border-slate-200 dark:border-slate-800 rounded-2xl focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500/50 outline-none transition-all dark:bg-slate-950 dark:text-white font-bold text-sm cursor-pointer"
+                    >
+                      {[1,2,3,4,5].map(y => <option key={y} value={y}>{y} Year</option>)}
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Semester</label>
+                    <select
+                      value={formData.semester}
+                      onChange={(e) => setFormData(prev => ({ ...prev, semester: Number(e.target.value) }))}
+                      className="w-full px-5 py-3.5 border border-slate-200 dark:border-slate-800 rounded-2xl focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500/50 outline-none transition-all dark:bg-slate-950 dark:text-white font-bold text-sm cursor-pointer"
+                    >
+                      <option value={1}>1st Sem</option>
+                      <option value={2}>2nd Sem</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Academic Major</label>
+                  <select
+                    value={formData.major}
+                    onChange={(e) => setFormData(prev => ({ ...prev, major: e.target.value }))}
+                    className="w-full px-5 py-3.5 border border-slate-200 dark:border-slate-800 rounded-2xl focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500/50 outline-none transition-all dark:bg-slate-950 dark:text-white font-bold text-sm cursor-pointer"
+                  >
+                    {getMajorOptionsForForm(formData.major).map((m) => (
+                      <option key={m.id} value={m.id}>{m.id} — {m.major_name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Status</label>
+                    <select
+                      value={formData.status}
+                      onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value }))}
+                      className="w-full px-5 py-3.5 border border-slate-200 dark:border-slate-800 rounded-2xl focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500/50 outline-none transition-all dark:bg-slate-950 dark:text-white font-bold text-sm cursor-pointer"
+                    >
+                      <option value="Active">Active</option>
+                      <option value="Probation">Probation</option>
+                      <option value="Suspended">Suspended</option>
+                      <option value="Graduated">Graduated</option>
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Credits</label>
+                    <input
+                      type="number"
+                      value={formData.total_credits}
+                      onChange={(e) => setFormData(prev => ({ ...prev, total_credits: Number(e.target.value) }))}
+                      className="w-full px-5 py-3.5 border border-slate-200 dark:border-slate-800 rounded-2xl focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500/50 outline-none transition-all dark:bg-slate-950 dark:text-white font-bold text-sm"
+                    />
+                  </div>
+                </div>
               </div>
             </div>
-            <div className="flex justify-end gap-3 mt-6">
+
+            <div className="mt-10 p-5 rounded-2xl bg-teal-50/50 dark:bg-teal-900/10 border border-teal-100 dark:border-teal-900/40">
+              <p className="text-xs text-teal-700 dark:text-teal-400 leading-relaxed font-bold">
+                🔒 SECURITY NOTICE: <span className="font-medium">Initial credentials will be student ID plus suffix "@123". System will require mandatory reset upon first login.</span>
+              </p>
+            </div>
+
+            <div className="flex justify-end gap-4 mt-10">
               <button
                 onClick={() => setShowAddModal(false)}
-                className="px-4 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-md transition-colors"
+                className="px-8 py-3 text-sm font-bold text-slate-500 hover:text-slate-800 dark:hover:text-white transition-all"
               >
-                Cancel
+                Discard
               </button>
               <button
                 onClick={handleAddStudent}
-                className="px-4 py-2 bg-primary hover:bg-primary-hover text-white rounded-md transition-colors"
+                className="px-10 py-3 bg-slate-900 dark:bg-slate-800 hover:bg-slate-800 dark:hover:bg-slate-700 text-white rounded-2xl font-bold text-sm transition-all shadow-lg active:scale-[0.98]"
               >
-                Add Student
+                Register Student
               </button>
             </div>
           </div>
@@ -750,133 +780,126 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
 
       {/* Edit Student Modal */}
       {editingStudent && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-slate-800 rounded-lg shadow-xl p-6 w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
-            <h3 className="text-lg font-semibold mb-4 text-slate-800 dark:text-white">Edit Student</h3>
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Student ID</label>
+        <div className="fixed inset-0 bg-slate-950/40 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-in fade-in duration-300">
+          <div className="bg-white dark:bg-slate-900 rounded-[32px] shadow-2xl p-10 w-full max-w-2xl border border-slate-200 dark:border-slate-800 max-h-[90vh] overflow-y-auto scrollbar-hide animate-in zoom-in-95 duration-300">
+            <div className="flex items-center justify-between mb-8">
+              <div className="space-y-1">
+                <h3 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">Edit Student Record</h3>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Modifying {formData.user_id}</p>
+              </div>
+              <button onClick={() => setEditingStudent(null)} className="h-10 w-10 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
+                <span className="material-icons-outlined">close</span>
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="space-y-6">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Student ID (Static)</label>
                   <input
                     type="text"
                     value={formData.user_id}
                     disabled
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 dark:bg-slate-600 dark:text-white"
+                    className="w-full px-5 py-3.5 border border-slate-200 dark:border-slate-800 rounded-2xl bg-slate-100 dark:bg-slate-950/50 text-slate-400 font-bold text-sm cursor-not-allowed"
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Full Name</label>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Legal Name</label>
                   <input
                     type="text"
                     value={formData.name}
                     onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-slate-700 dark:text-white"
+                    className="w-full px-5 py-3.5 border border-slate-200 dark:border-slate-800 rounded-2xl focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500/50 outline-none transition-all dark:bg-slate-950 dark:text-white font-bold text-sm"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Institutional Email</label>
+                  <input
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                    className="w-full px-5 py-3.5 border border-slate-200 dark:border-slate-800 rounded-2xl focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500/50 outline-none transition-all dark:bg-slate-950 dark:text-white font-bold text-sm"
                   />
                 </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Email</label>
-                <input
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-slate-700 dark:text-white"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Year</label>
-                  <select
-                    value={formData.year}
-                    onChange={(e) => setFormData(prev => ({ ...prev, year: Number(e.target.value) }))}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-slate-700 dark:text-white"
-                  >
-                    <option value={1}>1st Year</option>
-                    <option value={2}>2nd Year</option>
-                    <option value={3}>3rd Year</option>
-                    <option value={4}>4th Year</option>
-                    <option value={5}>5th Year</option>
-                  </select>
+
+              <div className="space-y-6">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Year</label>
+                    <select
+                      value={formData.year}
+                      onChange={(e) => setFormData(prev => ({ ...prev, year: Number(e.target.value) }))}
+                      className="w-full px-5 py-3.5 border border-slate-200 dark:border-slate-800 rounded-2xl focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500/50 outline-none transition-all dark:bg-slate-950 dark:text-white font-bold text-sm cursor-pointer"
+                    >
+                      {[1,2,3,4,5].map(y => <option key={y} value={y}>{y} Year</option>)}
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Semester</label>
+                    <select
+                      value={formData.semester}
+                      onChange={(e) => setFormData(prev => ({ ...prev, semester: Number(e.target.value) }))}
+                      className="w-full px-5 py-3.5 border border-slate-200 dark:border-slate-800 rounded-2xl focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500/50 outline-none transition-all dark:bg-slate-950 dark:text-white font-bold text-sm cursor-pointer"
+                    >
+                      <option value={1}>1st Sem</option>
+                      <option value={2}>2nd Sem</option>
+                    </select>
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Semester</label>
-                  <select
-                    value={formData.semester}
-                    onChange={(e) => setFormData(prev => ({ ...prev, semester: Number(e.target.value) }))}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-slate-700 dark:text-white"
-                  >
-                    <option value={1}>1st Semester</option>
-                    <option value={2}>2nd Semester</option>
-                  </select>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Major</label>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Current Major</label>
                   <select
                     value={formData.major}
                     onChange={(e) => setFormData(prev => ({ ...prev, major: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-slate-700 dark:text-white"
+                    className="w-full px-5 py-3.5 border border-slate-200 dark:border-slate-800 rounded-2xl focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500/50 outline-none transition-all dark:bg-slate-950 dark:text-white font-bold text-sm cursor-pointer"
                   >
                     {getMajorOptionsForForm(formData.major).map((m) => (
-                      <option key={m.id} value={m.id}>{m.id} – {m.major_name}</option>
+                      <option key={m.id} value={m.id}>{m.id} — {m.major_name}</option>
                     ))}
                   </select>
                 </div>
-                {formData.year >= 1 && formData.year <= 3 && (
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Section</label>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Status</label>
                     <select
-                      value={formData.section}
-                      onChange={(e) => setFormData(prev => ({ ...prev, section: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-slate-700 dark:text-white"
+                      value={formData.status}
+                      onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value }))}
+                      className="w-full px-5 py-3.5 border border-slate-200 dark:border-slate-800 rounded-2xl focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500/50 outline-none transition-all dark:bg-slate-950 dark:text-white font-bold text-sm cursor-pointer"
                     >
-                      <option value="">No Section</option>
-                      <option value="A">Section A</option>
-                      <option value="B">Section B</option>
-                      <option value="C">Section C</option>
+                      <option value="Active">Active</option>
+                      <option value="Probation">Probation</option>
+                      <option value="Suspended">Suspended</option>
+                      <option value="Graduated">Graduated</option>
                     </select>
                   </div>
-                )}
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Status</label>
-                  <select
-                    value={formData.status}
-                    onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-slate-700 dark:text-white"
-                  >
-                    <option value="Active">Active</option>
-                    <option value="Probation">Probation</option>
-                    <option value="Suspended">Suspended</option>
-                    <option value="Graduated">Graduated</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Total Credits</label>
-                  <input
-                    type="number"
-                    value={formData.total_credits}
-                    onChange={(e) => setFormData(prev => ({ ...prev, total_credits: Number(e.target.value) }))}
-                    min={0}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-slate-700 dark:text-white"
-                  />
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Credits</label>
+                    <input
+                      type="number"
+                      value={formData.total_credits}
+                      onChange={(e) => setFormData(prev => ({ ...prev, total_credits: Number(e.target.value) }))}
+                      className="w-full px-5 py-3.5 border border-slate-200 dark:border-slate-800 rounded-2xl focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500/50 outline-none transition-all dark:bg-slate-950 dark:text-white font-bold text-sm"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
-            <div className="flex justify-end gap-3 mt-6">
+
+            <div className="flex justify-end gap-4 mt-12 pt-8 border-t border-slate-100 dark:border-slate-800">
               <button
                 onClick={() => setEditingStudent(null)}
-                className="px-4 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-md transition-colors"
+                className="px-8 py-3 text-sm font-bold text-slate-500 hover:text-slate-800 dark:hover:text-white transition-all"
               >
-                Cancel
+                Discard Changes
               </button>
               <button
                 onClick={handleEditStudent}
-                className="px-4 py-2 bg-primary hover:bg-primary-hover text-white rounded-md transition-colors"
+                className="px-12 py-3 bg-teal-600 hover:bg-teal-700 text-white rounded-2xl font-bold text-sm transition-all shadow-lg active:scale-[0.98]"
               >
-                Save Changes
+                Apply Updates
               </button>
             </div>
           </div>

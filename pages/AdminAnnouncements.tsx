@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
+import { DetailedCardGridSkeleton } from "../components/Skeleton";
 import { User } from "../types";
 import { api } from "../lib/api";
 
@@ -641,267 +642,274 @@ const AdminAnnouncements: React.FC<Props> = ({ user, onLogout }) => {
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background-light dark:bg-background-dark font-poppins">
+    <div className="flex h-screen overflow-hidden bg-white dark:bg-slate-950 font-poppins">
       <Sidebar user={user} onLogout={onLogout} />
       <div className="flex flex-1 flex-col overflow-hidden">
         <Header title="Announcements" user={user} />
 
-        <main className="flex-1 overflow-y-auto p-6 lg:p-8 space-y-6">
+        <main className="flex-1 overflow-y-auto p-8 animate-in fade-in duration-700 slide-in-from-bottom-4 scrollbar-hide max-w-[1600px] mx-auto w-full">
           {error && (
-            <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900/40 dark:bg-red-900/20 dark:text-red-200">
+            <div className="mb-10 rounded-2xl border border-rose-100 bg-rose-50 p-5 text-sm font-bold text-rose-700 dark:border-rose-900/40 dark:bg-rose-900/20 dark:text-rose-300 flex items-center gap-3 animate-in fade-in slide-in-from-top-2">
+              <span className="material-icons-outlined text-lg">error_outline</span>
               {error}
             </div>
           )}
 
           {/* Create */}
-          <div className="bg-surface-light dark:bg-surface-dark rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-6">
-            <h3 className="font-bold text-gray-800 dark:text-white mb-4">Create Announcement</h3>
+          <div className="bg-slate-50/30 dark:bg-slate-900/20 rounded-[40px] border border-slate-100 dark:border-slate-800/50 p-12 mb-12 transition-all hover:bg-white dark:hover:bg-slate-900 hover:shadow-md group">
+            <div className="flex items-center gap-6 mb-10">
+              <div className="h-14 w-14 rounded-3xl bg-teal-50 dark:bg-teal-900/20 flex items-center justify-center text-teal-600 dark:text-teal-400 border border-teal-100/50 dark:border-teal-800/50 group-hover:scale-110 transition-transform duration-500">
+                <span className="material-icons-outlined text-3xl">campaign</span>
+              </div>
+              <div>
+                <h3 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">Dispatch Broadcast</h3>
+                <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.3em] mt-1">Institutional Communication Protocol</p>
+              </div>
+            </div>
 
-            <form onSubmit={onCreate} className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              <div className="lg:col-span-2">
-                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Title</label>
+            <form onSubmit={onCreate} className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+              <div className="lg:col-span-12 space-y-3">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Subject Title *</label>
                 <input
-                  className="mt-1 w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-transparent px-3 py-2 text-sm text-gray-800 dark:text-white"
+                  className="w-full rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950 px-8 py-4 text-base font-bold text-slate-900 dark:text-white outline-none focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500/50 transition-all shadow-sm placeholder:text-slate-300"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder="e.g., Portal Downtime Tonight"
+                  placeholder="e.g., Campus Network Maintenance Schedule"
                 />
               </div>
 
-              <div className="lg:col-span-2">
-                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Content</label>
+              <div className="lg:col-span-12 space-y-3">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Announcement Body *</label>
                 <textarea
-                  className="mt-1 w-full min-h-[110px] rounded-lg border border-gray-200 dark:border-gray-700 bg-transparent px-3 py-2 text-sm text-gray-800 dark:text-white"
+                  className="w-full min-h-[180px] rounded-[32px] border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950 px-8 py-6 text-base font-medium text-slate-900 dark:text-white outline-none focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500/50 transition-all shadow-sm leading-relaxed placeholder:text-slate-300 scrollbar-hide"
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
-                  placeholder="Write the announcement text..."
+                  placeholder="Draft your message content here..."
                 />
               </div>
 
-              <div>
-                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Type</label>
+              <div className="lg:col-span-3 space-y-3">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Type Vector</label>
                 <select
-                  className="mt-1 w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-transparent px-3 py-2 text-sm text-gray-800 dark:text-white"
+                  className="w-full rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950 px-6 py-4 text-sm font-black text-slate-700 dark:text-white outline-none focus:ring-4 focus:ring-teal-500/10 transition-all cursor-pointer shadow-sm appearance-none"
                   value={type}
                   onChange={(e) => setType(e.target.value as AnnouncementType)}
                 >
                   {TYPES.map((t) => (
-                    <option key={t} value={t}>
-                      {t}
-                    </option>
+                    <option key={t} value={t}>{t}</option>
                   ))}
                 </select>
               </div>
 
-              <div>
-                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Status</label>
+              <div className="lg:col-span-3 space-y-3">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Initial State</label>
                 <select
-                  className="mt-1 w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-transparent px-3 py-2 text-sm text-gray-800 dark:text-white"
+                  className="w-full rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950 px-6 py-4 text-sm font-black text-slate-700 dark:text-white outline-none focus:ring-4 focus:ring-teal-500/10 transition-all cursor-pointer shadow-sm appearance-none"
                   value={statusVal}
                   onChange={(e) => setStatusVal(e.target.value as AnnouncementStatus)}
                 >
-                  <option value="draft">Draft</option>
-                  <option value="published">Published</option>
+                  <option value="draft">Draft (Restricted)</option>
+                  <option value="published">Published (Live)</option>
                   <option value="archived">Archived</option>
                 </select>
-                <p className="mt-1 text-xs text-gray-500">Drafts are editable; Archived is inactive.</p>
               </div>
 
-              <div>
-                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Target Audience (Label)</label>
+              <div className="lg:col-span-3 space-y-3">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Target Audience</label>
                 <input
-                  className="mt-1 w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-transparent px-3 py-2 text-sm text-gray-800 dark:text-white"
+                  className="w-full rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950 px-6 py-4 text-sm font-bold text-slate-900 dark:text-white outline-none focus:ring-4 focus:ring-teal-500/10 transition-all shadow-sm"
                   value={targetAudience}
                   onChange={(e) => setTargetAudience(e.target.value)}
-                  placeholder='e.g., "All"'
+                  placeholder='e.g., Global Students'
                 />
-                <p className="mt-1 text-xs text-gray-500">Simple label only (no targeting).</p>
               </div>
 
-              <div>
-                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Expiry (optional)</label>
+              <div className="lg:col-span-3 space-y-3">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Termination Date</label>
                 <input
                   type="datetime-local"
-                  className="mt-1 w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-transparent px-3 py-2 text-sm text-gray-800 dark:text-white"
+                  className="w-full rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950 px-6 py-4 text-sm font-bold text-slate-700 dark:text-white outline-none focus:ring-4 focus:ring-teal-500/10 transition-all shadow-sm"
                   value={expiry}
                   onChange={(e) => setExpiry(e.target.value)}
                 />
-                <p className="mt-1 text-xs text-gray-500">Saved as UTC; shown in Local + UTC.</p>
               </div>
 
-              <div className="flex items-center gap-3">
-                <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200">
-                  <input
-                    type="checkbox"
-                    checked={pinned}
-                    onChange={(e) => setPinned(e.target.checked)}
-                    className="h-4 w-4 rounded border-gray-300 dark:border-gray-600"
-                  />
-                  Pin (show on top)
+              <div className="lg:col-span-12 flex flex-col sm:flex-row sm:items-center justify-between gap-10 pt-6">
+                <label className="flex items-center gap-4 cursor-pointer group/toggle">
+                  <div className="relative">
+                    <input
+                      type="checkbox"
+                      checked={pinned}
+                      onChange={(e) => setPinned(e.target.checked)}
+                      className="sr-only"
+                    />
+                    <div className={`w-14 h-7 rounded-full transition-colors duration-500 flex items-center px-1 ${pinned ? 'bg-teal-600' : 'bg-slate-200 dark:bg-slate-800'}`}>
+                      <div className={`bg-white w-5 h-5 rounded-full shadow-lg transform transition-transform duration-500 ${pinned ? 'translate-x-7' : 'translate-x-0'}`} />
+                    </div>
+                  </div>
+                  <div className="space-y-0.5">
+                    <span className="block text-sm font-black text-slate-900 dark:text-white transition-colors">Prioritize Placement</span>
+                    <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">Pin to global feed apex</span>
+                  </div>
                 </label>
-              </div>
 
-              <div className="flex items-end">
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="w-full lg:w-auto rounded-lg bg-primary px-4 py-2 text-sm font-bold text-white hover:opacity-90 disabled:opacity-50"
+                  className="px-16 py-5 rounded-[24px] bg-slate-900 dark:bg-teal-600 text-xs font-black uppercase tracking-[0.2em] text-white hover:bg-slate-800 dark:hover:bg-teal-700 transition-all shadow-2xl active:scale-[0.98] disabled:opacity-40"
                 >
-                  {submitting ? "Creating..." : "Create"}
+                  {submitting ? "Processing..." : "Commit Broadcast"}
                 </button>
               </div>
             </form>
           </div>
 
           {/* Controls */}
-          <div className="bg-surface-light dark:bg-surface-dark rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-4 space-y-3">
-            <div className="flex flex-wrap gap-2">
-              {STATUSES.map((t) => (
-                <button
-                  key={t.key}
-                  type="button"
-                  onClick={() => setStatusFilter(t.key)}
-                  className={clsx(
-                    "rounded-lg px-3 py-2 text-sm font-bold border",
-                    statusFilter === t.key
-                      ? "bg-primary text-white border-primary"
-                      : "bg-transparent text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-700 hover:opacity-90"
-                  )}
-                >
-                  {t.label}
-                </button>
-              ))}
+          <div className="bg-white dark:bg-slate-900 rounded-[40px] border border-slate-100 dark:border-slate-800 shadow-sm p-10 space-y-10 mb-10">
+            <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-10">
+              <div className="flex flex-wrap gap-3 p-2 bg-slate-50 dark:bg-slate-950 rounded-[24px] border border-slate-100 dark:border-slate-800 shadow-inner">
+                {STATUSES.map((t) => (
+                  <button
+                    key={t.key}
+                    type="button"
+                    onClick={() => setStatusFilter(t.key)}
+                    className={clsx(
+                      "rounded-2xl px-8 py-3 text-[11px] font-black uppercase tracking-widest transition-all",
+                      statusFilter === t.key
+                        ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-xl ring-1 ring-slate-100 dark:ring-slate-700"
+                        : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                    )}
+                  >
+                    {t.label}
+                  </button>
+                ))}
+              </div>
+
+              <div className="flex flex-wrap items-center gap-6">
+                <div className="text-[11px] font-black text-slate-300 dark:text-slate-600 uppercase tracking-[0.2em] mr-2">
+                  Active Selection: <span className="text-slate-900 dark:text-white ml-2">{selectedIds.length} items</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={bulkPublish}
+                    disabled={selectedIds.length === 0}
+                    className="h-12 px-6 rounded-2xl bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400 text-[10px] font-black uppercase tracking-[0.2em] border border-emerald-100 dark:border-emerald-800/50 transition-all disabled:opacity-30 active:scale-95 shadow-sm"
+                  >
+                    Publish
+                  </button>
+                  <button
+                    type="button"
+                    onClick={bulkArchive}
+                    disabled={selectedIds.length === 0}
+                    className="h-12 px-6 rounded-2xl bg-slate-50 text-slate-700 dark:bg-slate-800 dark:text-slate-300 text-[10px] font-black uppercase tracking-[0.2em] border border-slate-200 dark:border-slate-700 transition-all disabled:opacity-30 active:scale-95 shadow-sm"
+                  >
+                    Archive
+                  </button>
+                  <button
+                    type="button"
+                    onClick={bulkDelete}
+                    disabled={selectedIds.length === 0}
+                    className="h-12 px-6 rounded-2xl bg-rose-50 text-rose-700 dark:bg-rose-900/20 dark:text-rose-400 text-[10px] font-black uppercase tracking-[0.2em] border border-rose-100 dark:border-rose-800/50 transition-all disabled:opacity-30 active:scale-95 shadow-sm"
+                  >
+                    Purge
+                  </button>
+                </div>
+              </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-5 gap-3">
-              <input
-                className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-transparent px-3 py-2 text-sm text-gray-800 dark:text-white lg:col-span-2"
-                placeholder="Search title/content/id/audience..."
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-              />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+              <div className="lg:col-span-2 relative group">
+                <span className="material-icons-outlined absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-teal-500 transition-colors text-xl">search</span>
+                <input
+                  className="w-full rounded-[24px] border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 pl-14 pr-6 py-4 text-sm font-bold text-slate-900 dark:text-white outline-none focus:ring-4 focus:ring-teal-500/10 transition-all shadow-sm"
+                  placeholder="Filter broadcast logs..."
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                />
+              </div>
 
               <select
-                className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-transparent px-3 py-2 text-sm text-gray-800 dark:text-white"
+                className="rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950 px-6 py-4 text-xs font-black uppercase tracking-widest text-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-teal-500/20 transition-all cursor-pointer shadow-sm appearance-none"
                 value={typeFilter}
                 onChange={(e) => setTypeFilter(e.target.value as any)}
               >
-                <option value="All">All Types</option>
+                <option value="All">All Categories</option>
                 {TYPES.map((t) => (
-                  <option key={t} value={t}>
-                    {t}
-                  </option>
+                  <option key={t} value={t}>{t}</option>
                 ))}
               </select>
 
               <select
-                className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-transparent px-3 py-2 text-sm text-gray-800 dark:text-white"
+                className="rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950 px-6 py-4 text-xs font-black uppercase tracking-widest text-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-teal-500/20 transition-all cursor-pointer shadow-sm appearance-none"
                 value={pinnedFilter}
                 onChange={(e) => setPinnedFilter(e.target.value as any)}
               >
-                <option value="All">All</option>
-                <option value="Pinned">Pinned</option>
-                <option value="Unpinned">Unpinned</option>
+                <option value="All">All Tiers</option>
+                <option value="Pinned">Pinned Records</option>
+                <option value="Unpinned">Standard Records</option>
               </select>
 
               <select
-                className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-transparent px-3 py-2 text-sm text-gray-800 dark:text-white"
-                value={expiryFilter}
-                onChange={(e) => setExpiryFilter(e.target.value as any)}
-              >
-                <option value="All">All</option>
-                <option value="Active">Active (not expired)</option>
-                <option value="Expired">Expired</option>
-              </select>
-
-              <select
-                className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-transparent px-3 py-2 text-sm text-gray-800 dark:text-white lg:col-span-1"
+                className="rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950 px-6 py-4 text-xs font-black uppercase tracking-widest text-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-teal-500/20 transition-all cursor-pointer shadow-sm appearance-none"
                 value={sortMode}
                 onChange={(e) => setSortMode(e.target.value as any)}
               >
-                <option value="Pinned+Newest">Pinned + Newest</option>
-                <option value="Newest">Newest</option>
-                <option value="Oldest">Oldest</option>
-                <option value="Expiring Soon">Expiring Soon</option>
+                <option value="Pinned+Newest">Priority Flow</option>
+                <option value="Newest">Newest Dispatch</option>
+                <option value="Oldest">Oldest Dispatch</option>
+                <option value="Expiring Soon">Termination Velocity</option>
               </select>
-            </div>
-
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div className="text-xs text-gray-500 dark:text-gray-400">
-                Selected: <span className="font-bold text-gray-700 dark:text-gray-200">{selectedIds.length}</span>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  onClick={bulkPublish}
-                  disabled={selectedIds.length === 0}
-                  className="rounded-lg bg-green-600 px-3 py-2 text-xs font-bold text-white hover:opacity-90 disabled:opacity-50"
-                >
-                  Publish
-                </button>
-                <button
-                  type="button"
-                  onClick={bulkArchive}
-                  disabled={selectedIds.length === 0}
-                  className="rounded-lg bg-gray-700 px-3 py-2 text-xs font-bold text-white hover:opacity-90 disabled:opacity-50"
-                >
-                  Archive
-                </button>
-                <button
-                  type="button"
-                  onClick={bulkDelete}
-                  disabled={selectedIds.length === 0}
-                  className="rounded-lg bg-red-600 px-3 py-2 text-xs font-bold text-white hover:opacity-90 disabled:opacity-50"
-                >
-                  Delete
-                </button>
-              </div>
             </div>
           </div>
 
           {/* List */}
-          <div className="bg-surface-light dark:bg-surface-dark rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
-            <div className="border-b border-gray-200 dark:border-gray-700 px-4 md:px-6 py-4 flex items-center justify-between bg-gray-50/50 dark:bg-slate-900/20">
-              <div>
-                <h3 className="font-bold text-gray-800 dark:text-white">Announcements</h3>
-                <p className="text-[10px] md:text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mt-1">
-                  Showing {filtered.length} items
+          <div className="bg-white dark:bg-slate-900 rounded-[32px] border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden transition-all hover:shadow-md">
+            <div className="border-b border-slate-100 dark:border-slate-800 px-8 py-6 flex items-center justify-between bg-slate-50/30 dark:bg-slate-950/30">
+              <div className="space-y-1">
+                <h3 className="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">Broadcast Repository</h3>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                  Showing {filtered.length} matching communications
                 </p>
               </div>
               <button 
                 onClick={load} 
-                className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-bold text-primary hover:bg-primary/10 transition-colors" 
+                className="h-10 px-5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-xs font-bold text-slate-600 dark:text-white hover:bg-slate-50 dark:hover:bg-slate-800 transition-all flex items-center gap-2" 
                 disabled={loading}
               >
-                <span className={clsx("material-icons-outlined text-sm", loading && "animate-spin")}>refresh</span>
+                <span className={clsx("material-icons-outlined text-sm", loading && "animate-spin")}>sync</span>
                 Refresh
               </button>
             </div>
 
             {loading ? (
-              <div className="px-6 py-12 text-center text-sm font-bold text-gray-500 dark:text-gray-400 animate-pulse">
-                Loading database records...
+              <div className="p-10">
+                <DetailedCardGridSkeleton count={3} />
               </div>
             ) : filtered.length === 0 ? (
-              <div className="px-6 py-12 text-center text-sm font-bold text-gray-500 dark:text-gray-400">
-                No announcements found matching your filters.
+              <div className="py-32 text-center">
+                <div className="h-24 w-24 rounded-full bg-slate-50 dark:bg-slate-950 flex items-center justify-center mx-auto mb-8 border border-slate-100 dark:border-slate-800">
+                  <span className="material-icons-outlined text-slate-200 dark:text-slate-800 text-5xl">cloud_off</span>
+                </div>
+                <h4 className="text-lg font-bold text-slate-400 uppercase tracking-widest">No matching records</h4>
+                <p className="mt-2 text-sm text-slate-400 font-medium">Try refining your search parameters.</p>
               </div>
             ) : (
-              <div className="divide-y divide-gray-100 dark:divide-gray-800">
-                {/* Desktop Header - hidden on mobile */}
-                <div className="hidden lg:flex px-6 py-3 text-[10px] font-extrabold uppercase tracking-widest text-gray-400 dark:text-gray-500 items-center gap-3 bg-gray-50/30 dark:bg-slate-900/10">
-                  <input
-                    type="checkbox"
-                    checked={filtered.length > 0 && selectedIds.length === filtered.length}
-                    onChange={(e) => setAllSelected(filtered.map((x) => x._id), e.target.checked)}
-                    className="h-4 w-4 rounded border-gray-300 dark:border-gray-600 accent-primary"
-                    aria-label="Select all"
-                  />
-                  <span className="w-20">Type</span>
-                  <span className="w-24">Status</span>
-                  <span className="w-24">Pinned</span>
-                  <span className="flex-1">Details</span>
-                  <span className="w-[280px] text-right">Actions</span>
+              <div className="divide-y divide-slate-100 dark:divide-slate-800/50">
+                {/* Desktop Header */}
+                <div className="hidden lg:flex px-8 py-4 text-[10px] font-extrabold uppercase tracking-widest text-slate-400 dark:text-slate-500 items-center gap-6 bg-slate-50/50 dark:bg-slate-950/50 border-b border-slate-100 dark:border-slate-800">
+                  <div className="w-6 flex justify-center">
+                    <input
+                      type="checkbox"
+                      checked={filtered.length > 0 && selectedIds.length === filtered.length}
+                      onChange={(e) => setAllSelected(filtered.map((x) => x._id), e.target.checked)}
+                      className="h-4 w-4 rounded border-slate-300 dark:border-slate-700 accent-teal-600"
+                    />
+                  </div>
+                  <span className="w-24">Category</span>
+                  <span className="w-28">Status</span>
+                  <span className="flex-1">Announcement Details</span>
+                  <span className="w-[320px] text-right">Administrative Actions</span>
                 </div>
 
                 {filtered.map((a) => {
@@ -911,99 +919,92 @@ const AdminAnnouncements: React.FC<Props> = ({ user, onLogout }) => {
                   const expIso = a.expiry_date ?? null;
 
                   return (
-                    <div key={a._id} className="px-4 md:px-6 py-5 hover:bg-gray-50/50 dark:hover:bg-slate-800/30 transition-colors">
-                      <div className="flex flex-col lg:flex-row lg:items-start gap-4">
-                        <div className="flex items-center gap-3 shrink-0">
+                    <div key={a._id} className="group px-8 py-8 hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-all relative">
+                      {a.pinned && (
+                        <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-yellow-500" title="Pinned Announcement" />
+                      )}
+                      <div className="flex flex-col lg:flex-row lg:items-start gap-8">
+                        <div className="flex items-center gap-6 shrink-0">
                           <input
                             type="checkbox"
                             checked={!!selected[a._id]}
                             onChange={() => toggleSelected(a._id)}
-                            className="h-4 w-4 rounded border-gray-300 dark:border-gray-600 accent-primary"
-                            aria-label={`Select ${a._id}`}
+                            className="h-5 w-5 rounded-lg border-slate-300 dark:border-slate-700 accent-teal-600 transition-all transform group-hover:scale-110"
                           />
-                          <div className="lg:hidden flex items-center gap-2">
-                             <span className={clsx("text-[10px] font-extrabold uppercase tracking-wide px-2 py-0.5 rounded-full", typeBadge(a.type))}>
+                          <div className="lg:hidden flex flex-wrap items-center gap-2">
+                             <span className={clsx("text-[9px] font-extrabold uppercase tracking-widest px-2 py-1 rounded-md border", typeBadge(a.type))}>
                                {a.type ?? "General"}
                              </span>
-                             <span className={clsx("text-[10px] font-extrabold uppercase tracking-wide px-2 py-0.5 rounded-full", statusBadge(status))}>
+                             <span className={clsx("text-[9px] font-extrabold uppercase tracking-widest px-2 py-1 rounded-md border", statusBadge(status))}>
                                {status}
                              </span>
                           </div>
                         </div>
 
-                        {/* Desktop Columns */}
-                        <div className="hidden lg:block w-20 shrink-0">
-                          <span className={clsx("text-[10px] font-extrabold uppercase tracking-wide px-2 py-1 rounded", typeBadge(a.type))}>
+                        {/* Category */}
+                        <div className="hidden lg:block w-24 shrink-0">
+                          <span className={clsx("text-[9px] font-extrabold uppercase tracking-widest px-2 py-1 rounded-md border", typeBadge(a.type))}>
                             {a.type ?? "General"}
                           </span>
                         </div>
 
-                        <div className="hidden lg:block w-24 shrink-0">
-                          <span className={clsx("text-[10px] font-extrabold uppercase tracking-wide px-2 py-1 rounded", statusBadge(status))}>
+                        {/* Status */}
+                        <div className="hidden lg:block w-28 shrink-0">
+                          <span className={clsx("text-[9px] font-extrabold uppercase tracking-widest px-2 py-1 rounded-md border", statusBadge(status))}>
                             {status}
                           </span>
                         </div>
 
-                        <div className="hidden lg:block w-24 shrink-0">
-                          {a.pinned ? (
-                            <span className="flex items-center gap-1 text-[10px] font-extrabold uppercase tracking-wide text-yellow-600 dark:text-yellow-400">
-                              <span className="material-icons-round text-sm">push_pin</span>
-                              Pinned
-                            </span>
-                          ) : (
-                            <span className="text-[10px] text-gray-400">—</span>
-                          )}
-                        </div>
-
                         {/* Details Area */}
                         <div className="min-w-0 flex-1">
-                          <div className="flex items-center flex-wrap gap-x-4 gap-y-1.5 mb-2">
-                            <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-tight">
-                              Audience: <span className="text-gray-900 dark:text-white">{a.target_audience ?? "All"}</span>
-                            </span>
+                          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 mb-4">
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Audience:</span>
+                              <span className="text-[10px] font-extrabold text-slate-900 dark:text-white uppercase tracking-widest">{a.target_audience ?? "Global"}</span>
+                            </div>
 
                             {createdIso && (
-                              <span className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-tight flex items-center gap-1">
-                                <span className="material-icons-outlined text-xs">edit_calendar</span>
+                              <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-tighter">
+                                <span className="material-icons-outlined text-sm opacity-60">history</span>
                                 {formatLocalWithTz(createdIso)}
-                              </span>
+                              </div>
                             )}
 
                             {expIso && (
-                              <span className={clsx(
-                                "text-[10px] font-bold uppercase tracking-tight flex items-center gap-1",
-                                expired ? "text-rose-500" : "text-gray-400 dark:text-slate-500"
+                              <div className={clsx(
+                                "flex items-center gap-2 text-[10px] font-bold uppercase tracking-tighter",
+                                expired ? "text-rose-500" : "text-slate-400 dark:text-slate-500"
                               )}>
-                                <span className="material-icons-outlined text-xs">event_busy</span>
-                                {expired ? "Expired" : `Expires: ${formatLocalWithTz(expIso)}`}
-                              </span>
+                                <span className="material-icons-outlined text-sm opacity-60">timer_off</span>
+                                {expired ? "Lapsed" : `Ends: ${formatLocalWithTz(expIso)}`}
+                              </div>
                             )}
                           </div>
 
-                          <h4 className="font-bold text-gray-900 dark:text-white break-words leading-tight">{a.title}</h4>
-                          <p className="mt-1.5 text-sm text-gray-600 dark:text-gray-300 break-words line-clamp-3 md:line-clamp-none leading-relaxed">{a.content}</p>
+                          <h4 className="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-2 group-hover:text-teal-600 transition-colors leading-snug">{a.title}</h4>
+                          <p className="text-sm font-medium text-slate-500 dark:text-slate-400 leading-relaxed line-clamp-2 md:line-clamp-3 mb-6">{a.content}</p>
 
-                          <div className="mt-3 text-[10px] font-bold text-gray-400 dark:text-slate-500 flex items-center gap-3 flex-wrap uppercase tracking-widest">
-                            <div className="flex items-center gap-1">
-                              ID: <span className="font-mono text-gray-600 dark:text-gray-400">{shortId(a._id)}</span>
-                              <button
-                                type="button"
-                                onClick={() => copy(a._id)}
-                                className="ml-1 text-primary hover:underline transition-all"
-                              >
-                                Copy
-                              </button>
+                          <div className="flex items-center gap-6">
+                            <div className="flex items-center gap-2 py-1 px-2.5 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800">
+                              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">UUID:</span>
+                              <span className="text-[10px] font-bold font-mono text-slate-600 dark:text-slate-400">{shortId(a._id)}</span>
+                              <button onClick={() => copy(a._id)} className="text-teal-600 hover:text-teal-700 material-icons-outlined text-sm ml-1">content_copy</button>
                             </div>
-                            {a.posted_by && <span className="flex items-center gap-1"><span className="material-icons-outlined text-xs">person</span> {a.posted_by}</span>}
+                            {a.posted_by && (
+                              <div className="flex items-center gap-2">
+                                <div className="w-5 h-5 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center text-[8px] font-bold">BY</div>
+                                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{a.posted_by}</span>
+                              </div>
+                            )}
                           </div>
                         </div>
 
                         {/* Actions Area */}
-                        <div className="mt-4 lg:mt-0 flex flex-wrap lg:flex-nowrap items-center gap-2 shrink-0 lg:w-[280px] lg:justify-end">
+                        <div className="mt-6 lg:mt-0 flex flex-wrap lg:flex-nowrap items-center gap-3 shrink-0 lg:w-[320px] lg:justify-end opacity-0 group-hover:opacity-100 transition-opacity">
                             {status === "draft" && (
                               <button
                                 onClick={() => onPublish(a)}
-                                className="flex-1 lg:flex-none rounded-lg bg-emerald-600 px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-wide text-white hover:bg-emerald-700 transition-colors shadow-sm"
+                                className="h-10 px-5 rounded-2xl bg-teal-600 text-[10px] font-extrabold uppercase tracking-widest text-white hover:bg-teal-700 transition-all shadow-md active:scale-95"
                               >
                                 Publish
                               </button>
@@ -1011,7 +1012,7 @@ const AdminAnnouncements: React.FC<Props> = ({ user, onLogout }) => {
                             {status === "published" && (
                               <button
                                 onClick={() => onArchive(a)}
-                                className="flex-1 lg:flex-none rounded-lg bg-slate-700 px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-wide text-white hover:bg-slate-800 transition-colors shadow-sm"
+                                className="h-10 px-5 rounded-2xl bg-slate-900 dark:bg-slate-800 text-[10px] font-extrabold uppercase tracking-widest text-white hover:bg-slate-800 transition-all shadow-md active:scale-95"
                               >
                                 Archive
                               </button>
@@ -1020,30 +1021,30 @@ const AdminAnnouncements: React.FC<Props> = ({ user, onLogout }) => {
                             <button
                               onClick={() => onPinToggle(a)}
                               className={clsx(
-                                "flex-1 lg:flex-none rounded-lg px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-wide border transition-all shadow-sm flex items-center justify-center gap-1",
+                                "h-10 px-4 rounded-2xl border transition-all flex items-center justify-center gap-2 shadow-sm active:scale-95",
                                 a.pinned
-                                  ? "bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-300 dark:border-yellow-900/50"
-                                  : "bg-white text-gray-700 border-gray-200 dark:bg-slate-800 dark:text-gray-200 dark:border-gray-700"
+                                  ? "bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-400"
+                                  : "bg-white text-slate-400 border-slate-200 dark:bg-slate-900 dark:border-slate-700 hover:text-slate-600"
                               )}
+                              title={a.pinned ? "Unpin" : "Pin to top"}
                             >
-                              <span className="material-icons-outlined text-sm">{a.pinned ? "push_pin" : "push_pin"}</span>
-                              {a.pinned ? "Unpin" : "Pin"}
+                              <span className="material-icons-outlined text-lg">push_pin</span>
                             </button>
 
                             <button
                               onClick={() => openEdit(a)}
-                              className="rounded-lg border border-gray-200 bg-white p-1.5 text-gray-500 hover:text-primary hover:border-primary transition-all dark:border-gray-700 dark:bg-slate-800 dark:text-gray-400"
-                              title="Edit"
+                              className="h-10 w-10 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 flex items-center justify-center text-slate-400 hover:text-teal-600 hover:border-teal-500/50 transition-all shadow-sm active:scale-95"
+                              title="Edit Record"
                             >
-                              <span className="material-icons-outlined text-sm">edit</span>
+                              <span className="material-icons-outlined text-lg">edit</span>
                             </button>
 
                             <button
                               onClick={() => onDelete(a._id)}
-                              className="rounded-lg border border-rose-100 bg-rose-50 p-1.5 text-rose-600 hover:bg-rose-600 hover:text-white transition-all dark:bg-rose-900/20 dark:border-rose-900/40"
-                              title="Delete"
+                              className="h-10 w-10 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 flex items-center justify-center text-slate-400 hover:text-rose-600 hover:border-rose-500/50 transition-all shadow-sm active:scale-95"
+                              title="Purge Record"
                             >
-                              <span className="material-icons-outlined text-sm">delete_outline</span>
+                              <span className="material-icons-outlined text-lg">delete_outline</span>
                             </button>
                         </div>
                       </div>
@@ -1056,58 +1057,53 @@ const AdminAnnouncements: React.FC<Props> = ({ user, onLogout }) => {
 
           {/* Edit Modal */}
           {editing && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-              <div className="w-full max-w-2xl rounded-xl bg-surface-light dark:bg-surface-dark border border-gray-200 dark:border-gray-700 shadow-lg">
-                <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
-                  <h3 className="font-bold text-gray-800 dark:text-white">Edit Announcement</h3>
-                  <button
-                    onClick={() => setEditing(null)}
-                    className="text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white"
-                    type="button"
-                  >
-                    ✕
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 backdrop-blur-md p-4 animate-in fade-in duration-300">
+              <div className="w-full max-w-2xl bg-white dark:bg-slate-900 rounded-[32px] border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+                <div className="px-10 py-8 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-950/50">
+                  <div className="space-y-1">
+                    <h3 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">Edit Announcement</h3>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Modifying record: {editing._id}</p>
+                  </div>
+                  <button onClick={() => setEditing(null)} className="h-10 w-10 rounded-full flex items-center justify-center text-slate-400 hover:bg-white dark:hover:bg-slate-800 transition-all">
+                    <span className="material-icons-outlined">close</span>
                   </button>
                 </div>
 
-                <form onSubmit={saveEdit} className="p-6 space-y-4">
-                  <div>
-                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Title</label>
+                <form onSubmit={saveEdit} className="p-10 space-y-8">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Announcement Title</label>
                     <input
-                      className="mt-1 w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-transparent px-3 py-2 text-sm text-gray-800 dark:text-white"
+                      className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-6 py-3.5 text-sm font-bold text-slate-900 dark:text-white outline-none focus:ring-4 focus:ring-teal-500/10 transition-all"
                       value={editTitle}
                       onChange={(e) => setEditTitle(e.target.value)}
                     />
                   </div>
 
-                  <div>
-                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Content</label>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Content Body</label>
                     <textarea
-                      className="mt-1 w-full min-h-[110px] rounded-lg border border-gray-200 dark:border-gray-700 bg-transparent px-3 py-2 text-sm text-gray-800 dark:text-white"
+                      className="w-full min-h-[140px] rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-6 py-4 text-sm font-medium text-slate-900 dark:text-white outline-none focus:ring-4 focus:ring-teal-500/10 transition-all leading-relaxed"
                       value={editContent}
                       onChange={(e) => setEditContent(e.target.value)}
                     />
                   </div>
 
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Type</label>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Type</label>
                       <select
-                        className="mt-1 w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-transparent px-3 py-2 text-sm text-gray-800 dark:text-white"
+                        className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-5 py-3 text-sm font-bold text-slate-700 dark:text-white cursor-pointer outline-none focus:ring-2 focus:ring-teal-500/20"
                         value={editType}
                         onChange={(e) => setEditType(e.target.value as AnnouncementType)}
                       >
-                        {TYPES.map((t) => (
-                          <option key={t} value={t}>
-                            {t}
-                          </option>
-                        ))}
+                        {TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
                       </select>
                     </div>
 
-                    <div>
-                      <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Status</label>
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Status</label>
                       <select
-                        className="mt-1 w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-transparent px-3 py-2 text-sm text-gray-800 dark:text-white"
+                        className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-5 py-3 text-sm font-bold text-slate-700 dark:text-white cursor-pointer outline-none focus:ring-2 focus:ring-teal-500/20"
                         value={editStatus}
                         onChange={(e) => setEditStatus(e.target.value as AnnouncementStatus)}
                       >
@@ -1117,54 +1113,57 @@ const AdminAnnouncements: React.FC<Props> = ({ user, onLogout }) => {
                       </select>
                     </div>
 
-                    <div className="lg:col-span-2 flex items-center gap-3">
-                      <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200">
-                        <input
-                          type="checkbox"
-                          checked={editPinned}
-                          onChange={(e) => setEditPinned(e.target.checked)}
-                          className="h-4 w-4 rounded border-gray-300 dark:border-gray-600"
-                        />
-                        Pinned
+                    <div className="lg:col-span-2">
+                      <label className="flex items-center gap-3 cursor-pointer group">
+                        <div className="relative">
+                          <input
+                            type="checkbox"
+                            checked={editPinned}
+                            onChange={(e) => setEditPinned(e.target.checked)}
+                            className="sr-only"
+                          />
+                          <div className={`w-12 h-6 rounded-full transition-colors duration-300 flex items-center px-1 ${editPinned ? 'bg-teal-600' : 'bg-slate-200 dark:bg-slate-800'}`}>
+                            <div className={`bg-white w-4 h-4 rounded-full shadow-sm transform transition-transform duration-300 ${editPinned ? 'translate-x-6' : 'translate-x-0'}`} />
+                          </div>
+                        </div>
+                        <span className="text-sm font-bold text-slate-600 dark:text-slate-300">Pinned announcement (appears first)</span>
                       </label>
-                      <span className="text-xs text-gray-500 dark:text-gray-400">(Pinned announcements appear on top.)</span>
                     </div>
 
-                    <div>
-                      <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Target Audience (Label)</label>
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Target Audience</label>
                       <input
-                        className="mt-1 w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-transparent px-3 py-2 text-sm text-gray-800 dark:text-white"
+                        className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-5 py-3 text-sm font-bold text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-teal-500/20"
                         value={editTargetAudience}
                         onChange={(e) => setEditTargetAudience(e.target.value)}
                       />
                     </div>
 
-                    <div>
-                      <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Expiry (optional)</label>
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Expiry Date</label>
                       <input
                         type="datetime-local"
-                        className="mt-1 w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-transparent px-3 py-2 text-sm text-gray-800 dark:text-white"
+                        className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-5 py-3 text-sm font-bold text-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-teal-500/20"
                         value={editExpiry}
                         onChange={(e) => setEditExpiry(e.target.value)}
                       />
-                      <p className="mt-1 text-xs text-gray-500">Clear this field to remove expiry.</p>
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-end gap-3 pt-2">
+                  <div className="flex items-center justify-end gap-4 pt-8 border-t border-slate-100 dark:border-slate-800">
                     <button
                       type="button"
                       onClick={() => setEditing(null)}
-                      className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-bold text-gray-700 hover:opacity-90 dark:border-gray-700 dark:text-gray-200"
+                      className="px-8 py-3 text-sm font-bold text-slate-500 hover:text-slate-900 dark:hover:text-white transition-all"
                     >
-                      Cancel
+                      Discard Changes
                     </button>
                     <button
                       type="submit"
                       disabled={savingEdit}
-                      className="rounded-lg bg-primary px-4 py-2 text-sm font-bold text-white hover:opacity-90 disabled:opacity-50"
+                      className="px-12 py-3 bg-teal-600 text-sm font-extrabold text-white rounded-2xl hover:bg-teal-700 transition-all shadow-lg active:scale-[0.98] disabled:opacity-40"
                     >
-                      {savingEdit ? "Saving..." : "Save"}
+                      {savingEdit ? "Updating..." : "Commit Updates"}
                     </button>
                   </div>
                 </form>
@@ -1191,6 +1190,7 @@ const AdminAnnouncements: React.FC<Props> = ({ user, onLogout }) => {
       </div>
     </div>
   );
+
 };
 
 export default AdminAnnouncements;

@@ -4,6 +4,8 @@ import ChatComposer from "./ChatComposer";
 import { modeMeta, modeOrder } from "../../lib/studentChatModes";
 import { StudentChatMessage, StudentChatMode } from "../../types/studentChat";
 
+import { useNavigate } from "react-router-dom";
+
 interface ChatWindowProps {
   selectedMode: StudentChatMode;
   onModeChange: (mode: StudentChatMode) => void;
@@ -31,26 +33,36 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
 }) => {
   const endRef = useRef<HTMLDivElement | null>(null);
   const meta = modeMeta[selectedMode];
+  const navigate = useNavigate();
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isPending]);
 
   return (
-    <section className="flex h-full flex-col rounded-[8px] border border-[#cccccc] bg-white shadow-[0_2px_6px_rgba(0,0,0,0.1)] overflow-hidden dark:border-gray-700 dark:bg-surface-dark">
-      <div className="border-b border-[#cccccc] px-3 py-3 md:px-4 dark:border-gray-700">
-        <div className="mb-2 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <h2 className="font-poppins text-base md:text-lg font-bold text-[#333333] truncate dark:text-white">Student AI Chatbot</h2>
-          <div className="flex items-center gap-2">
-            <div className="relative flex-1 sm:flex-none">
-              <label htmlFor="mode-select" className="sr-only">
-                AI mode
-              </label>
+    <section className="flex h-full flex-col bg-transparent overflow-hidden">
+      <div className="px-8 py-8 border-b border-slate-100 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 backdrop-blur-md">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-6">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => navigate("/student/dashboard")}
+              className="h-10 w-10 rounded-2xl bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-400 hover:text-teal-600 transition-all shadow-sm active:scale-95"
+              title="Return to Dashboard"
+            >
+              <span className="material-icons-outlined">home</span>
+            </button>
+            <div className="space-y-1">
+              <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Academic Intelligence</h2>
+              <p className="text-sm font-medium text-slate-500 dark:text-slate-400">{meta.description}</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="relative">
               <select
                 id="mode-select"
                 value={selectedMode}
                 onChange={(event) => onModeChange(event.target.value as StudentChatMode)}
-                className="w-full sm:w-auto rounded-[6px] border border-[#cccccc] bg-[#f7f8f7] px-2 py-1.5 text-[10px] md:text-[11px] font-bold text-[#333333] focus:border-[#1f6f5f] focus:outline-none focus:ring-2 focus:ring-[#1f6f5f]/20 transition-all dark:border-gray-700 dark:bg-slate-800/60 dark:text-gray-100 dark:focus:border-teal-400 dark:focus:ring-teal-500/30"
+                className="appearance-none rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-5 py-2.5 pr-10 text-[11px] font-bold uppercase tracking-widest text-slate-700 dark:text-white focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500/50 outline-none transition-all cursor-pointer shadow-sm"
                 aria-label="Select AI mode"
               >
                 {modeOrder.map((mode) => (
@@ -59,25 +71,26 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
                   </option>
                 ))}
               </select>
+              <span className="material-icons-outlined absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-lg">expand_more</span>
             </div>
             <button
               type="button"
               onClick={onNewChat}
-              className="rounded-[6px] bg-[#1f6f5f] px-2.5 py-1.5 text-[10px] md:text-[11px] font-bold uppercase tracking-[0.12em] text-white hover:bg-[#185a4e] shadow-sm transition-all active:scale-95 whitespace-nowrap dark:bg-[#247b6a] dark:hover:bg-[#1f6a5b]"
+              className="h-10 px-6 rounded-2xl bg-slate-900 dark:bg-teal-600 text-[11px] font-bold uppercase tracking-widest text-white hover:bg-slate-800 dark:hover:bg-teal-700 shadow-lg transition-all active:scale-[0.98]"
               aria-label="Start a new chat"
             >
-              New Chat
+              Clear
             </button>
           </div>
         </div>
-        <p className="mb-3 text-[11px] md:text-xs text-[#666666] leading-relaxed line-clamp-2 md:line-clamp-none dark:text-gray-300">{meta.description}</p>
-        <div className="hidden lg:flex lg:flex-nowrap lg:overflow-x-auto lg:pb-1 lg:-mx-1 lg:px-1 lg:gap-2 lg:scrollbar-none">
+        
+        <div className="flex flex-nowrap overflow-x-auto gap-2 scrollbar-hide">
           {meta.examples.map((example) => (
             <button
               key={example}
               type="button"
               onClick={() => onSelectPrompt(example)}
-              className="whitespace-nowrap rounded-full border border-[#cccccc] bg-[#f5f5f5] px-3 py-1.5 text-[10px] md:text-xs font-bold text-[#1f6f5f] hover:bg-[#e0e0e0] transition-colors active:bg-[#d0d0d0] dark:border-gray-700 dark:bg-slate-800/60 dark:text-teal-300 dark:hover:bg-slate-700"
+              className="whitespace-nowrap rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-4 py-2 text-[10px] font-bold text-slate-500 dark:text-slate-400 hover:border-teal-500/50 hover:text-teal-600 transition-all shadow-sm"
               aria-label={`Quick prompt: ${example}`}
             >
               {example}
@@ -88,20 +101,24 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
 
       {errorMessage && (
         <div
-          className="mx-4 mt-3 rounded-[6px] bg-[#fdecea] px-4 py-3 text-sm text-[#e74c3c] dark:bg-red-900/20 dark:text-red-200"
+          className="mx-8 mt-6 rounded-2xl bg-rose-50 p-5 text-sm font-bold text-rose-700 border border-rose-100 dark:bg-rose-950/40 dark:text-rose-400 dark:border-rose-900/40 flex items-center gap-3 animate-in fade-in slide-in-from-top-2"
           role="alert"
           aria-live="polite"
         >
+          <span className="material-icons-outlined text-lg">error_outline</span>
           {errorMessage}
         </div>
       )}
 
-      <div className="flex-1 overflow-y-auto px-4 py-4">
+      <div className="flex-1 overflow-y-auto px-8 py-10 scrollbar-hide">
         {messages.length === 0 ? (
-          <div className="rounded-[8px] border border-dashed border-[#cccccc] bg-[#f5f5f5] p-6 text-center dark:border-gray-700 dark:bg-slate-800/40">
-            <p className="font-poppins text-base font-semibold text-[#333333] dark:text-white">Start your conversation</p>
-            <p className="mt-1 text-sm text-[#666666] dark:text-gray-300">
-              Ask about courses, policies, announcements, and academic planning.
+          <div className="h-full flex flex-col items-center justify-center text-center animate-in fade-in zoom-in-95 duration-700">
+            <div className="h-20 w-20 rounded-[32px] bg-slate-50 dark:bg-slate-900 flex items-center justify-center text-slate-300 dark:text-slate-700 mb-8 border border-slate-100 dark:border-slate-800">
+              <span className="material-icons-outlined text-4xl">auto_awesome</span>
+            </div>
+            <h3 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight mb-2">Student Knowledge Base</h3>
+            <p className="max-w-md text-sm font-medium text-slate-500 dark:text-slate-400 leading-relaxed">
+              Inquire about curriculum metrics, administrative logs, faculty updates, or campus policies.
             </p>
           </div>
         ) : (
@@ -110,7 +127,11 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
         <div ref={endRef} />
       </div>
 
-      <ChatComposer value={input} onChange={onInputChange} onSend={onSend} disabled={isPending} />
+      <div className="px-8 pb-8 pt-2">
+        <div className="max-w-4xl mx-auto w-full">
+          <ChatComposer value={input} onChange={onInputChange} onSend={onSend} disabled={isPending} />
+        </div>
+      </div>
     </section>
   );
 };

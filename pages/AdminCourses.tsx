@@ -435,7 +435,7 @@ const CourseWizardModal = React.memo(function CourseWizardModal({
   if (!open) return null;
 
   const isCreate = mode === "create";
-  const steps = ["Basics", "Schedule & Semester", "Prerequisites", "Review"];
+  const steps = ["Fundamentals", "Matrix Sync", "Dependencies", "Verification"];
 
   const setField = (k: keyof CourseDraft, v: any) => setDraft((p) => ({ ...p, [k]: v }));
 
@@ -447,7 +447,7 @@ const CourseWizardModal = React.memo(function CourseWizardModal({
     Number.isFinite(Number(draft.credits)) &&
     Number(draft.credits) > 0;
 
-  const headerTitle = isCreate ? "Add New Course" : `Edit Course (${draft.course_code})`;
+  const headerTitle = isCreate ? "Initialize Curriculum Node" : `Modify Curriculum (${draft.course_code})`;
 
   const submit = async () => {
     const creditsNum = Number(draft.credits);
@@ -476,99 +476,112 @@ const CourseWizardModal = React.memo(function CourseWizardModal({
   };
 
   const pill = (active: boolean) =>
-    active ? "bg-primary text-white" : "bg-gray-100 text-gray-600 dark:bg-slate-800 dark:text-gray-300";
+    active 
+      ? "bg-slate-900 dark:bg-teal-600 text-white shadow-lg" 
+      : "bg-slate-50 text-slate-400 dark:bg-slate-800 dark:text-slate-500 border border-slate-100 dark:border-slate-700";
+
+  const canOpenStep = (idx: number) => idx === 0 || canNextStep0;
 
   return (
-    <div className="fixed inset-0 z-[9997] flex items-center justify-center bg-black/55 p-4">
-      <div className="w-full max-w-3xl rounded-2xl bg-white dark:bg-surface-dark border border-gray-200 dark:border-gray-700 shadow-2xl overflow-hidden">
-        <div className="px-6 py-5 border-b border-gray-100 dark:border-gray-700 flex items-start justify-between gap-4">
-          <div className="min-w-0">
-            <div className="text-lg font-extrabold text-gray-900 dark:text-white">{headerTitle}</div>
-            <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-              Semester + Prereqs are selected. Schedule is free-type tags. Major/Track are optional.
+    <div className="fixed inset-0 z-[9997] flex items-center justify-center bg-slate-950/40 backdrop-blur-md p-8 animate-in fade-in duration-500">
+      <div className="w-full max-w-4xl max-h-[90vh] rounded-[40px] bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-[0_32px_64px_-12px_rgba(0,0,0,0.2)] overflow-hidden flex flex-col animate-in zoom-in-95 duration-500">
+        <div className="px-10 py-8 border-b border-slate-50 dark:border-slate-800 flex items-start justify-between gap-8 shrink-0 bg-slate-50/30 dark:bg-slate-950/20">
+          <div className="min-w-0 space-y-4">
+            <div className="space-y-1">
+              <div className="text-2xl font-black text-slate-900 dark:text-white tracking-tight leading-none">{headerTitle}</div>
+              <div className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Curriculum Provisioning Wizard</div>
             </div>
 
-            <div className="mt-4 flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-3">
               {steps.map((s, idx) => (
-                <span key={s} className={["px-3 py-1 rounded-full text-xs font-semibold", pill(idx === step)].join(" ")}>
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => canOpenStep(idx) && setStep(idx)}
+                  disabled={busy || !canOpenStep(idx)}
+                  className={[
+                    "h-10 px-5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 disabled:opacity-30",
+                    pill(idx === step),
+                  ].join(" ")}
+                >
                   {idx + 1}. {s}
-                </span>
+                </button>
               ))}
             </div>
           </div>
 
-          <button onClick={onClose} disabled={busy} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200" title="Close">
-            <span className="material-icons-outlined">close</span>
+          <button onClick={onClose} disabled={busy} className="h-12 w-12 rounded-full flex items-center justify-center text-slate-400 hover:bg-white dark:hover:bg-slate-800 hover:text-rose-500 transition-all shadow-sm">
+            <span className="material-icons-outlined text-2xl">close</span>
           </button>
         </div>
 
-        <div className="p-6">
+        <div className="p-10 lg:p-12 overflow-y-auto scrollbar-hide flex-1">
           {/* Step 0 */}
           {step === 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
               {isCreate && (
-                <div>
-                  <label className="text-xs font-bold text-gray-500 dark:text-gray-400">Course Code</label>
+                <div className="space-y-2">
+                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] ml-1">Protocol Code</label>
                   <input
                     ref={codeRef}
-                    className="mt-1 w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                    className="w-full rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 px-6 py-4 font-bold text-sm focus:ring-4 focus:ring-teal-500/10 outline-none transition-all dark:text-white placeholder:text-slate-300"
                     value={draft.course_code}
                     onChange={(e) => setField("course_code", e.target.value)}
                     placeholder="e.g. CST-1010"
                   />
-                  <p className="mt-1 text-[11px] text-gray-400">Used as unique ID. Cannot change later.</p>
+                  <p className="px-1 text-[9px] font-bold text-slate-300 uppercase tracking-tighter italic">Persistent unique identifier.</p>
                 </div>
               )}
 
-              <div className={isCreate ? "" : "md:col-span-2"}>
-                <label className="text-xs font-bold text-gray-500 dark:text-gray-400">Title</label>
+              <div className={isCreate ? "space-y-2" : "md:col-span-2 space-y-2"}>
+                <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] ml-1">Nomenclature</label>
                 <input
                   ref={titleRef}
-                  className="mt-1 w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                  className="w-full rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 px-6 py-4 font-bold text-sm focus:ring-4 focus:ring-teal-500/10 outline-none transition-all dark:text-white placeholder:text-slate-300"
                   value={draft.title}
                   onChange={(e) => setField("title", e.target.value)}
-                  placeholder="Course name"
+                  placeholder="Official course designation"
                 />
               </div>
 
-              <div>
-                <label className="text-xs font-bold text-gray-500 dark:text-gray-400">Department</label>
+              <div className="space-y-2">
+                <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] ml-1">Department Hub</label>
                 <input
-                  className="mt-1 w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                  className="w-full rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 px-6 py-4 font-bold text-sm focus:ring-4 focus:ring-teal-500/10 outline-none transition-all dark:text-white placeholder:text-slate-300"
                   value={draft.department}
                   onChange={(e) => setField("department", e.target.value)}
                   placeholder="e.g. Computer Science"
                 />
               </div>
 
-              <div>
-                <label className="text-xs font-bold text-gray-500 dark:text-gray-400">Credits</label>
+              <div className="space-y-2">
+                <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] ml-1">Credit Weight (CU)</label>
                 <input
-                  className="mt-1 w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                  className="w-full rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 px-6 py-4 font-bold text-sm focus:ring-4 focus:ring-teal-500/10 outline-none transition-all dark:text-white placeholder:text-slate-300"
                   value={draft.credits}
                   onChange={(e) => setField("credits", e.target.value)}
-                  placeholder="e.g. 3"
+                  placeholder="e.g. 3.0"
                   inputMode="decimal"
                 />
               </div>
 
-              <div>
-                <label className="text-xs font-bold text-gray-500 dark:text-gray-400">Type</label>
+              <div className="space-y-2">
+                <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] ml-1">Classification</label>
                 <select
-                  className="mt-1 w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                  className="w-full rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950 px-6 py-4 font-bold text-sm outline-none transition-all dark:text-white cursor-pointer focus:ring-4 focus:ring-teal-500/10"
                   value={draft.type}
                   onChange={(e) => setField("type", e.target.value)}
                 >
-                  <option value="Core">Core</option>
-                  <option value="Elective">Elective</option>
-                  <option value="Major">Major</option>
+                  <option value="Core">Core Registry</option>
+                  <option value="Elective">Elective Matrix</option>
+                  <option value="Major">Specialization</option>
                 </select>
               </div>
 
-              <div>
-                <label className="text-xs font-bold text-gray-500 dark:text-gray-400">Instructor</label>
+              <div className="space-y-2">
+                <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] ml-1">Lead Academic</label>
                 <input
-                  className="mt-1 w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                  className="w-full rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 px-6 py-4 font-bold text-sm focus:ring-4 focus:ring-teal-500/10 outline-none transition-all dark:text-white placeholder:text-slate-300"
                   value={draft.instructor}
                   onChange={(e) => setField("instructor", e.target.value)}
                   placeholder="Optional"
@@ -576,10 +589,10 @@ const CourseWizardModal = React.memo(function CourseWizardModal({
               </div>
 
               {/* ✅ NEW */}
-              <div>
-                <label className="text-xs font-bold text-gray-500 dark:text-gray-400">Major (optional)</label>
+              <div className="space-y-2">
+                <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] ml-1">Major Alignment</label>
                 <input
-                  className="mt-1 w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                  className="w-full rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 px-6 py-4 font-bold text-sm focus:ring-4 focus:ring-teal-500/10 outline-none transition-all dark:text-white placeholder:text-slate-300"
                   value={draft.major}
                   onChange={(e) => setField("major", e.target.value)}
                   placeholder="e.g. Software Engineering"
@@ -587,34 +600,34 @@ const CourseWizardModal = React.memo(function CourseWizardModal({
               </div>
 
               {/* ✅ NEW */}
-              <div>
-                <label className="text-xs font-bold text-gray-500 dark:text-gray-400">Track (optional)</label>
+              <div className="space-y-2">
+                <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] ml-1">Track Vector</label>
                 <input
-                  className="mt-1 w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                  className="w-full rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 px-6 py-4 font-bold text-sm focus:ring-4 focus:ring-teal-500/10 outline-none transition-all dark:text-white placeholder:text-slate-300"
                   value={draft.track}
                   onChange={(e) => setField("track", e.target.value)}
                   placeholder="e.g. CS / CT"
                 />
               </div>
 
-              <div>
-                <label className="text-xs font-bold text-gray-500 dark:text-gray-400">Room</label>
+              <div className="space-y-2">
+                <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] ml-1">Vector Room</label>
                 <input
-                  className="mt-1 w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                  className="w-full rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 px-6 py-4 font-bold text-sm focus:ring-4 focus:ring-teal-500/10 outline-none transition-all dark:text-white placeholder:text-slate-300"
                   value={draft.room}
                   onChange={(e) => setField("room", e.target.value)}
                   placeholder="Optional"
                 />
               </div>
 
-              <div className="md:col-span-2">
-                <label className="text-xs font-bold text-gray-500 dark:text-gray-400">Description</label>
+              <div className="md:col-span-2 space-y-2">
+                <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] ml-1">Abstract Description</label>
                 <textarea
-                  className="mt-1 w-full rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                  className="w-full rounded-[24px] border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 px-6 py-4 font-medium text-sm focus:ring-4 focus:ring-teal-500/10 outline-none transition-all dark:text-white placeholder:text-slate-300"
                   rows={4}
                   value={draft.description}
                   onChange={(e) => setField("description", e.target.value)}
-                  placeholder="Optional"
+                  placeholder="Comprehensive course overview..."
                 />
               </div>
             </div>
@@ -622,25 +635,25 @@ const CourseWizardModal = React.memo(function CourseWizardModal({
 
           {/* Step 1 */}
           {step === 1 && (
-            <div className="space-y-6">
-              <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50/60 dark:bg-slate-800/40 p-4">
+            <div className="space-y-10 animate-in fade-in slide-in-from-bottom-2 duration-500">
+              <div className="rounded-[32px] border border-slate-100 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-950/20 p-8 space-y-6">
                 <MultiSelectChips
-                  label="Semester (multi-select)"
+                  label="Academic Periods"
                   options={SEMESTER_OPTIONS}
                   selected={draft.semester}
                   onChange={(vals) => setField("semester", vals)}
-                  placeholder="Choose a semester…"
-                  helper="You can add multiple semesters."
+                  placeholder="Select valid intervals..."
+                  helper="Concurrent period selection supported."
                 />
               </div>
 
-              <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50/60 dark:bg-slate-800/40 p-4">
+              <div className="rounded-[32px] border border-slate-100 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-950/20 p-8 space-y-6">
                 <TagInput
-                  label="Schedule (free type, press Enter to add)"
+                  label="Execution Schedule"
                   values={draft.schedule}
                   onChange={(vals) => setField("schedule", vals)}
-                  placeholder='e.g. "Mon/Wed 10:00-11:30"'
-                  helper="Tip: Enter adds a chip. Backspace deletes last chip when input is empty."
+                  placeholder='e.g. "Interval 10:00 - 11:30 (Alpha)"'
+                  helper="Tip: ENTER to commit node. BACKSPACE to purge."
                 />
               </div>
             </div>
@@ -648,15 +661,15 @@ const CourseWizardModal = React.memo(function CourseWizardModal({
 
           {/* Step 2 */}
           {step === 2 && (
-            <div className="space-y-6">
-              <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50/60 dark:bg-slate-800/40 p-4">
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
+              <div className="rounded-[32px] border border-slate-100 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-950/20 p-8 space-y-6">
                 <MultiSelectChips
-                  label="Prerequisites (choose from existing courses)"
+                  label="System Prerequisites"
                   options={prerequisiteOptions}
                   selected={draft.prerequisites}
                   onChange={(vals) => setField("prerequisites", vals)}
-                  placeholder="Select prerequisite course…"
-                  helper="Shows Course Code + Title (stores only course code)."
+                  placeholder="Audit existing curriculum..."
+                  helper="Map required parent nodes for this curriculum sequence."
                 />
               </div>
             </div>
@@ -664,122 +677,141 @@ const CourseWizardModal = React.memo(function CourseWizardModal({
 
           {/* Step 3 */}
           {step === 3 && (
-            <div className="space-y-4">
-              <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50/60 dark:bg-slate-800/40 p-5">
-                <div className="text-xl font-extrabold text-gray-900 dark:text-white">{draft.title || "—"}</div>
-                <div className="mt-1 text-sm text-gray-600 dark:text-gray-300">
-                  <span className="font-mono">{draft.course_code || "—"}</span> • {draft.department || "—"} • {draft.type || "—"} •{" "}
-                  {Number(draft.credits || 0).toFixed(1)} credits
+            <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
+              <div className="rounded-[40px] border border-slate-100 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-950/20 p-10 space-y-10">
+                <div className="space-y-2">
+                  <div className="text-3xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">{draft.title || "Untitled Node"}</div>
+                  <div className="flex items-center gap-4 text-xs font-black text-slate-400 uppercase tracking-widest">
+                    <span className="font-mono text-teal-600">{draft.course_code || "PENDING"}</span>
+                    <span className="opacity-20">•</span>
+                    <span>{draft.department || "DEPT_NULL"}</span>
+                    <span className="opacity-20">•</span>
+                    <span>{draft.type || "TYPE_NULL"}</span>
+                    <span className="opacity-20">•</span>
+                    <span className="text-slate-900 dark:text-white">{Number(draft.credits || 0).toFixed(1)} CU</span>
+                  </div>
                 </div>
 
-                {/* ✅ NEW: show Major/Track if present */}
                 {(draft.major.trim() || draft.track.trim()) && (
-                  <div className="mt-3 flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-3">
                     {draft.major.trim() && (
-                      <span className="inline-flex items-center gap-1 rounded-full bg-white dark:bg-slate-900 border border-gray-200 dark:border-gray-700 px-3 py-1 text-xs text-gray-700 dark:text-gray-200">
-                        <span className="material-icons-outlined text-[16px] text-gray-400">badge</span>
+                      <span className="inline-flex items-center gap-2 rounded-xl bg-white dark:bg-slate-950 border border-slate-100 dark:border-slate-800 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-slate-600 dark:text-slate-300 shadow-sm">
+                        <span className="material-icons-outlined text-sm opacity-40">badge</span>
                         Major: {draft.major.trim()}
                       </span>
                     )}
                     {draft.track.trim() && (
-                      <span className="inline-flex items-center gap-1 rounded-full bg-white dark:bg-slate-900 border border-gray-200 dark:border-gray-700 px-3 py-1 text-xs text-gray-700 dark:text-gray-200">
-                        <span className="material-icons-outlined text-[16px] text-gray-400">timeline</span>
+                      <span className="inline-flex items-center gap-2 rounded-xl bg-white dark:bg-slate-950 border border-slate-100 dark:border-slate-800 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-slate-600 dark:text-slate-300 shadow-sm">
+                        <span className="material-icons-outlined text-sm opacity-40">timeline</span>
                         Track: {draft.track.trim()}
                       </span>
                     )}
                   </div>
                 )}
 
-                <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <div className="rounded-xl bg-white dark:bg-slate-900 border border-gray-200 dark:border-gray-700 p-4">
-                    <div className="text-xs text-gray-500 dark:text-gray-400 font-bold">Semester</div>
-                    <div className="mt-2 flex flex-wrap gap-2">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="rounded-[24px] bg-white dark:bg-slate-950 border border-slate-100 dark:border-slate-800 p-6 space-y-4 shadow-sm">
+                    <div className="text-[9px] font-black text-slate-300 uppercase tracking-[0.2em]">Active Periods</div>
+                    <div className="flex flex-wrap gap-2">
                       {draft.semester.length ? (
                         draft.semester.map((s) => (
-                          <span key={s} className="rounded-full bg-gray-100 dark:bg-slate-800 px-3 py-1 text-xs text-gray-700 dark:text-gray-200">
+                          <span key={s} className="px-3 py-1 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 text-[10px] font-bold text-slate-500 dark:text-slate-400">
                             {s}
                           </span>
                         ))
                       ) : (
-                        <span className="text-xs text-gray-500 dark:text-gray-400">—</span>
+                        <span className="text-xs font-bold text-slate-200 italic">No periods assigned.</span>
                       )}
                     </div>
                   </div>
 
-                  <div className="rounded-xl bg-white dark:bg-slate-900 border border-gray-200 dark:border-gray-700 p-4">
-                    <div className="text-xs text-gray-500 dark:text-gray-400 font-bold">Schedule</div>
-                    <div className="mt-2 space-y-1">
+                  <div className="rounded-[24px] bg-white dark:bg-slate-950 border border-slate-100 dark:border-slate-800 p-6 space-y-4 shadow-sm">
+                    <div className="text-[9px] font-black text-slate-300 uppercase tracking-[0.2em]">Matrix Schedule</div>
+                    <div className="space-y-2">
                       {draft.schedule.length ? (
                         draft.schedule.map((s, i) => (
-                          <div key={i} className="text-sm text-gray-800 dark:text-gray-200">
-                            • {s}
+                          <div key={i} className="flex items-center gap-3 text-xs font-bold text-slate-600 dark:text-slate-300">
+                            <span className="h-1.5 w-1.5 rounded-full bg-teal-500" />
+                            {s}
                           </div>
                         ))
                       ) : (
-                        <span className="text-xs text-gray-500 dark:text-gray-400">—</span>
+                        <span className="text-xs font-bold text-slate-200 italic">Unscheduled.</span>
                       )}
                     </div>
                   </div>
 
-                  <div className="rounded-xl bg-white dark:bg-slate-900 border border-gray-200 dark:border-gray-700 p-4 md:col-span-2">
-                    <div className="text-xs text-gray-500 dark:text-gray-400 font-bold">Prerequisites</div>
-                    <div className="mt-2 flex flex-wrap gap-2">
+                  <div className="rounded-[24px] bg-white dark:bg-slate-950 border border-slate-100 dark:border-slate-800 p-6 space-y-4 md:col-span-2 shadow-sm">
+                    <div className="text-[9px] font-black text-slate-300 uppercase tracking-[0.2em]">Logical Dependencies</div>
+                    <div className="flex flex-wrap gap-2">
                       {draft.prerequisites.length ? (
                         draft.prerequisites.map((p) => (
-                          <span key={p} className="rounded-full bg-gray-100 dark:bg-slate-800 px-3 py-1 text-xs text-gray-700 dark:text-gray-200">
+                          <span key={p} className="px-3 py-1 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 text-[10px] font-black uppercase text-slate-500 dark:text-slate-400 tracking-tighter">
                             {p}
                           </span>
                         ))
                       ) : (
-                        <span className="text-xs text-gray-500 dark:text-gray-400">None</span>
+                        <span className="text-xs font-bold text-slate-200 italic">No dependencies found.</span>
                       )}
                     </div>
                   </div>
                 </div>
 
                 {draft.description.trim() ? (
-                  <div className="mt-4 text-sm text-gray-700 dark:text-gray-200 whitespace-pre-wrap">{draft.description.trim()}</div>
+                  <div className="px-4 text-sm font-medium text-slate-500 dark:text-slate-400 leading-relaxed italic border-l-4 border-slate-100 dark:border-slate-800">
+                    "{draft.description.trim()}"
+                  </div>
                 ) : (
-                  <div className="mt-4 text-xs text-gray-500 dark:text-gray-400">No description.</div>
+                  <div className="text-[10px] font-black text-slate-300 uppercase tracking-widest text-center py-4 italic opacity-50">Abstract Manifest Missing</div>
                 )}
               </div>
             </div>
           )}
         </div>
 
-        <div className="px-6 py-4 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between gap-3">
+        <div className="px-10 py-8 border-t border-slate-50 dark:border-slate-800 flex items-center justify-between gap-6 shrink-0 bg-slate-50/30 dark:bg-slate-950/20">
           <button
             onClick={onClose}
             disabled={busy}
-            className="rounded-xl border border-gray-200 dark:border-gray-700 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-800"
+            className="h-14 px-8 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 hover:text-slate-600 transition-all active:scale-95"
           >
-            Close
+            Abort Wizard
           </button>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-4">
             <button
               onClick={() => setStep((s) => Math.max(0, s - 1))}
               disabled={busy || step === 0}
-              className="rounded-xl border border-gray-200 dark:border-gray-700 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-800 disabled:opacity-50"
+              className="h-14 px-8 rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 text-[10px] font-black uppercase tracking-[0.2em] text-slate-600 dark:text-white transition-all active:scale-95 disabled:opacity-20 shadow-sm hover:bg-slate-50"
             >
-              Back
+              Previous
             </button>
 
             {step < 3 ? (
               <button
                 onClick={() => setStep((s) => Math.min(3, s + 1))}
                 disabled={busy || (step === 0 && !canNextStep0)}
-                className="rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary-hover disabled:opacity-50"
+                className="h-14 px-10 rounded-2xl bg-slate-900 dark:bg-teal-600 font-black text-[10px] uppercase tracking-[0.2em] text-white transition-all active:scale-95 disabled:opacity-30 shadow-xl shadow-slate-200 dark:shadow-teal-900/20"
               >
-                Next
+                Proceed
               </button>
             ) : (
               <button
                 onClick={submit}
                 disabled={busy}
-                className="rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary-hover disabled:opacity-60"
+                className="h-14 px-12 rounded-2xl bg-slate-900 dark:bg-teal-600 font-black text-[10px] uppercase tracking-[0.3em] text-white transition-all active:scale-95 disabled:opacity-30 shadow-xl shadow-slate-200 dark:shadow-teal-900/20 flex items-center gap-3"
               >
-                {busy ? "Saving..." : "Save"}
+                {busy ? (
+                  <>
+                    <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <span>Synchronizing...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Execute Commit</span>
+                    <span className="material-icons-outlined text-lg">verified</span>
+                  </>
+                )}
               </button>
             )}
           </div>
@@ -794,21 +826,21 @@ const CourseWizardModal = React.memo(function CourseWizardModal({
 // -----------------------------
 function CourseCardSkeleton() {
   return (
-    <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-surface-dark p-5 shadow-sm">
-      <div className="flex items-start justify-between gap-4">
+    <div className="rounded-[32px] border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-8 shadow-sm animate-pulse">
+      <div className="flex items-start justify-between gap-6">
         <div className="min-w-0 flex-1">
-          <div className="h-4 w-28 bg-gray-200 dark:bg-slate-700 rounded mb-3" />
-          <div className="h-6 w-2/3 bg-gray-200 dark:bg-slate-700 rounded mb-2" />
-          <div className="h-4 w-1/2 bg-gray-200 dark:bg-slate-700 rounded" />
-          <div className="mt-4 flex flex-wrap gap-2">
-            <div className="h-6 w-20 bg-gray-200 dark:bg-slate-700 rounded-full" />
-            <div className="h-6 w-28 bg-gray-200 dark:bg-slate-700 rounded-full" />
-            <div className="h-6 w-24 bg-gray-200 dark:bg-slate-700 rounded-full" />
+          <div className="h-3 w-24 bg-slate-100 dark:bg-slate-800 rounded-lg mb-4 opacity-60" />
+          <div className="h-8 w-3/4 bg-slate-100 dark:bg-slate-800 rounded-lg mb-3" />
+          <div className="h-4 w-1/2 bg-slate-100 dark:bg-slate-800 rounded-lg" />
+          <div className="mt-8 flex flex-wrap gap-3">
+            <div className="h-8 w-20 bg-slate-100 dark:bg-slate-800 rounded-xl" />
+            <div className="h-8 w-32 bg-slate-100 dark:bg-slate-800 rounded-xl" />
+            <div className="h-8 w-24 bg-slate-100 dark:bg-slate-800 rounded-xl" />
           </div>
         </div>
-        <div className="flex gap-2">
-          <div className="h-9 w-9 bg-gray-200 dark:bg-slate-700 rounded-xl" />
-          <div className="h-9 w-9 bg-gray-200 dark:bg-slate-700 rounded-xl" />
+        <div className="flex gap-3">
+          <div className="h-10 w-10 bg-slate-100 dark:bg-slate-800 rounded-2xl" />
+          <div className="h-10 w-10 bg-slate-100 dark:bg-slate-800 rounded-2xl" />
         </div>
       </div>
     </div>
@@ -1046,73 +1078,76 @@ const AdminCourses: React.FC<CoursesProps> = ({ user, onLogout }) => {
   const goDetails = (code: string) => navigate(`/admin/courses/${encodeURIComponent(code)}`);
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background-light dark:bg-background-dark">
+    <div className="flex h-screen overflow-hidden bg-white dark:bg-slate-950">
       <Sidebar user={user} onLogout={onLogout} />
 
       <div className="flex flex-1 flex-col overflow-hidden">
-        <Header title="Courses Management" user={user} />
+        <Header title="Course Catalog" user={user} />
 
-        <main className="flex-1 overflow-y-auto p-6">
-          <div className="mb-6 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-surface-dark shadow-sm overflow-hidden">
-            <div className="p-5 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-              <div className="min-w-0">
-                <div className="text-lg font-extrabold text-gray-900 dark:text-white">Manage Courses</div>
-                <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                  Semester + prereqs are selected. Schedule is free typed. Major/Track optional.
+        <main className="flex-1 overflow-y-auto p-8 animate-in fade-in duration-700 slide-in-from-bottom-4 scrollbar-hide">
+          <div className="mb-10 rounded-[32px] border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30 shadow-sm overflow-hidden transition-all hover:shadow-md">
+            <div className="px-8 py-8 flex flex-col xl:flex-row xl:items-center xl:justify-between gap-8">
+              <div className="min-w-0 space-y-2">
+                <div className="flex items-center gap-4">
+                  <div className="h-12 w-12 rounded-2xl bg-teal-50 dark:bg-teal-900/20 flex items-center justify-center text-teal-600 dark:text-teal-400">
+                    <span className="material-icons-outlined text-2xl">auto_stories</span>
+                  </div>
+                  <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">Curriculum Inventory</h2>
                 </div>
+                <p className="text-sm font-medium text-slate-500 dark:text-slate-400 max-w-xl">
+                  Global management of courses, academic prerequisites, and institutional tracks.
+                </p>
 
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <span className={badge(`Total: ${courses.length}`)}>
-                    <span className="material-icons-outlined text-[16px] text-gray-400">database</span>
-                    Total: {courses.length}
-                  </span>
-                  <span className={badge(`Shown: ${filtered.length}`)}>
-                    <span className="material-icons-outlined text-[16px] text-gray-400">filter_alt</span>
-                    Shown: {filtered.length}
-                  </span>
+                <div className="pt-4 flex flex-wrap gap-3">
+                  <div className="px-3 py-1 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 shadow-sm flex items-center gap-2">
+                    <span className="material-icons-outlined text-xs">database</span>
+                    {courses.length} Total
+                  </div>
+                  <div className="px-3 py-1 rounded-full bg-teal-50 dark:bg-teal-900/20 border border-teal-100 dark:border-teal-800 text-[10px] font-bold uppercase tracking-widest text-teal-700 dark:text-teal-400 shadow-sm flex items-center gap-2">
+                    <span className="material-icons-outlined text-xs">filter_list</span>
+                    {filtered.length} Filtered
+                  </div>
                 </div>
               </div>
 
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-4 shrink-0">
                 <button
-                  className="flex items-center justify-center gap-2 rounded-xl border border-primary bg-white px-4 py-2.5 text-sm font-semibold text-primary hover:bg-gray-50 dark:bg-transparent dark:hover:bg-slate-800 transition-colors"
-                  onClick={() => toast("info", "Excel import", "To be implemented in the future.")}
+                  className="flex items-center justify-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-6 py-3.5 text-sm font-bold text-slate-700 dark:text-white hover:bg-slate-50 dark:hover:bg-slate-800 transition-all shadow-sm active:scale-[0.98]"
+                  onClick={() => toast("info", "Excel import", "Bulk import interface will be integrated in version 2.5.")}
                   disabled={mutating}
                 >
-                  <span className="material-icons-outlined text-lg">description</span>
-                  Import (Excel)
+                  <span className="material-icons-outlined text-lg">publish</span>
+                  Bulk Import
                 </button>
 
                 <button
-                  className="flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary-hover shadow-sm transition-colors"
+                  className="flex items-center justify-center gap-2 rounded-2xl bg-teal-600 px-8 py-3.5 text-sm font-bold text-white hover:bg-teal-700 transition-all shadow-lg active:scale-[0.98]"
                   onClick={openCreate}
                   disabled={mutating}
                 >
                   <span className="material-icons-outlined text-lg">add</span>
-                  Add Course
+                  Create Course
                 </button>
               </div>
             </div>
 
-            <div className="border-t border-gray-100 dark:border-gray-700 p-4">
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-3">
-                <div className="lg:col-span-4">
-                  <div className="relative">
-                    <span className="absolute inset-y-0 left-0 flex items-center pl-3">
-                      <span className="material-icons-outlined text-gray-400">search</span>
-                    </span>
-                    <input
-                      className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 dark:text-gray-200"
-                      placeholder="Search by code, title, instructor..."
-                      value={search}
-                      onChange={(e) => setSearch(e.target.value)}
-                    />
-                  </div>
+            <div className="border-t border-slate-100 dark:border-slate-800 px-8 py-6 bg-white dark:bg-slate-950/20">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-4">
+                <div className="lg:col-span-5 relative group">
+                  <span className="absolute inset-y-0 left-0 flex items-center pl-4">
+                    <span className="material-icons-outlined text-slate-400 group-focus-within:text-teal-500 transition-colors">search</span>
+                  </span>
+                  <input
+                    className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 py-3 pl-12 pr-4 text-sm font-medium focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500/50 outline-none transition-all dark:text-white"
+                    placeholder="Filter by code, title, or academic lead..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                  />
                 </div>
 
-                <div className="lg:col-span-3">
+                <div className="lg:col-span-2">
                   <select
-                    className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 py-2.5 px-3 text-sm text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/40"
+                    className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-4 py-3 text-xs font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-teal-500/20 transition-all cursor-pointer"
                     value={deptFilter}
                     onChange={(e) => setDeptFilter(e.target.value)}
                   >
@@ -1127,7 +1162,7 @@ const AdminCourses: React.FC<CoursesProps> = ({ user, onLogout }) => {
 
                 <div className="lg:col-span-2">
                   <select
-                    className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 py-2.5 px-3 text-sm text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/40"
+                    className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-4 py-3 text-xs font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-teal-500/20 transition-all cursor-pointer"
                     value={typeFilter}
                     onChange={(e) => setTypeFilter(e.target.value)}
                   >
@@ -1142,11 +1177,11 @@ const AdminCourses: React.FC<CoursesProps> = ({ user, onLogout }) => {
 
                 <div className="lg:col-span-3">
                   <select
-                    className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 py-2.5 px-3 text-sm text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/40"
+                    className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-4 py-3 text-xs font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-teal-500/20 transition-all cursor-pointer"
                     value={semesterFilter}
                     onChange={(e) => setSemesterFilter(e.target.value)}
                   >
-                    <option value="">All Semesters</option>
+                    <option value="">All Periods</option>
                     {semesterOptions.map((s) => (
                       <option key={s} value={s}>
                         {s}
@@ -1159,19 +1194,19 @@ const AdminCourses: React.FC<CoursesProps> = ({ user, onLogout }) => {
           </div>
 
           {loading ? (
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
               {Array.from({ length: 6 }).map((_, i) => (
                 <CourseCardSkeleton key={i} />
               ))}
             </div>
           ) : filtered.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-gray-300 dark:border-gray-700 bg-white dark:bg-surface-dark p-10 text-center">
-              <div className="mx-auto h-14 w-14 rounded-2xl bg-gray-100 dark:bg-slate-800 flex items-center justify-center text-gray-600 dark:text-gray-200">
-                <span className="material-icons-outlined text-3xl">menu_book</span>
+            <div className="rounded-[40px] border border-dashed border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-20 text-center animate-in fade-in zoom-in-95">
+              <div className="mx-auto h-20 w-20 rounded-3xl bg-slate-50 dark:bg-slate-950 flex items-center justify-center text-slate-300 dark:text-slate-700 mb-8 border border-slate-100 dark:border-slate-800">
+                <span className="material-icons-outlined text-4xl">inventory_2</span>
               </div>
-              <div className="mt-4 text-lg font-extrabold text-gray-900 dark:text-white">No courses found</div>
-              <div className="mt-1 text-sm text-gray-500 dark:text-gray-400">Try adjusting filters or create a new course.</div>
-              <div className="mt-6 flex justify-center gap-3">
+              <h3 className="text-xl font-extrabold text-slate-900 dark:text-white mb-2">No matching curriculum found</h3>
+              <p className="text-sm text-slate-400 font-medium max-w-sm mx-auto mb-10 leading-relaxed">Adjust your filters or initiate a new course record to expand the catalog.</p>
+              <div className="flex justify-center gap-4">
                 <button
                   onClick={() => {
                     setSearch("");
@@ -1179,63 +1214,80 @@ const AdminCourses: React.FC<CoursesProps> = ({ user, onLogout }) => {
                     setTypeFilter("");
                     setSemesterFilter("");
                   }}
-                  className="rounded-xl border border-gray-200 dark:border-gray-700 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-800"
+                  className="px-8 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 text-sm font-bold text-slate-600 dark:text-white hover:bg-slate-50 dark:hover:bg-slate-800 transition-all"
                 >
-                  Reset Filters
+                  Reset Parameters
                 </button>
-                <button onClick={openCreate} className="rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary-hover">
-                  Add Course
+                <button onClick={openCreate} className="px-10 py-3 rounded-2xl bg-teal-600 text-sm font-bold text-white hover:bg-teal-700 shadow-lg transition-all active:scale-[0.98]">
+                  Initialize Course
                 </button>
               </div>
             </div>
           ) : (
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
               {filtered.map((course) => (
                 <div
                   key={course.id}
-                  className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-surface-dark p-5 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+                  className="group rounded-[32px] border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-8 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer relative overflow-hidden"
                   onClick={() => goDetails(course.course_code)}
                 >
-                  <div className="flex items-start justify-between gap-4">
+                  <div className="absolute right-0 top-0 h-24 w-24 bg-teal-500/5 rounded-bl-[64px] opacity-0 group-hover:opacity-100 transition-opacity" />
+                  
+                  <div className="flex items-start justify-between gap-6 relative z-10">
                     <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-mono text-gray-500 dark:text-gray-400">{course.course_code}</span>
-                        <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${typeBadgeClass(course.type)}`}>{course.type}</span>
-                      </div>
-
-                      <div className="mt-2 text-lg font-extrabold text-gray-900 dark:text-white truncate">{course.title}</div>
-
-                      <div className="mt-1 text-sm text-gray-600 dark:text-gray-300 truncate">
-                        {course.department}
-                        {course.instructor ? ` • Instructor: ${course.instructor}` : ""}
-                        {course.room ? ` • Room: ${course.room}` : ""}
-                        {course.major ? ` • Major: ${course.major}` : ""}
-                        {course.track ? ` • Track: ${course.track}` : ""}
-                      </div>
-
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        <span className={badge(`${Number(course.credits).toFixed(1)} credits`)}>
-                          <span className="material-icons-outlined text-[16px] text-gray-400">stars</span>
-                          {Number(course.credits).toFixed(1)} credits
+                      <div className="flex flex-wrap items-center gap-3 mb-4">
+                        <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] font-mono">{course.course_code}</span>
+                        <span className={`px-2.5 py-0.5 rounded-lg text-[9px] font-extrabold uppercase tracking-widest border ${typeBadgeClass(course.type)}`}>
+                          {course.type}
                         </span>
+                      </div>
+
+                      <h3 className="text-xl font-extrabold text-slate-900 dark:text-white truncate mb-2 group-hover:text-teal-600 transition-colors">
+                        {course.title}
+                      </h3>
+
+                      <div className="flex flex-col gap-1.5 text-xs font-medium text-slate-500 dark:text-slate-400">
+                        <div className="flex items-center gap-2">
+                          <span className="material-icons-outlined text-sm opacity-60">domain</span>
+                          {course.department}
+                        </div>
+                        {course.instructor && (
+                          <div className="flex items-center gap-2">
+                            <span className="material-icons-outlined text-sm opacity-60">person_search</span>
+                            {course.instructor}
+                          </div>
+                        )}
+                        {(course.major || course.track) && (
+                          <div className="flex items-center gap-2 text-teal-600/80 dark:text-teal-400/80">
+                            <span className="material-icons-outlined text-sm opacity-60">layers</span>
+                            {course.major} {course.track && `• ${course.track}`}
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="mt-6 flex flex-wrap gap-3">
+                        <div className="px-3 py-1 rounded-xl bg-slate-50 dark:bg-slate-950 text-[10px] font-bold uppercase tracking-tighter text-slate-600 dark:text-slate-300 border border-slate-100 dark:border-slate-800 flex items-center gap-2">
+                          <span className="material-icons-outlined text-sm opacity-60">stars</span>
+                          {Number(course.credits).toFixed(1)} CU
+                        </div>
 
                         {course.semester?.slice(0, 2).map((s) => (
-                          <span key={s} className={badge(s)}>
-                            <span className="material-icons-outlined text-[16px] text-gray-400">school</span>
+                          <div key={s} className="px-3 py-1 rounded-xl bg-slate-50 dark:bg-slate-950 text-[10px] font-bold uppercase tracking-tighter text-slate-600 dark:text-slate-300 border border-slate-100 dark:border-slate-800 flex items-center gap-2">
+                            <span className="material-icons-outlined text-sm opacity-60">calendar_today</span>
                             {s}
-                          </span>
+                          </div>
                         ))}
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2 shrink-0">
+                    <div className="flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           openEdit(course);
                         }}
-                        className="h-9 w-9 rounded-xl border border-gray-200 dark:border-gray-700 flex items-center justify-center text-gray-500 dark:text-gray-200 hover:text-primary hover:border-primary transition-colors"
-                        title="Edit"
+                        className="h-10 w-10 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-400 hover:text-teal-600 hover:border-teal-500/50 shadow-sm transition-all"
+                        title="Edit Course"
                         disabled={mutating}
                       >
                         <span className="material-icons-outlined text-lg">edit</span>
@@ -1246,11 +1298,11 @@ const AdminCourses: React.FC<CoursesProps> = ({ user, onLogout }) => {
                           e.stopPropagation();
                           askDelete(course.course_code);
                         }}
-                        className="h-9 w-9 rounded-xl border border-gray-200 dark:border-gray-700 flex items-center justify-center text-gray-500 dark:text-gray-200 hover:text-red-500 hover:border-red-400 transition-colors"
-                        title="Delete"
+                        className="h-10 w-10 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-400 hover:text-rose-600 hover:border-rose-500/50 shadow-sm transition-all"
+                        title="Purge Record"
                         disabled={mutating}
                       >
-                        <span className="material-icons-outlined text-lg">delete</span>
+                        <span className="material-icons-outlined text-lg">delete_outline</span>
                       </button>
                     </div>
                   </div>
@@ -1261,12 +1313,10 @@ const AdminCourses: React.FC<CoursesProps> = ({ user, onLogout }) => {
 
           <button
             onClick={openCreate}
-            className="fixed right-5 bottom-5 z-[50] rounded-2xl bg-primary text-white shadow-xl hover:bg-primary-hover transition-colors px-4 py-3 flex items-center gap-2"
+            className="fixed right-10 bottom-10 z-[50] h-16 w-16 rounded-[24px] bg-slate-900 dark:bg-teal-600 text-white shadow-2xl hover:scale-110 active:scale-95 transition-all flex items-center justify-center group overflow-hidden"
             disabled={mutating}
-            title="Add Course"
           >
-            <span className="material-icons-outlined">add</span>
-            <span className="text-sm font-bold">Add Course</span>
+            <span className="material-icons-outlined text-3xl group-hover:rotate-90 transition-transform duration-500">add</span>
           </button>
         </main>
       </div>
@@ -1283,9 +1333,9 @@ const AdminCourses: React.FC<CoursesProps> = ({ user, onLogout }) => {
 
       <ConfirmModal
         open={confirmOpen}
-        title="Delete course?"
-        message={confirmCourseCode ? `This will permanently delete "${confirmCourseCode}".` : "This cannot be undone."}
-        confirmText="Delete"
+        title="Destroy Record?"
+        message={confirmCourseCode ? `This action will permanently purge "${confirmCourseCode}" from the institutional database.` : "This action cannot be reverted."}
+        confirmText="Confirm Purge"
         danger
         loading={mutating}
         onCancel={() => {

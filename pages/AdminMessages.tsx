@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
+import { DetailedCardGridSkeleton, Skeleton } from "../components/Skeleton";
 import { User } from "../types";
 import { api } from "../lib/api";
 
@@ -355,24 +356,25 @@ export default function AdminMessages({ user, onLogout }: Props) {
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background-light dark:bg-background-dark font-poppins">
+    <div className="flex h-screen overflow-hidden bg-white dark:bg-slate-950 font-poppins">
       <Sidebar user={user} onLogout={onLogout} />
-      <div className="flex flex-1 flex-col">
-        <Header title="Messages" user={user} />
+      <div className="flex flex-1 flex-col overflow-hidden">
+        <Header title="Communications" user={user} />
 
-        <main className="flex-1 overflow-y-auto p-3 sm:p-4 lg:p-6 xl:p-8">
-          <div className="flex flex-col gap-6 pb-4">
+        <main className="flex-1 overflow-y-auto p-8 animate-in fade-in duration-700 slide-in-from-bottom-4 scrollbar-hide">
+          <div className="flex flex-col gap-10 pb-10 max-w-[1600px] mx-auto">
             {/* Toast */}
             {toast && (
-              <div className="fixed right-6 top-6 z-50">
+              <div className="fixed right-10 top-10 z-50 animate-in slide-in-from-right-10 duration-500">
                 <div
                   className={[
-                    "rounded-lg border px-4 py-3 text-sm font-bold shadow-sm",
+                    "rounded-2xl border px-6 py-4 text-sm font-bold shadow-xl flex items-center gap-3",
                     toast.type === "success"
-                      ? "border-green-200 bg-green-50 text-green-700 dark:border-green-900/40 dark:bg-green-900/20 dark:text-green-200"
-                      : "border-gray-200 bg-white text-gray-800 dark:border-gray-700 dark:bg-slate-900 dark:text-gray-100",
+                      ? "border-emerald-100 bg-emerald-50 text-emerald-700 dark:border-emerald-900/40 dark:bg-emerald-900/20 dark:text-emerald-300"
+                      : "border-slate-200 bg-white text-slate-800 dark:border-slate-700 dark:bg-slate-900 dark:text-white",
                   ].join(" ")}
                 >
+                  <span className="material-icons-outlined text-lg">{toast.type === "success" ? "verified" : "info"}</span>
                   {toast.text}
                 </div>
               </div>
@@ -380,78 +382,89 @@ export default function AdminMessages({ user, onLogout }: Props) {
 
             {/* Error */}
             {error && (
-              <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900/40 dark:bg-red-900/20 dark:text-red-200">
+              <div className="rounded-2xl border border-rose-100 bg-rose-50 p-5 text-sm font-bold text-rose-700 dark:border-rose-900/40 dark:bg-rose-900/20 dark:text-rose-300 animate-in fade-in slide-in-from-top-2 flex items-center gap-3">
+                <span className="material-icons-outlined">error_outline</span>
                 {error}
               </div>
             )}
 
             {/* Compose (collapsible) */}
-            <div className="bg-surface-light dark:bg-surface-dark rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+            <div className="bg-white dark:bg-slate-900 rounded-[32px] border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden transition-all hover:shadow-md">
               <button
                 type="button"
                 onClick={() => setComposeOpen((v) => !v)}
-                className="w-full px-4 sm:px-6 py-4 flex items-center justify-between text-left hover:bg-gray-50 dark:hover:bg-slate-800/40"
+                className="w-full px-8 py-6 flex items-center justify-between text-left hover:bg-slate-50/50 dark:hover:bg-slate-800/40 transition-colors"
               >
-                <div>
-                  <div className="font-bold text-gray-800 dark:text-white">Send Message</div>
-                  <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                    {composeOpen ? "Fill the form below" : "Click to compose a new message"}
+                <div className="flex items-center gap-6">
+                  <div className="h-12 w-12 rounded-2xl bg-teal-50 dark:bg-teal-900/20 flex items-center justify-center text-teal-600 dark:text-teal-400">
+                    <span className="material-icons-outlined text-2xl">send</span>
+                  </div>
+                  <div>
+                    <div className="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">New Communication</div>
+                    <div className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-1">
+                      Direct message to student directory
+                    </div>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3 sm:gap-4">
-                  <div className="text-xs text-gray-500 dark:text-gray-400">
-                    Unread: <span className="font-bold text-gray-800 dark:text-white">{unreadCount}</span>
+                <div className="flex items-center gap-8">
+                  <div className="hidden sm:block text-[11px] font-bold text-slate-400 uppercase tracking-widest">
+                    Pending Inbox: <span className="text-slate-900 dark:text-white ml-1">{unreadCount} items</span>
                   </div>
-                  <div className="text-sm font-bold text-primary">{composeOpen ? "Hide" : "Compose"}</div>
+                  <div className={`h-10 px-5 rounded-xl flex items-center text-xs font-extrabold uppercase tracking-widest transition-all ${composeOpen ? 'bg-slate-900 text-white' : 'bg-teal-50 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400'}`}>
+                    {composeOpen ? "Discard" : "Compose"}
+                  </div>
                 </div>
               </button>
 
               {composeOpen && (
-                <div className="p-4 sm:p-6 border-t border-gray-200 dark:border-gray-700">
-                  <form onSubmit={onSend} className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                <div className="px-8 pb-8 pt-2 border-t border-slate-100 dark:border-slate-800 animate-in slide-in-from-top-4 duration-500">
+                  <form onSubmit={onSend} className="grid grid-cols-1 xl:grid-cols-12 gap-8">
                     {/* Receiver (strict searchable select) */}
-                    <div className="relative">
-                      <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Receiver ID</label>
+                    <div className="xl:col-span-4 relative space-y-2">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Recipient ID *</label>
 
                       <button
                         type="button"
                         onClick={() => setReceiverOpen((v) => !v)}
                         disabled={studentIdsLoading || studentOptions.length === 0}
                         className={[
-                          "mt-1 w-full rounded-lg border px-3 py-2 text-sm text-left flex items-center justify-between",
-                          "border-gray-200 dark:border-slate-500/60 bg-transparent dark:bg-slate-800 text-gray-800 dark:text-white",
+                          "w-full rounded-2xl border px-5 py-3.5 text-sm text-left flex items-center justify-between transition-all",
+                          "border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 text-slate-900 dark:text-white font-bold shadow-sm",
                           (studentIdsLoading || studentOptions.length === 0)
                             ? "opacity-60 cursor-not-allowed"
-                            : "hover:bg-gray-50 dark:hover:bg-slate-700/60",
+                            : "hover:border-teal-500/50 focus:ring-4 focus:ring-teal-500/10",
                         ].join(" ")}
                       >
-                        <span className={receiverId ? "" : "text-gray-400 dark:text-slate-300"}>
-                          {receiverId ||
-                            (studentIdsLoading
-                              ? "Loading students..."
-                              : studentOptions.length === 0
-                              ? "No students found"
-                              : "Select a student (TNT-xxxx)")}
+                        <span className={receiverId ? "" : "text-slate-400"}>
+                          {receiverId ? (
+                            receiverId
+                          ) : studentIdsLoading ? (
+                            "Syncing directory..."
+                          ) : studentOptions.length === 0 ? (
+                            "No student found"
+                          ) : (
+                            "Search TNT-xxxx..."
+                          )}
                         </span>
-                        <span className="text-xs text-gray-500 dark:text-slate-300">{receiverOpen ? "▲" : "▼"}</span>
+                        <span className="material-icons-outlined text-sm text-slate-400">{receiverOpen ? "expand_less" : "expand_more"}</span>
                       </button>
 
                       {receiverOpen && (
-                        <div className="absolute z-40 mt-2 w-full rounded-xl border border-gray-200 dark:border-slate-500/60 bg-white dark:bg-slate-800 shadow-lg overflow-hidden">
-                          <div className="p-2 border-b border-gray-200 dark:border-slate-500/40">
+                        <div className="absolute z-40 mt-3 w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95">
+                          <div className="p-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50">
                             <input
                               autoFocus
                               value={studentSearch}
                               onChange={(e) => setStudentSearch(e.target.value)}
-                              placeholder="Search TNT..."
-                              className="w-full rounded-lg border border-gray-200 dark:border-slate-500/60 bg-transparent dark:bg-slate-800 px-3 py-2 text-sm text-gray-800 dark:text-white placeholder:text-gray-400 dark:placeholder:text-slate-300"
+                              placeholder="Type student name or ID..."
+                              className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2.5 text-sm font-bold text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-teal-500/20"
                             />
                           </div>
 
-                          <div className="max-h-56 overflow-y-auto">
+                          <div className="max-h-64 overflow-y-auto scrollbar-hide">
                             {studentMatches.length === 0 ? (
-                              <div className="p-3 text-sm text-gray-500 dark:text-slate-300">No matches.</div>
+                              <div className="p-6 text-center text-sm text-slate-400 italic">No matches in directory.</div>
                             ) : (
                               studentMatches.map((s) => (
                                 <button
@@ -463,70 +476,56 @@ export default function AdminMessages({ user, onLogout }: Props) {
                                     setStudentSearch("");
                                   }}
                                   className={[
-                                    "w-full text-left px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-slate-700/60 text-gray-800 dark:text-white",
-                                    s.user_id === receiverId ? "bg-gray-50 dark:bg-slate-700/80 font-bold" : "",
+                                    "w-full text-left px-6 py-3.5 text-sm transition-all flex items-center justify-between",
+                                    s.user_id === receiverId ? "bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-400 font-bold" : "text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60",
                                   ].join(" ")}
                                 >
-                                  <div className="flex items-center justify-between gap-3">
-                                    <span className="font-mono">{s.user_id}</span>
-                                    <span className="text-xs text-gray-500 dark:text-slate-300 truncate">{s.name}</span>
-                                  </div>
+                                  <span className="font-bold">{s.user_id}</span>
+                                  <span className="text-[10px] font-bold uppercase tracking-widest opacity-60 truncate ml-4">{s.name}</span>
                                 </button>
                               ))
                             )}
                           </div>
                         </div>
                       )}
-
-                      <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                        Only existing student IDs can be selected.
-                      </div>
                     </div>
 
-                    <div>
-                      <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Category</label>
+                    <div className="xl:col-span-3 space-y-2">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Category</label>
                       <select
-                        className="mt-1 w-full rounded-lg border border-gray-200 dark:border-slate-500/60 bg-transparent dark:bg-slate-800 px-3 py-2 text-sm text-gray-800 dark:text-white"
+                        className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 px-5 py-3.5 text-sm font-bold text-slate-900 dark:text-white outline-none focus:ring-4 focus:ring-teal-500/10 transition-all cursor-pointer shadow-sm"
                         value={category}
                         onChange={(e) => setCategory(e.target.value)}
                       >
                         {CATEGORIES.map((c) => (
-                          <option key={c} value={c} className="bg-white text-gray-800 dark:bg-slate-800 dark:text-white">
+                          <option key={c} value={c} className="bg-white text-slate-800 dark:bg-slate-900 dark:text-white">
                             {c}
                           </option>
                         ))}
                       </select>
                     </div>
 
-                    <div className="xl:col-span-2">
-                      <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Subject</label>
+                    <div className="xl:col-span-5 space-y-2">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Subject Title *</label>
                       <input
-                        className="mt-1 w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-transparent px-3 py-2 text-sm text-gray-800 dark:text-white"
+                        className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 px-5 py-3.5 text-sm font-bold text-slate-900 dark:text-white outline-none focus:ring-4 focus:ring-teal-500/10 transition-all shadow-sm placeholder:text-slate-300"
                         value={subject}
                         onChange={(e) => setSubject(e.target.value)}
-                        placeholder="e.g., Probation Warning"
+                        placeholder="Purpose of this communication..."
                       />
                     </div>
 
-                    <div className="xl:col-span-2">
-                      <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Body</label>
+                    <div className="xl:col-span-12 space-y-2">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Message Content *</label>
                       <textarea
-                        className="mt-1 w-full min-h-[90px] rounded-lg border border-gray-200 dark:border-gray-700 bg-transparent px-3 py-2 text-sm text-gray-800 dark:text-white"
+                        className="w-full min-h-[160px] rounded-[32px] border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 px-8 py-6 text-sm font-medium text-slate-900 dark:text-white outline-none focus:ring-4 focus:ring-teal-500/10 transition-all shadow-sm leading-relaxed placeholder:text-slate-300"
                         value={body}
                         onChange={(e) => setBody(e.target.value)}
-                        placeholder="Write your message..."
+                        placeholder="Draft your detailed message here..."
                       />
                     </div>
 
-                    <div className="flex items-end gap-2 xl:col-span-2">
-                      <button
-                        type="submit"
-                        disabled={sending}
-                        className="rounded-lg bg-primary px-4 py-2 text-sm font-bold text-white hover:opacity-90 disabled:opacity-50"
-                      >
-                        {sending ? "Sending..." : "Send"}
-                      </button>
-
+                    <div className="xl:col-span-12 flex items-center justify-end gap-4 mt-4">
                       <button
                         type="button"
                         onClick={() => {
@@ -534,9 +533,16 @@ export default function AdminMessages({ user, onLogout }: Props) {
                           setReceiverOpen(false);
                           setStudentSearch("");
                         }}
-                        className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-bold text-gray-700 hover:opacity-90 dark:border-gray-700 dark:bg-slate-800 dark:text-gray-200"
+                        className="px-8 py-3 text-sm font-bold text-slate-500 hover:text-slate-900 dark:hover:text-white transition-all"
                       >
-                        Close
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={sending}
+                        className="rounded-2xl bg-slate-900 dark:bg-slate-800 px-10 py-3 text-sm font-bold text-white hover:bg-slate-800 dark:hover:bg-slate-700 transition-all shadow-lg active:scale-[0.98] disabled:opacity-40"
+                      >
+                        {sending ? "Processing..." : "Dispatch Message"}
                       </button>
                     </div>
                   </form>
@@ -545,143 +551,135 @@ export default function AdminMessages({ user, onLogout }: Props) {
             </div>
 
             {/* Inbox */}
-            <div className="bg-surface-light dark:bg-surface-dark rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden flex flex-col">
+            <div className="bg-white dark:bg-slate-900 rounded-[32px] border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden flex flex-col transition-all hover:shadow-md min-h-[700px]">
               {/* Top bar */}
-              <div className="border-b border-gray-200 dark:border-gray-700 px-4 py-4 flex flex-col gap-4">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-bold text-gray-800 dark:text-white">Inbox</h3>
-                      <span className="text-[10px] font-extrabold uppercase tracking-widest bg-gray-100 dark:bg-slate-800 px-2 py-0.5 rounded text-gray-500">
-                        {filtered.length}/{items.length}
-                      </span>
+              <div className="border-b border-slate-100 dark:border-slate-800 px-8 py-8 flex flex-col gap-8 bg-slate-50/30 dark:bg-slate-950/30">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-3">
+                      <h3 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">Communication Logs</h3>
+                      <div className="px-3 py-1 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase tracking-widest border border-slate-300 dark:border-slate-700">
+                        {filtered.length} of {items.length} records
+                      </div>
                     </div>
-                    <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-1">
-                      Unread messages auto-mark as read when opened.
+                    <p className="text-sm font-medium text-slate-400 dark:text-slate-500">
+                      Archive of all dispatched and received communications.
                     </p>
                   </div>
 
-                  <div className="grid grid-cols-2 sm:flex items-center gap-2 shrink-0 w-full sm:w-auto">
+                  <div className="flex items-center gap-3">
                     <button
                       onClick={onRefresh}
-                      className="flex items-center justify-center gap-2 rounded-lg border border-primary/20 px-3 py-2 text-xs font-bold text-primary hover:bg-primary/5 transition-colors"
+                      className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-5 py-2.5 text-xs font-bold text-slate-700 dark:text-white shadow-sm hover:bg-slate-50 dark:hover:bg-slate-800 transition-all active:scale-[0.98]"
                       disabled={loading}
                     >
-                      <span className={clsx("material-icons-outlined text-sm", loading && "animate-spin")}>refresh</span>
-                      Refresh
+                      <span className={clsx("material-icons-outlined text-sm", loading && "animate-spin")}>sync</span>
+                      Sync
                     </button>
                     <button
                       type="button"
                       onClick={markAllVisibleAsRead}
-                      className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-bold text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-slate-800 dark:text-gray-200 transition-all shadow-sm"
+                      className="inline-flex items-center justify-center gap-2 rounded-2xl bg-teal-600 px-5 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-teal-700 transition-all active:scale-[0.98]"
                     >
-                      Mark read
+                      Mark All as Read
                     </button>
                   </div>
                 </div>
 
-                <div className="flex flex-col lg:flex-row gap-3">
+                <div className="flex flex-col xl:flex-row gap-6">
                   {/* Tabs */}
-                  <div className="flex items-center gap-1 bg-gray-100 dark:bg-slate-900/50 p-1 rounded-xl shrink-0">
+                  <div className="flex items-center gap-1.5 bg-slate-200/50 dark:bg-slate-950 p-1.5 rounded-2xl shrink-0 border border-slate-200/50 dark:border-slate-800/50">
                     <button
                       type="button"
                       onClick={() => setTab("All")}
                       className={clsx(
-                        "flex-1 lg:flex-none rounded-lg px-4 py-1.5 text-xs font-bold transition-all",
+                        "flex-1 xl:flex-none rounded-xl px-6 py-2.5 text-xs font-bold transition-all uppercase tracking-widest",
                         tab === "All"
-                          ? "bg-white dark:bg-primary text-primary dark:text-white shadow-sm"
-                          : "text-gray-500 dark:text-gray-400 hover:text-gray-700"
+                          ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm"
+                          : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
                       )}
                     >
-                      All
+                      Archive
                     </button>
                     <button
                       type="button"
                       onClick={() => setTab("Unread")}
                       className={clsx(
-                        "flex-1 lg:flex-none rounded-lg px-4 py-1.5 text-xs font-bold transition-all flex items-center justify-center gap-2",
+                        "flex-1 xl:flex-none rounded-xl px-6 py-2.5 text-xs font-bold transition-all uppercase tracking-widest flex items-center justify-center gap-3",
                         tab === "Unread"
-                          ? "bg-white dark:bg-primary text-primary dark:text-white shadow-sm"
-                          : "text-gray-500 dark:text-gray-400 hover:text-gray-700"
+                          ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm"
+                          : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
                       )}
                     >
                       Unread
                       {unreadCount > 0 && (
-                        <span className={clsx("size-1.5 rounded-full", tab === "Unread" ? "bg-white" : "bg-primary")} />
+                        <span className="h-2 w-2 rounded-full bg-teal-500 animate-pulse" />
                       )}
                     </button>
                   </div>
 
                   {/* Search + filters */}
-                  <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2">
-                    <div className="relative">
-                      <span className="material-icons-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm pointer-events-none">
+                  <div className="flex-1 flex flex-col md:flex-row gap-4">
+                    <div className="relative flex-1 group">
+                      <span className="material-icons-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-teal-500 transition-colors text-lg">
                         search
                       </span>
                       <input
-                        className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-transparent pl-8 pr-3 py-1.5 text-xs font-bold text-gray-800 dark:text-white focus:border-primary outline-none transition-all"
-                        placeholder="Search..."
+                        className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 pl-12 pr-4 py-3 text-sm font-bold text-slate-900 dark:text-white focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500/50 outline-none transition-all shadow-sm"
+                        placeholder="Search logs..."
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
                       />
                     </div>
 
                     <select
-                      className="w-full rounded-xl border border-gray-200 dark:border-slate-500/60 bg-transparent dark:bg-slate-800 px-3 py-1.5 text-xs font-bold text-gray-800 dark:text-white outline-none focus:border-primary transition-all"
+                      className="md:w-48 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-5 py-3 text-sm font-bold text-slate-700 dark:text-white outline-none focus:ring-4 focus:ring-teal-500/10 transition-all cursor-pointer shadow-sm"
                       value={catFilter}
                       onChange={(e) => setCatFilter(e.target.value)}
                     >
-                      <option value="All" className="bg-white text-gray-800 dark:bg-slate-800 dark:text-white">
-                        Categories
-                      </option>
+                      <option value="All">All Categories</option>
                       {CATEGORIES.map((c) => (
-                        <option key={c} value={c} className="bg-white text-gray-800 dark:bg-slate-800 dark:text-white">
-                          {c}
-                        </option>
+                        <option key={c} value={c}>{c}</option>
                       ))}
                     </select>
 
                     <select
-                      className="w-full rounded-xl border border-gray-200 dark:border-slate-500/60 bg-transparent dark:bg-slate-800 px-3 py-1.5 text-xs font-bold text-gray-800 dark:text-white outline-none focus:border-primary transition-all"
+                      className="md:w-40 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-5 py-3 text-sm font-bold text-slate-700 dark:text-white outline-none focus:ring-4 focus:ring-teal-500/10 transition-all cursor-pointer shadow-sm"
                       value={sortDir}
                       onChange={(e) => setSortDir(e.target.value as any)}
                     >
-                      <option value="Newest" className="bg-white text-gray-800 dark:bg-slate-800 dark:text-white">
-                        Newest
-                      </option>
-                      <option value="Oldest" className="bg-white text-gray-800 dark:bg-slate-800 dark:text-white">
-                        Oldest
-                      </option>
+                      <option value="Newest">Newest First</option>
+                      <option value="Oldest">Oldest First</option>
                     </select>
                   </div>
                 </div>
               </div>
 
-              {/* Two-panel body (flex-1 = stable scrolling) */}
-              <div className="grid grid-cols-1 xl:grid-cols-12">
+              {/* Two-panel body */}
+              <div className="grid grid-cols-1 xl:grid-cols-12 flex-1 min-h-0">
                 {/* LEFT: list */}
                 <div
                   className={clsx(
-                    // ✅ FIXED: remove that grey slab + make list darker
-                    "xl:col-span-5 2xl:col-span-4 border-b xl:border-b-0 xl:border-r border-gray-200 dark:border-gray-700 min-h-0 flex flex-col bg-white dark:bg-slate-900/10",
+                    "xl:col-span-5 2xl:col-span-4 border-r border-slate-100 dark:border-slate-800 min-h-0 flex flex-col bg-slate-50/10 dark:bg-slate-950/10",
                     selectedId && "hidden xl:flex"
                   )}
                 >
                   <div ref={listTopRef} />
 
                   {loading ? (
-                    <div className="p-8 text-center text-xs font-bold text-gray-400 animate-pulse uppercase tracking-widest">
-                      Syncing messages…
+                    <div className="p-8">
+                      <DetailedCardGridSkeleton count={3} />
                     </div>
                   ) : filtered.length === 0 ? (
-                    <div className="p-8 text-center">
-                      <div className="text-sm font-bold text-gray-400 uppercase tracking-wide">
-                        {tab === "Unread" ? "Clean Inbox" : "Empty Inbox"}
+                    <div className="p-20 text-center">
+                      <div className="h-20 w-20 rounded-full bg-slate-100 dark:bg-slate-900 flex items-center justify-center mx-auto mb-6">
+                        <span className="material-icons-outlined text-slate-300 text-3xl">inbox</span>
                       </div>
-                      <div className="mt-1 text-[11px] text-gray-400">Try adjusting your filters.</div>
+                      <div className="text-sm font-bold text-slate-400 uppercase tracking-widest">No logs found</div>
+                      <div className="mt-2 text-xs text-slate-400 font-medium">Try clearing your filters.</div>
                     </div>
                   ) : (
-                    <div className="flex-1 min-h-0 overflow-y-auto divide-y divide-gray-100 dark:divide-slate-800 scrollbar-thin">
+                    <div className="flex-1 min-h-0 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800/50 scrollbar-hide">
                       {filtered.map((m) => {
                         const isSelected = m._id === selectedId;
                         const isUnread = !m.is_read;
@@ -691,75 +689,64 @@ export default function AdminMessages({ user, onLogout }: Props) {
                             key={m._id}
                             onClick={() => openMessage(m._id)}
                             className={clsx(
-                              "w-full text-left px-4 py-4 transition-all group",
-                              // ✅ cleaner, less gray, and readable
+                              "w-full text-left px-8 py-6 transition-all group relative",
                               isSelected
-                                ? "bg-white dark:bg-slate-800/35 shadow-inner"
-                                : "hover:bg-gray-50 dark:hover:bg-slate-800/20"
+                                ? "bg-white dark:bg-slate-800 shadow-md z-10 scale-[1.02] border-y border-slate-200 dark:border-slate-700"
+                                : "hover:bg-slate-50 dark:hover:bg-slate-800/40"
                             )}
                           >
-                            <div className="flex items-start gap-3">
-                              {/* unread dot */}
-                              <div className="pt-1.5 shrink-0">
-                                <div
+                            {isSelected && (
+                              <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-teal-500 rounded-r-full" />
+                            )}
+                            <div className="flex flex-col gap-3">
+                              <div className="flex items-center justify-between gap-3">
+                                <span
                                   className={clsx(
-                                    "h-2 w-2 rounded-full transition-all",
-                                    isUnread
-                                      ? "bg-primary scale-110 shadow-[0_0_8px_rgba(7,125,138,0.4)]"
-                                      : "bg-gray-300 dark:bg-slate-600 scale-75"
+                                    "text-[9px] font-extrabold uppercase tracking-widest px-2 py-1 rounded-md border",
+                                    m.category === "Warning"
+                                      ? "bg-rose-50 text-rose-700 border-rose-100 dark:bg-rose-900/30 dark:text-rose-400 dark:border-rose-900"
+                                      : "bg-teal-50 text-teal-700 border-teal-100 dark:bg-teal-900/30 dark:text-teal-400 dark:border-teal-900"
                                   )}
-                                />
+                                >
+                                  {m.category ?? "General"}
+                                </span>
+                                <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-tight">
+                                  {formatListDate(m.sent_at)}
+                                </span>
                               </div>
 
-                              <div className="min-w-0 flex-1">
-                                <div className="flex items-center justify-between gap-2 mb-1">
-                                  <span
-                                    className={clsx(
-                                      "text-[10px] font-extrabold uppercase tracking-tight px-1.5 py-0.5 rounded shrink-0",
-                                      m.category === "Warning"
-                                        ? "bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-200"
-                                        : "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-200"
-                                    )}
-                                  >
-                                    {m.category ?? "General"}
-                                  </span>
-                                  {/* ✅ brighter date */}
-                                  <span className="shrink-0 text-[10px] font-bold text-gray-400 dark:text-slate-300 uppercase">
-                                    {formatListDate(m.sent_at)}
-                                  </span>
-                                </div>
+                              <div
+                                className={clsx(
+                                  "text-sm line-clamp-1 transition-colors leading-snug",
+                                  isSelected
+                                    ? "text-slate-900 dark:text-white font-extrabold"
+                                    : isUnread
+                                    ? "text-slate-900 dark:text-white font-bold"
+                                    : "text-slate-600 dark:text-slate-400 font-medium"
+                                )}
+                              >
+                                {m.subject || "(No subject)"}
+                              </div>
 
-                                <div
-                                  className={clsx(
-                                    "text-sm truncate transition-colors",
-                                    isSelected
-                                      ? "text-primary font-bold"
-                                      : isUnread
-                                      ? "text-gray-900 dark:text-white font-bold"
-                                      : "text-gray-600 dark:text-slate-200 font-semibold"
-                                  )}
-                                >
-                                  {m.subject || "(No subject)"}
-                                </div>
+                              <div
+                                className={clsx(
+                                  "text-xs line-clamp-2 leading-relaxed",
+                                  isUnread
+                                    ? "text-slate-600 dark:text-slate-300 font-medium"
+                                    : "text-slate-400 dark:text-slate-500"
+                                )}
+                              >
+                                {previewText(m.body, 85)}
+                              </div>
 
-                                {/* ✅ FIX: this is the line you said you can't see */}
-                                <div
-                                  className={clsx(
-                                    "mt-1 text-xs truncate",
-                                    isUnread
-                                      ? "text-gray-600 dark:text-slate-200 font-medium"
-                                      : "text-gray-400 dark:text-slate-300"
-                                  )}
-                                >
-                                  {previewText(m.body, 60)}
+                              <div className="flex items-center gap-3 pt-1">
+                                <div className="flex items-center gap-1.5">
+                                  <div className="w-1.5 h-1.5 rounded-full bg-slate-200 dark:bg-slate-800" />
+                                  <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-tighter">TO: {m.receiver_id}</span>
                                 </div>
-
-                                {/* ✅ meta line brighter in dark */}
-                                <div className="mt-2 text-[10px] font-bold text-gray-400 dark:text-slate-300 flex items-center gap-2 uppercase tracking-tighter">
-                                  <span className="truncate">From: {m.sender_id}</span>
-                                  <span className="opacity-30">|</span>
-                                  <span className="truncate">To: {m.receiver_id}</span>
-                                </div>
+                                {isUnread && (
+                                  <div className="ml-auto h-2 w-2 rounded-full bg-teal-500 shadow-sm" />
+                                )}
                               </div>
                             </div>
                           </button>
@@ -772,89 +759,83 @@ export default function AdminMessages({ user, onLogout }: Props) {
                 {/* RIGHT: detail */}
                 <div
                   className={clsx(
-                    "xl:col-span-7 2xl:col-span-8 min-h-0 flex flex-col bg-white dark:bg-transparent",
+                    "xl:col-span-7 2xl:col-span-8 min-h-0 flex flex-col bg-white dark:bg-slate-950/50",
                     !selectedId && "hidden xl:flex"
                   )}
                 >
                   {!selected ? (
-                    <div className="h-full flex items-center justify-center p-8 bg-gray-50/30 dark:bg-slate-900/20">
-                      <div className="text-center">
-                        <div className="size-16 rounded-2xl bg-gray-100 dark:bg-slate-800 flex items-center justify-center mx-auto mb-4">
-                          <span className="material-icons-outlined text-gray-400 text-3xl">mail_outline</span>
-                        </div>
-                        <div className="text-sm font-bold text-gray-400 uppercase tracking-widest">Select a message</div>
-                        <div className="mt-1 text-xs text-gray-400">Choose an item to read its full content.</div>
-                      </div>
+                    <div className="h-full flex flex-col items-center justify-center p-20 text-slate-300 dark:text-slate-700">
+                      <div className="text-8xl mb-8 opacity-10">✉️</div>
+                      <div className="text-lg font-bold uppercase tracking-[0.3em] mb-2">Selection Required</div>
+                      <div className="text-sm font-medium">Select a communication record to expand details</div>
                     </div>
                   ) : (
-                    <div className="h-full min-h-0 flex flex-col">
+                    <div className="h-full min-h-0 flex flex-col animate-in fade-in duration-500">
                       {/* mobile back button */}
-                      <div className="xl:hidden px-4 py-2 border-b border-gray-100 dark:border-slate-800">
-                        <button onClick={() => setSelectedId(null)} className="flex items-center gap-1 text-xs font-bold text-primary">
-                          <span className="material-icons-outlined text-sm">arrow_back</span>
-                          Back to Inbox
+                      <div className="xl:hidden px-6 py-4 border-b border-slate-100 dark:border-slate-800">
+                        <button onClick={() => setSelectedId(null)} className="flex items-center gap-2 text-xs font-bold text-teal-600">
+                          <span className="material-icons-outlined text-sm">west</span>
+                          Inbox Overview
                         </button>
                       </div>
 
                       {/* detail header */}
-                      <div className="border-b border-gray-200 dark:border-gray-700 px-4 md:px-6 py-5 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 bg-gray-50/30 dark:bg-slate-900/20">
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap mb-3">
-                            <span className="text-[10px] font-extrabold uppercase tracking-wide px-2 py-1 rounded bg-primary/10 text-primary border border-primary/20">
-                              {selected.category ?? "General"}
+                      <div className="px-10 py-10 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-8 bg-slate-50/50 dark:bg-slate-950/20 border-b border-slate-100 dark:border-slate-800">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-3 mb-6">
+                            <span className="text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-400 border border-teal-100 dark:border-teal-800">
+                              {selected.category ?? "Institutional"}
                             </span>
 
                             <span
                               className={clsx(
-                                "text-[10px] font-extrabold uppercase tracking-wide px-2 py-1 rounded border",
+                                "text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full border",
                                 selected.is_read
-                                  ? "bg-gray-100 text-gray-500 border-gray-200 dark:bg-slate-800/80 dark:text-slate-300 dark:border-slate-700"
-                                  : "bg-emerald-50 text-emerald-700 border-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-300 dark:border-emerald-900/40"
+                                  ? "bg-slate-100 text-slate-500 border-slate-200 dark:bg-slate-900 dark:text-slate-400 dark:border-slate-800"
+                                  : "bg-emerald-50 text-emerald-700 border-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-900"
                               )}
                             >
-                              {selected.is_read ? "Read" : "Unread"}
+                              {selected.is_read ? "Archived" : "Unread"}
                             </span>
                           </div>
 
-                          <h2 className="text-lg md:text-xl font-bold text-gray-900 dark:text-white break-words leading-tight">
+                          <h2 className="text-4xl font-extrabold text-slate-900 dark:text-white leading-tight tracking-tight mb-8">
                             {selected.subject || "(No subject)"}
                           </h2>
 
-                          <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-[11px] font-bold">
-                            <div className="flex items-center gap-2 text-gray-500">
-                              <span className="uppercase tracking-widest text-[9px] w-10">From:</span>
-                              <span className="font-mono text-gray-900 dark:text-white bg-gray-100 dark:bg-slate-800/80 px-1.5 py-0.5 rounded">
-                                {selected.sender_id}
-                              </span>
+                          <div className="flex flex-wrap items-center gap-x-10 gap-y-4">
+                            <div className="space-y-1.5">
+                              <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">Sender ID</span>
+                              <div className="flex items-center gap-2">
+                                <div className="w-8 h-8 rounded-full bg-slate-900 dark:bg-slate-800 flex items-center justify-center text-white text-[10px] font-bold">A</div>
+                                <span className="text-sm font-bold text-slate-900 dark:text-white">{selected.sender_id}</span>
+                              </div>
                             </div>
-                            <div className="flex items-center gap-2 text-gray-500">
-                              <span className="uppercase tracking-widest text-[9px] w-10">To:</span>
-                              <span className="font-mono text-gray-900 dark:text-white bg-gray-100 dark:bg-slate-800/80 px-1.5 py-0.5 rounded">
-                                {selected.receiver_id}
-                              </span>
+                            <div className="space-y-1.5">
+                              <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">Recipient</span>
+                              <div className="flex items-center gap-2">
+                                <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 text-[10px] font-bold">S</div>
+                                <span className="text-sm font-bold text-slate-900 dark:text-white">{selected.receiver_id}</span>
+                              </div>
                             </div>
-                            <div className="flex items-center gap-2 text-gray-500">
-                              <span className="uppercase tracking-widest text-[9px] w-10">Sent:</span>
-                              <span className="text-gray-700 dark:text-gray-300">{formatLocal(selected.sent_at)}</span>
-                            </div>
-                            <div className="flex items-center gap-2 text-gray-500">
-                              <span className="uppercase tracking-widest text-[9px] w-10">ID:</span>
-                              <span className="font-mono text-gray-400 truncate">{selected._id}</span>
+                            <div className="space-y-1.5">
+                              <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">Dispatch Timestamp</span>
+                              <span className="block text-sm font-bold text-slate-700 dark:text-slate-300">{formatLocal(selected.sent_at)}</span>
                             </div>
                           </div>
                         </div>
 
-                        <div className="grid grid-cols-2 sm:grid-cols-1 gap-2 shrink-0 w-full sm:w-auto">
+                        <div className="flex flex-col gap-3 shrink-0">
                           <button
                             onClick={() => setReadState(selected._id, !selected.is_read)}
-                            className="rounded-xl border border-gray-200 bg-white px-3 py-2 text-[10px] font-extrabold uppercase tracking-wide text-gray-700 hover:bg-gray-50 shadow-sm transition-all dark:border-slate-700 dark:bg-slate-800 dark:text-gray-200 dark:hover:bg-slate-700/70"
+                            className="w-full sm:w-40 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-6 py-3 text-[11px] font-bold uppercase tracking-widest text-slate-700 dark:text-white hover:bg-slate-50 dark:hover:bg-slate-800 shadow-sm transition-all"
                           >
                             Mark {selected.is_read ? "Unread" : "Read"}
                           </button>
 
                           <button
                             onClick={() => onDelete(selected._id)}
-                            className="rounded-xl border border-rose-100 bg-rose-50 px-3 py-2 text-[10px] font-extrabold uppercase tracking-wide text-rose-600 hover:bg-rose-100 shadow-sm transition-all dark:border-rose-900/40 dark:bg-rose-900/20 dark:text-rose-200"
+                            className="w-full sm:w-40 rounded-2xl bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 px-6 py-3 text-[11px] font-bold uppercase tracking-widest hover:bg-rose-100 transition-all border border-rose-100 dark:border-rose-900/40"
                           >
                             Delete
                           </button>
@@ -862,40 +843,40 @@ export default function AdminMessages({ user, onLogout }: Props) {
                       </div>
 
                       {/* body */}
-                      <div className="px-4 md:px-8 py-6 md:py-8">
-                        <div className="whitespace-pre-wrap text-sm md:text-base text-gray-800 dark:text-gray-100 break-words leading-relaxed max-w-3xl">
+                      <div className="flex-1 overflow-y-auto p-10 lg:p-16 scrollbar-hide">
+                        <div className="whitespace-pre-wrap text-lg text-slate-700 dark:text-slate-200 leading-relaxed font-normal max-w-4xl">
                           {selected.body || "—"}
                         </div>
 
-                        {/* attachments placeholder */}
-                        <div className="mt-12 rounded-2xl border border-dashed border-gray-200 dark:border-slate-700 p-6 bg-gray-50/30 dark:bg-slate-900/30">
-                          <div className="flex items-center gap-2 text-[10px] font-extrabold text-gray-400 dark:text-slate-300 uppercase tracking-[0.2em] mb-4">
-                            <span className="material-icons-outlined text-sm">attach_file</span>
-                            Attachments
-                          </div>
+                        {/* attachments */}
+                        {selected.attachments && selected.attachments.length > 0 && (
+                          <div className="mt-20 pt-10 border-t border-slate-100 dark:border-slate-800">
+                            <div className="flex items-center gap-3 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-8">
+                              <span className="material-icons-outlined text-lg">attach_file</span>
+                              Attached Assets
+                            </div>
 
-                          {selected.attachments && selected.attachments.length > 0 ? (
-                            <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                               {selected.attachments.map((a, idx) => (
-                                <li
+                                <button
                                   key={`${a}-${idx}`}
-                                  className="text-xs text-gray-700 dark:text-gray-200 flex items-center justify-between gap-3 p-3 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm hover:border-primary/30 transition-colors"
+                                  className="group flex items-center justify-between p-5 rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/50 shadow-sm hover:border-teal-500/50 transition-all"
                                 >
-                                  <span className="font-mono truncate">{a}</span>
-                                  <span className="material-icons-outlined text-gray-400 text-sm">download</span>
-                                </li>
+                                  <div className="flex items-center gap-4">
+                                    <span className="material-icons-outlined text-slate-300 group-hover:text-teal-500 transition-colors">description</span>
+                                    <span className="text-sm font-bold text-slate-700 dark:text-slate-200 truncate max-w-[200px]">{a}</span>
+                                  </div>
+                                  <span className="material-icons-outlined text-slate-300 group-hover:text-teal-500 transition-colors">download</span>
+                                </button>
                               ))}
-                            </ul>
-                          ) : (
-                            <div className="text-xs font-bold text-gray-400 dark:text-slate-300 italic">No files attached to this message.</div>
-                          )}
-                        </div>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
                   )}
                 </div>
               </div>
-              {/* end two-panel */}
             </div>
           </div>
         </main>
