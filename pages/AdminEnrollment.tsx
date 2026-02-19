@@ -372,7 +372,7 @@ const AdminEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
                         : 'bg-indigo-50 text-indigo-700 border border-indigo-100 dark:bg-indigo-950/40 dark:text-indigo-400 dark:border-indigo-900/40'
                     }`}
                   >
-                    <span className="mr-2">ℹ️</span> {advanceDetail}
+                    <span className="mr-2">Info:</span> {advanceDetail}
                   </div>
                 )}
               </div>

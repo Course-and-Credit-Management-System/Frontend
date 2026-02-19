@@ -312,17 +312,41 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
     parseYearNumber(user.student_profile?.status) ??
     parseYearNumber(majorState?.status);
   const isFirstOrSecondYear = studentYearNum === 1 || studentYearNum === 2;
+  const firstNonEmpty = (...values: unknown[]) =>
+    values.find((value) => String(value ?? "").trim().length > 0);
+  const sessionMajor = firstNonEmpty(
+    user.student_profile?.selected_major,
+    user.student_profile?.major_id,
+    (user.student_profile as any)?.major,
+    (user.student_profile as any)?.major_code,
+    (user as any)?.students_progress?.selected_major,
+    (user as any)?.students_progress?.major_id,
+    (user as any)?.students_progress?.major,
+    (user as any)?.students_progress?.major_code
+  );
+  const sessionTrack = firstNonEmpty(
+    user.student_profile?.major_track,
+    (user.student_profile as any)?.track,
+    (user as any)?.students_progress?.selected_track,
+    (user as any)?.students_progress?.major_track,
+    (user as any)?.students_progress?.track
+  );
+  const hasMajorInSession = !!sessionMajor;
+  const hasTrackInSession = !!sessionTrack;
   const shouldForceMajorSelection =
     isNewStudent &&
     isFirstOrSecondYear &&
+    !hasMajorInSession &&
     selectedHasMajorCourse;
   const isOldStudent = !isNewStudent;
   const hasRecordedTrack = !!(majorState?.selected_track || majorState?.profile_major_track);
   const hasRecordedMajor = !!(majorState?.selected_major || majorState?.profile_major_id);
+  const hasAnyRecordedTrack = hasRecordedTrack || hasTrackInSession;
+  const hasAnyRecordedMajor = hasRecordedMajor || hasMajorInSession;
   const shouldForceOldStudentSpecialSelection =
     isOldStudent &&
     selectedHasMajorCourse &&
-    ((selectedTrackSet.size > 0 && !hasRecordedTrack) || (selectedMajorSet.size > 0 && !hasRecordedMajor));
+    ((selectedTrackSet.size > 0 && !hasAnyRecordedTrack) || !hasAnyRecordedMajor);
   const shouldRouteToSpecialMajorFlow = shouldForceMajorSelection || shouldForceOldStudentSpecialSelection;
   const isPrimaryActionDisabled = shouldRouteToSpecialMajorFlow
     ? (!isEnrollmentActive || selectedRegistry.size === 0)

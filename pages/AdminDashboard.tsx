@@ -28,7 +28,7 @@ type AdminPendingActionsResponse = {
   majorChanges?: PendingDoc[] | { count: number }; // still supported by backend, but hidden in UI
   scheduleConflicts?: PendingDoc[] | { count: number };
 
-  // ✅ new backend shape
+  //  new backend shape
   mustResetPasswords?: PendingDoc[] | { count: number };
   mustResetPasswordCount?: number;
 };
@@ -307,7 +307,7 @@ const AdminDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   // Counts (Major Change intentionally ignored in UI)
   const pendingSchedulePending = getCount(pending?.scheduleConflicts);
 
-  // ✅ backend now uses mustResetPasswords + mustResetPasswordCount
+  //  backend now uses mustResetPasswords + mustResetPasswordCount
   const mustResetPasswordCount =
     typeof pending?.mustResetPasswordCount === "number"
       ? pending.mustResetPasswordCount
@@ -434,7 +434,7 @@ const AdminDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     return { tone: "gray" as const, label: "Unknown" };
   };
 
-  // ✅ Pending modal data (Major Change removed from UI)
+  //  Pending modal data (Major Change removed from UI)
   const pendingDocs = useMemo(() => {
     const conflict = Array.isArray(pending?.scheduleConflicts) ? pending?.scheduleConflicts : [];
     const reset = Array.isArray(pending?.mustResetPasswords) ? pending?.mustResetPasswords : [];
@@ -847,7 +847,7 @@ const AdminDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
 
                   <div className="mt-10 p-6 rounded-[24px] bg-slate-50/50 dark:bg-slate-950/50 border border-slate-100 dark:border-slate-800">
                     <div className="flex gap-4">
-                      <span className="text-xl opacity-50">💡</span>
+                      <span className="text-xl opacity-50">Tip:</span>
                       <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-bold">
                         Global sync pulse: Every navigation cycle or manual refresh updates system state.
                         <span className="block mt-3 text-[10px] font-black uppercase tracking-widest text-slate-300 dark:text-slate-600 italic">

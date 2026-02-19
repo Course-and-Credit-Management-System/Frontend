@@ -316,6 +316,15 @@ export const api = {
   adminDeleteMessage: (messageId: string) =>
     request(`/api/v1/admin/messages/${encodeURIComponent(messageId)}`, { method: "DELETE" }),
 
+  // --- Student Messages ---
+  studentMessages: () => request<any[]>("/api/v1/student/messages"),
+
+  studentMarkMessageRead: (messageId: string, is_read: boolean) =>
+    request(`/api/v1/student/messages/${encodeURIComponent(messageId)}/read`, {
+      method: "PUT",
+      body: { is_read },
+    }),
+
   studentAvailableCourses: (query?: string, sort?: string) => {
     const params = new URLSearchParams();
     if (query) params.append("search", query);

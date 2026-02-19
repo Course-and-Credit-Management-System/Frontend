@@ -13,7 +13,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // ✅ modal open/close via query param so login stays behind it
+  //  modal open/close via query param so login stays behind it
   const params = new URLSearchParams(location.search);
   const showForgot = params.get("forgot") === "1";
 
@@ -58,7 +58,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         throw new Error("Login succeeded but no user returned.");
       }
 
-      // ✅ store must_reset_password locally too
+      //  store must_reset_password locally too
       const mustReset = !!data?.must_reset_password;
 
       // IMPORTANT: attach it to the user so App.tsx can guard routes
@@ -75,7 +75,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
 
       onLogin(userWithFlag);
 
-      // ✅ force reset immediately
+      //  force reset immediately
       if (mustReset) {
         navigate("/reset-password", { replace: true });
       }
@@ -264,7 +264,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         <div className="fixed bottom-0 left-0 -z-0 w-[500px] h-[500px] bg-indigo-500/[0.03] dark:bg-indigo-500/[0.02] rounded-full blur-[100px] pointer-events-none -translate-x-1/2 translate-y-1/2" />
       </div>
 
-      {/* ✅ Forgot Password modal on top of login page */}
+      {/*  Forgot Password modal on top of login page */}
       {showForgot && <ForgotPassword onClose={closeForgot} />}
     </>
   );

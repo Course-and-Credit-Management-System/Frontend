@@ -24,7 +24,7 @@ type CourseRow = {
   prerequisites: string[];
   semester: string[];
 
-  // ✅ NEW
+  //  NEW
   major?: string;
   track?: string;
 };
@@ -32,7 +32,7 @@ type CourseRow = {
 const API_BASE = (import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000").replace(/\/$/, "");
 
 /**
- * ✅ Semester dropdown options (edit as you like)
+ *  Semester dropdown options (edit as you like)
  */
 const SEMESTER_OPTIONS: { label: string; value: string }[] = [
   // NEW system (up to 4 years)
@@ -398,7 +398,7 @@ type CourseDraft = {
   type: string;
   instructor: string;
 
-  // ✅ NEW
+  //  NEW
   major: string;
   track: string;
 
@@ -471,7 +471,7 @@ const CourseWizardModal = React.memo(function CourseWizardModal({
       type: draft.type,
       instructor: draft.instructor.trim() ? draft.instructor.trim() : null,
 
-      // ✅ NEW
+      //  NEW
       major: draft.major.trim() ? draft.major.trim() : null,
       track: draft.track.trim() ? draft.track.trim() : null,
 
@@ -600,7 +600,7 @@ const CourseWizardModal = React.memo(function CourseWizardModal({
                 />
               </div>
 
-              {/* ✅ NEW */}
+              {/*  NEW */}
               <div className="space-y-2">
                 <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] ml-1">Major Alignment</label>
                 <input
@@ -611,7 +611,7 @@ const CourseWizardModal = React.memo(function CourseWizardModal({
                 />
               </div>
 
-              {/* ✅ NEW */}
+              {/*  NEW */}
               <div className="space-y-2">
                 <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] ml-1">Track Vector</label>
                 <input
@@ -894,7 +894,7 @@ const AdminCourses: React.FC<CoursesProps> = ({ user, onLogout }) => {
     type: "Elective",
     instructor: "",
 
-    // ✅ NEW
+    //  NEW
     major: "",
     track: "",
 
@@ -936,7 +936,7 @@ const AdminCourses: React.FC<CoursesProps> = ({ user, onLogout }) => {
         instructor: c.instructor ? String(c.instructor) : "",
         schedule: normalizeSchedule(c.schedule),
 
-        // ✅ NEW
+        //  NEW
         major: c.major ? String(c.major) : "",
         track: c.track ? String(c.track) : "",
 
@@ -987,7 +987,7 @@ const AdminCourses: React.FC<CoursesProps> = ({ user, onLogout }) => {
       type: "Elective",
       instructor: "",
 
-      // ✅ NEW
+      //  NEW
       major: "",
       track: "",
 
@@ -1010,7 +1010,7 @@ const AdminCourses: React.FC<CoursesProps> = ({ user, onLogout }) => {
       type: course.type ?? "Elective",
       instructor: course.instructor ?? "",
 
-      // ✅ NEW
+      //  NEW
       major: course.major ?? "",
       track: course.track ?? "",
 

@@ -253,7 +253,7 @@ function Toast({
             className="text-xs font-bold opacity-70 hover:opacity-100"
             aria-label="Close toast"
           >
-            âœ•
+            •
           </button>
         </div>
       </div>

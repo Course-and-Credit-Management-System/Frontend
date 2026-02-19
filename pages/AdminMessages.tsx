@@ -765,7 +765,7 @@ export default function AdminMessages({ user, onLogout }: Props) {
                 >
                   {!selected ? (
                     <div className="h-full flex flex-col items-center justify-center p-20 text-slate-300 dark:text-slate-700">
-                      <div className="text-8xl mb-8 opacity-10">✉️</div>
+                      <div className="text-8xl mb-8 opacity-10">Mail</div>
                       <div className="text-lg font-bold uppercase tracking-[0.3em] mb-2">Selection Required</div>
                       <div className="text-sm font-medium">Select a communication record to expand details</div>
                     </div>

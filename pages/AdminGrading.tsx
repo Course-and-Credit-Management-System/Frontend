@@ -652,7 +652,7 @@ const AdminGrading: React.FC<GradingProps> = ({ user, onLogout }) => {
               </div>
               <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800">
                 <div className="flex items-start gap-3">
-                  <span className="text-teal-600">📍</span>
+                  <span className="text-teal-600">Context:</span>
                   <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 leading-relaxed uppercase tracking-tighter">
                     Entry context: Year {year}, Sem {semester}
                     {showSection && `, Sec ${section || 'All'}`}

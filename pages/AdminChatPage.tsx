@@ -149,7 +149,7 @@ const AdminChatPage: React.FC<AdminChatPageProps> = ({ user, onLogout }) => {
       <div className="flex flex-1 flex-col overflow-hidden relative">
         <main className="flex-1 overflow-hidden p-0 dark:bg-slate-950 animate-in fade-in duration-700">
           <div className="h-full w-full max-w-[1400px] mx-auto flex flex-col px-6 md:px-10 lg:px-12 py-4">
-            <div className="flex-1 min-h-0 bg-slate-50/30 dark:bg-slate-900/20 rounded-[40px] border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden transition-all hover:shadow-md">
+            <div className="flex-1 min-h-0 bg-slate-50/30 dark:bg-slate-900/70 rounded-[40px] border border-slate-100 dark:border-slate-700/80 shadow-sm dark:shadow-[0_20px_60px_rgba(2,6,23,0.55)] overflow-hidden transition-all hover:shadow-md">
               <ChatWindow
                 selectedMode={selectedMode}
                 onModeChange={handleModeChange}

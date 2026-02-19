@@ -15,6 +15,9 @@ const Header: React.FC<HeaderProps> = ({ title, user }) => {
 
   const navigate = useNavigate();
   const [unread, setUnread] = useState<number>(0);
+  const [themeMode, setThemeMode] = useState<"light" | "dark">(() =>
+    typeof document !== "undefined" && document.documentElement.classList.contains("dark") ? "dark" : "light"
+  );
 
   useEffect(() => {
     let mounted = true;
@@ -26,6 +29,13 @@ const Header: React.FC<HeaderProps> = ({ title, user }) => {
     return () => {
       mounted = false;
     };
+  }, []);
+  useEffect(() => {
+    const syncTheme = () => {
+      setThemeMode(document.documentElement.classList.contains("dark") ? "dark" : "light");
+    };
+    window.addEventListener("themechange", syncTheme as EventListener);
+    return () => window.removeEventListener("themechange", syncTheme as EventListener);
   }, []);
 
   const openAnnouncements = async () => {
@@ -70,10 +80,13 @@ const Header: React.FC<HeaderProps> = ({ title, user }) => {
           
           
           <button 
-            onClick={() => toggleTheme()}
+            onClick={() => setThemeMode(toggleTheme())}
             className="rounded-xl p-2.5 text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900 dark:hover:text-slate-200 active:scale-[0.98] transition-all group"
             aria-label="Toggle dark mode"
           >
+            <span className="material-icons-outlined text-[22px] group-hover:rotate-12 transition-transform">
+              {themeMode === "dark" ? "light_mode" : "dark_mode"}
+            </span>
           </button>
         </div>
 
