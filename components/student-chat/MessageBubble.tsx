@@ -19,7 +19,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
             : "bg-white dark:bg-slate-900 text-slate-900 dark:text-white border border-slate-100 dark:border-slate-800 rounded-tl-none"
         }`}
       >
-        <div className="prose prose-slate dark:prose-invert max-w-none">
+        <div className={`prose max-w-none ${isUser ? 'prose-invert' : 'prose-slate dark:prose-invert'}`}>
           {isUser ? (
             <p className="whitespace-pre-wrap break-words text-base font-medium leading-relaxed">{message.content}</p>
           ) : (
