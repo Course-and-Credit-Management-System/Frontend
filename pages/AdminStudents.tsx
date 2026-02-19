@@ -100,10 +100,19 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
   // Major options for forms: from API + ensure current value is included
   const getMajorOptionsForForm = (currentMajor: string) => {
     const ids = new Set(majorsList.map(m => m.id));
-    if (currentMajor && !ids.has(currentMajor)) {
-      return [{ id: currentMajor, major_name: currentMajor }, ...majorsList];
+    
+    // Always include "No Major" option for create form
+    const options = [{ id: '', major_name: 'No Major' }];
+    
+    // Add current major if it exists and is not empty
+    if (currentMajor && currentMajor !== '' && !ids.has(currentMajor)) {
+      options.push({ id: currentMajor, major_name: currentMajor });
     }
-    return majorsList;
+    
+    // Add all majors from API
+    options.push(...majorsList);
+    
+    return options;
   };
 
   // Major options based on year - for filter dropdown
