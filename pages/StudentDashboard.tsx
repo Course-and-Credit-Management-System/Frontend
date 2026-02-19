@@ -442,24 +442,6 @@ const StudentDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                   </div>
                 </div>
               </div>
-              <div className="bg-surface-light dark:bg-surface-dark rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
-                <div className="p-4 md:p-5 border-b border-gray-200 dark:border-gray-700 flex items-center gap-2">
-                  <span className="material-icons-round text-primary">workspace_premium</span>
-                  <h2 className="text-lg font-bold text-gray-800 dark:text-white">Special Major Access</h2>
-                </div>
-                <div className="p-5 md:p-6">
-                  <p className="text-sm text-gray-700 dark:text-gray-300">
-                    Access special major options with faculty approval. Use this entry point
-                    to review eligibility and proceed when permitted.
-                  </p>
-                  <button
-                    onClick={() => navigate("/student/special-major/access")}
-                    className="mt-4 px-3 py-2 text-xs font-bold text-primary border border-primary/20 hover:bg-primary/5 rounded-xl uppercase tracking-wide"
-                  >
-                    Start Major Access
-                  </button>
-                </div>
-              </div>
             </div>
 
             <div className="lg:col-span-5 xl:col-span-4 flex flex-col gap-8">

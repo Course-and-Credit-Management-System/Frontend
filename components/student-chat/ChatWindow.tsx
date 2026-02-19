@@ -41,8 +41,8 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
 
   return (
     <section className="flex h-full flex-col bg-transparent overflow-hidden">
-      <div className="px-8 py-8 border-b border-slate-100 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 backdrop-blur-md">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-6">
+      <div className="px-6 py-5 border-b border-slate-100 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 backdrop-blur-md">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
           <div className="flex items-center gap-4">
             <button
               onClick={() => navigate("/student/dashboard")}
@@ -52,7 +52,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
               <span className="material-icons-outlined">home</span>
             </button>
             <div className="space-y-1">
-              <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Academic Intelligence</h2>
+              <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">Academic Intelligence</h2>
               <p className="text-sm font-medium text-slate-500 dark:text-slate-400">{meta.description}</p>
             </div>
           </div>
@@ -71,7 +71,6 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
                   </option>
                 ))}
               </select>
-              <span className="material-icons-outlined absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-lg">expand_more</span>
             </div>
             <button
               type="button"
@@ -101,7 +100,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
 
       {errorMessage && (
         <div
-          className="mx-8 mt-6 rounded-2xl bg-rose-50 p-5 text-sm font-bold text-rose-700 border border-rose-100 dark:bg-rose-950/40 dark:text-rose-400 dark:border-rose-900/40 flex items-center gap-3 animate-in fade-in slide-in-from-top-2"
+          className="mx-6 mt-4 rounded-2xl bg-rose-50 p-4 text-sm font-bold text-rose-700 border border-rose-100 dark:bg-rose-950/40 dark:text-rose-400 dark:border-rose-900/40 flex items-center gap-3 animate-in fade-in slide-in-from-top-2"
           role="alert"
           aria-live="polite"
         >
@@ -110,7 +109,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
         </div>
       )}
 
-      <div className="flex-1 overflow-y-auto px-8 py-10 scrollbar-hide">
+      <div className="flex-1 overflow-y-auto px-6 py-6 scrollbar-hide">
         {messages.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-center animate-in fade-in zoom-in-95 duration-700">
             <div className="h-20 w-20 rounded-[32px] bg-slate-50 dark:bg-slate-900 flex items-center justify-center text-slate-300 dark:text-slate-700 mb-8 border border-slate-100 dark:border-slate-800">
@@ -127,7 +126,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
         <div ref={endRef} />
       </div>
 
-      <div className="px-8 pb-8 pt-2">
+      <div className="px-6 pb-5 pt-1">
         <div className="max-w-4xl mx-auto w-full">
           <ChatComposer value={input} onChange={onInputChange} onSend={onSend} disabled={isPending} />
         </div>

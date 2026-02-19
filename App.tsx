@@ -47,6 +47,7 @@ import { DetailedCardGridSkeleton, Skeleton } from "./components/Skeleton";
 import { User } from "./types";
 import { api } from "./lib/api";
 import { UIProvider } from "./context/UIContext";
+import { applyTheme, getPreferredTheme } from "./lib/theme";
 
 const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -61,6 +62,10 @@ const App: React.FC = () => {
       // non-blocking for app bootstrap
     }
   };
+
+  useEffect(() => {
+    applyTheme(getPreferredTheme());
+  }, []);
 
   useEffect(() => {
     const boot = async () => {

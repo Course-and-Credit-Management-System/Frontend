@@ -105,31 +105,31 @@ export default function StudentMessages({ user, onLogout }: Props) {
 
       <div className="flex-1 flex flex-col overflow-hidden relative">
         <Header user={user} onLogout={onLogout} /> 
-        <main className="flex-1 p-10 lg:p-16 scrollbar-hide animate-in fade-in duration-1000 slide-in-from-bottom-4 overflow-y-auto">
+        <main className="flex-1 p-4 sm:p-6 lg:p-10 xl:p-12 scrollbar-hide animate-in fade-in duration-1000 slide-in-from-bottom-4 overflow-y-auto">
           {/* Header */}
-          <div className="flex flex-col gap-10 xl:flex-row xl:items-end xl:justify-between mb-12">
+          <div className="flex flex-col gap-6 lg:gap-8 xl:flex-row xl:items-end xl:justify-between mb-8 lg:mb-10">
             <div className="space-y-3">
-              <h1 className="text-4xl font-black tracking-tight text-slate-900 dark:text-white leading-tight">Messages</h1>
-              <p className="text-lg font-medium text-slate-400 dark:text-slate-500">
+              <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-slate-900 dark:text-white leading-tight">Messages</h1>
+              <p className="text-sm sm:text-base lg:text-lg font-medium text-slate-400 dark:text-slate-500">
                 {unreadCount > 0 ? `${unreadCount} unread items` : "All caught up"} • Critical communications from administration
               </p>
             </div>
 
-            <div className="flex flex-wrap gap-4 items-center">
-              <div className="group flex items-center gap-4 bg-slate-50/50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800 rounded-2xl px-6 py-4 shadow-sm focus-within:ring-4 focus-within:ring-teal-500/10 focus-within:border-teal-500/50 transition-all min-w-[380px]">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 sm:items-center w-full xl:w-auto">
+              <div className="group flex items-center gap-3 bg-slate-50/50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800 rounded-2xl px-4 sm:px-6 py-3 sm:py-4 shadow-sm focus-within:ring-4 focus-within:ring-teal-500/10 focus-within:border-teal-500/50 transition-all w-full sm:min-w-[320px] xl:min-w-[380px]">
                 <span className="material-icons-outlined text-slate-300 group-focus-within:text-teal-500 transition-colors">search</span>
                 <input
                   value={q}
                   onChange={(e) => setQ(e.target.value)}
                   placeholder="Filter dispatches..."
-                  className="w-full outline-none bg-transparent text-base font-medium text-slate-900 dark:text-white placeholder:text-slate-300"
+                  className="w-full outline-none bg-transparent text-sm sm:text-base font-medium text-slate-900 dark:text-white placeholder:text-slate-300"
                 />
               </div>
 
               <button
                 onClick={load}
                 disabled={loading}
-                className={`h-14 px-8 rounded-2xl font-black text-xs uppercase tracking-[0.2em] text-white shadow-xl transition-all flex items-center gap-3 active:scale-95 ${
+                className={`h-12 sm:h-14 px-6 sm:px-8 rounded-2xl font-black text-[10px] sm:text-xs uppercase tracking-[0.2em] text-white shadow-xl transition-all flex items-center justify-center gap-3 active:scale-95 w-full sm:w-auto ${
                   loading ? "bg-slate-200 dark:bg-slate-800 text-slate-400 cursor-not-allowed shadow-none" : "bg-slate-900 dark:bg-teal-600 hover:bg-slate-800 dark:hover:bg-teal-700 shadow-slate-500/10"
                 }`}
               >
@@ -150,17 +150,17 @@ export default function StudentMessages({ user, onLogout }: Props) {
             </div>
           )}
 
-          <div className="grid grid-cols-1 lg:grid-cols-[460px_1fr] gap-12 items-start">
+          <div className="grid grid-cols-1 xl:grid-cols-[420px_1fr] 2xl:grid-cols-[460px_1fr] gap-6 lg:gap-8 xl:gap-10 items-start">
             {/* Left: list */}
-            <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-[40px] shadow-sm overflow-hidden transition-all hover:shadow-md">
-              <div className="px-10 py-8 bg-slate-50/30 dark:bg-slate-950/30 border-b border-slate-50 dark:border-slate-800 flex items-center justify-between">
-                <div className="font-black text-xl text-slate-900 dark:text-white tracking-tight">Dispatch Feed</div>
+            <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-[28px] lg:rounded-[40px] shadow-sm overflow-hidden transition-all hover:shadow-md">
+              <div className="px-5 sm:px-7 lg:px-10 py-5 sm:py-6 lg:py-8 bg-slate-50/30 dark:bg-slate-950/30 border-b border-slate-50 dark:border-slate-800 flex items-center justify-between">
+                <div className="font-black text-lg sm:text-xl text-slate-900 dark:text-white tracking-tight">Dispatch Feed</div>
                 <div className="text-[10px] font-black uppercase tracking-widest text-slate-400 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 px-3 py-1 rounded-lg">
                   {filtered.length} Items
                 </div>
               </div>
 
-              <div className="max-h-[65vh] overflow-y-auto scrollbar-hide divide-y divide-slate-50 dark:divide-slate-800/50">
+              <div className="max-h-[60vh] xl:max-h-[68vh] overflow-y-auto scrollbar-hide divide-y divide-slate-50 dark:divide-slate-800/50">
                 {filtered.length === 0 ? (
                   <div className="p-20 text-center space-y-4">
                     <div className="h-16 w-16 rounded-[24px] bg-slate-50 dark:bg-slate-950 flex items-center justify-center text-slate-200 dark:text-slate-800 mx-auto border border-slate-100 dark:border-slate-800 shadow-inner">
@@ -177,7 +177,7 @@ export default function StudentMessages({ user, onLogout }: Props) {
                       <button
                         key={m._id}
                         onClick={() => setSelectedId(m._id)}
-                        className={`w-full text-left px-10 py-8 transition-all relative group ${
+                        className={`w-full text-left px-5 sm:px-7 lg:px-10 py-5 sm:py-6 lg:py-8 transition-all relative group ${
                           active ? "bg-white dark:bg-slate-800 shadow-inner" : "hover:bg-slate-50 dark:hover:bg-slate-800/40"
                         }`}
                       >
@@ -192,14 +192,14 @@ export default function StudentMessages({ user, onLogout }: Props) {
                                 title="Unread dispatch"
                               />
                             )}
-                            <div className={`text-base truncate tracking-tight transition-colors ${active ? "text-teal-600 font-black" : unread ? "text-slate-900 dark:text-white font-black" : "text-slate-500 dark:text-slate-400 font-bold"}`}>
+                            <div className={`text-sm sm:text-base truncate tracking-tight transition-colors ${active ? "text-teal-600 font-black" : unread ? "text-slate-900 dark:text-white font-black" : "text-slate-500 dark:text-slate-400 font-bold"}`}>
                               {m.subject || "Untitled Protocol"}
                             </div>
                           </div>
                           <div className="text-[10px] font-black text-slate-300 dark:text-slate-600 whitespace-nowrap uppercase tracking-tighter tabular-nums">{fmt(m.sent_at).split(',')[0]}</div>
                         </div>
 
-                        <div className="text-sm text-slate-400 dark:text-slate-500 line-clamp-2 leading-relaxed mb-6 font-medium">
+                        <div className="text-xs sm:text-sm text-slate-400 dark:text-slate-500 line-clamp-2 leading-relaxed mb-4 sm:mb-6 font-medium">
                           {m.body || "No content available."}
                         </div>
 
@@ -232,7 +232,7 @@ export default function StudentMessages({ user, onLogout }: Props) {
             </div>
 
             {/* Right: viewer */}
-            <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-[40px] shadow-sm p-10 lg:p-16 min-h-[600px] transition-all hover:shadow-md relative overflow-hidden group">
+            <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-[28px] lg:rounded-[40px] shadow-sm p-5 sm:p-7 lg:p-10 xl:p-12 min-h-[460px] lg:min-h-[560px] transition-all hover:shadow-md relative overflow-hidden group">
               <div className="absolute top-0 right-0 h-64 w-64 bg-teal-500/[0.01] rounded-bl-full pointer-events-none" />
               {!selected ? (
                 <div className="h-full flex flex-col items-center justify-center text-center space-y-6 animate-in fade-in duration-700">
@@ -246,12 +246,12 @@ export default function StudentMessages({ user, onLogout }: Props) {
                 </div>
               ) : (
                 <div className="animate-in fade-in duration-500 relative z-10">
-                  <div className="flex flex-col md:flex-row md:items-start justify-between gap-10 mb-12 pb-10 border-b border-slate-50 dark:border-slate-800">
+                  <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-6 lg:gap-10 mb-8 lg:mb-12 pb-8 lg:pb-10 border-b border-slate-50 dark:border-slate-800">
                     <div className="space-y-6">
                       <div className="inline-block px-4 py-1.5 rounded-full bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-400 text-[10px] font-black uppercase tracking-[0.3em] border border-teal-100 dark:border-teal-800 shadow-sm">
                         {selected.category || "General Dispatch"}
                       </div>
-                      <h2 className="text-4xl font-black text-slate-900 dark:text-white tracking-tight leading-tight group-hover:text-teal-600 transition-colors">
+                      <h2 className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white tracking-tight leading-tight group-hover:text-teal-600 transition-colors">
                         {selected.subject || "Untitled Protocol"}
                       </h2>
 
@@ -275,11 +275,11 @@ export default function StudentMessages({ user, onLogout }: Props) {
                       </div>
                     </div>
 
-                    <div className="flex gap-4 shrink-0">
+                    <div className="flex gap-4 shrink-0 w-full lg:w-auto">
                       <button
                         onClick={() => void markRead(selected._id, !selected.is_read)}
                         disabled={busyId === selected._id}
-                        className={`h-14 px-8 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-xl transition-all active:scale-95 ${
+                        className={`h-12 sm:h-14 px-6 sm:px-8 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-xl transition-all active:scale-95 w-full lg:w-auto ${
                           selected.is_read
                             ? "bg-white dark:bg-slate-800 text-slate-600 dark:text-white border border-slate-100 dark:border-slate-700 hover:bg-slate-50 shadow-sm"
                             : "bg-teal-600 text-white hover:bg-teal-700 shadow-teal-500/20"
@@ -291,7 +291,7 @@ export default function StudentMessages({ user, onLogout }: Props) {
                   </div>
 
                   <div className="prose prose-slate dark:prose-invert max-w-none">
-                    <div className="whitespace-pre-wrap leading-relaxed text-slate-600 dark:text-slate-300 text-lg font-medium max-w-4xl italic">
+                    <div className="whitespace-pre-wrap leading-relaxed text-slate-600 dark:text-slate-300 text-base sm:text-lg font-medium max-w-4xl italic">
                       "{selected.body || "End of transmission."}"
                     </div>
                   </div>

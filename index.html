@@ -57,6 +57,16 @@
             }
         }
     </script>
+    <script>
+        (function () {
+            try {
+                var stored = localStorage.getItem("ui_theme_mode");
+                var prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+                var mode = (stored === "dark" || stored === "light") ? stored : (prefersDark ? "dark" : "light");
+                document.documentElement.classList.toggle("dark", mode === "dark");
+            } catch {}
+        })();
+    </script>
     <style>
         :root {
             font-size: 16px;
@@ -73,23 +83,54 @@
         .font-display { font-family: 'Poppins', sans-serif; }
         .font-poppins { font-family: 'Poppins', sans-serif; }
 
+        /* Global input style: remove borders from text-like controls */
+        input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+        textarea,
+        select {
+            border: 0 !important;
+            box-shadow: none !important;
+        }
+        input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):focus,
+        textarea:focus,
+        select:focus {
+            border: 0 !important;
+            box-shadow: none !important;
+            outline: none !important;
+        }
+
         /* Global contrast boost for the existing utility-heavy codebase (light mode). */
-        body:not(.dark) .text-slate-300 { color: var(--ink-soft) !important; }
-        body:not(.dark) .text-slate-400,
-        body:not(.dark) .text-gray-400 { color: var(--ink-muted) !important; }
-        body:not(.dark) .text-slate-500,
-        body:not(.dark) .text-gray-500 { color: var(--ink-medium) !important; }
-        body:not(.dark) .border-slate-100 { border-color: var(--line-soft) !important; }
-        body:not(.dark) [class*="bg-slate-50"] { background-color: var(--surface-subtle) !important; }
-        body:not(.dark) .placeholder\:text-slate-300::placeholder,
-        body:not(.dark) .placeholder\:text-slate-400::placeholder { color: var(--ink-soft) !important; opacity: 1; }
+        html:not(.dark) .text-slate-300 { color: var(--ink-soft) !important; }
+        html:not(.dark) .text-slate-400,
+        html:not(.dark) .text-gray-400 { color: var(--ink-muted) !important; }
+        html:not(.dark) .text-slate-500,
+        html:not(.dark) .text-gray-500 { color: var(--ink-medium) !important; }
+        html:not(.dark) .border-slate-100 { border-color: var(--line-soft) !important; }
+        html:not(.dark) [class*="bg-slate-50"] { background-color: var(--surface-subtle) !important; }
+        html:not(.dark) .placeholder\:text-slate-300::placeholder,
+        html:not(.dark) .placeholder\:text-slate-400::placeholder { color: var(--ink-soft) !important; opacity: 1; }
 
         /* Dark mode readability boost for secondary and helper text. */
-        body.dark .text-slate-500,
-        body.dark .text-gray-500 { color: #cbd5e1 !important; }
-        body.dark .text-slate-400,
-        body.dark .text-gray-400 { color: #e2e8f0 !important; }
-        body.dark .text-slate-300 { color: #f1f5f9 !important; }
+        .dark .text-slate-500,
+        .dark .text-gray-500 { color: #cbd5e1 !important; }
+        .dark .text-slate-400,
+        .dark .text-gray-400 { color: #e2e8f0 !important; }
+        .dark .text-slate-300 { color: #f1f5f9 !important; }
+        .dark .text-white { color: #e2e8f0 !important; }
+        .dark [class*="bg-white"] { background-color: #0f172a !important; }
+        .dark .bg-white { background-color: #0f172a !important; }
+        .dark [class*="bg-gray-50"] { background-color: #111827 !important; }
+        .dark [class*="bg-gray-100"] { background-color: #1f2937 !important; }
+        .dark .border-white,
+        .dark [class*="border-white"] { border-color: #334155 !important; }
+        .dark .ring-white,
+        .dark [class*="ring-white"] { --tw-ring-color: #334155 !important; }
+        .dark [class*="border-gray-100"],
+        .dark [class*="border-gray-200"],
+        .dark [class*="border-gray-300"] { border-color: #334155 !important; }
+        .dark .text-gray-900,
+        .dark .text-gray-800 { color: #f8fafc !important; }
+        .dark .text-gray-700,
+        .dark .text-gray-600 { color: #e2e8f0 !important; }
 
         /* Custom Scrollbar Styling */
         ::-webkit-scrollbar {

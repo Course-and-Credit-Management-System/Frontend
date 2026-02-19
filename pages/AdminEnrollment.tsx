@@ -178,7 +178,7 @@ const AdminEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
       <div className="flex flex-1 flex-col overflow-hidden">
         <Header title="Enrollment Management" user={user} />
         <main className="flex-1 overflow-y-auto p-8 animate-in fade-in duration-700 slide-in-from-bottom-4 scrollbar-hide">
-          <div className="mb-10 grid grid-cols-1 gap-8 md:grid-cols-3">
+          <div className="mb-10 grid grid-cols-1 gap-8 md:grid-cols-2">
              <div className="group relative overflow-hidden rounded-3xl bg-slate-50/50 dark:bg-slate-900/30 p-8 border border-slate-200/60 dark:border-slate-800/60 transition-all hover:bg-white dark:hover:bg-slate-900 hover:shadow-lg hover:-translate-y-1">
               <div className="absolute right-0 top-0 -mt-4 -mr-4 h-24 w-24 rounded-full bg-teal-500/5 transition-all group-hover:scale-150 group-hover:bg-teal-500/10" />
               <div className="relative z-10 flex items-start justify-between mb-8">
@@ -194,23 +194,6 @@ const AdminEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
                   className="mt-6 inline-flex items-center text-sm font-bold text-teal-600 hover:text-teal-700 dark:text-teal-400 group/btn"
                 >
                   Launch Form 
-                  <span className="material-icons-outlined ml-2 text-sm transform group-hover/btn:translate-x-1 transition-transform">arrow_forward</span>
-                </button>
-              </div>
-            </div>
-
-            <div className="group relative overflow-hidden rounded-3xl bg-slate-50/50 dark:bg-slate-900/30 p-8 border border-slate-200/60 dark:border-slate-800/60 transition-all hover:bg-white dark:hover:bg-slate-900 hover:shadow-lg hover:-translate-y-1">
-              <div className="absolute right-0 top-0 -mt-4 -mr-4 h-24 w-24 rounded-full bg-orange-500/5 transition-all group-hover:scale-150 group-hover:bg-orange-500/10" />
-              <div className="relative z-10 flex items-start justify-between mb-8">
-                <div className="rounded-2xl bg-orange-100/50 p-4 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400 transform group-hover:rotate-12 transition-transform duration-500">
-                  <span className="material-icons-outlined text-2xl">psychology</span>
-                </div>
-              </div>
-              <div className="relative z-10">
-                <h3 className="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">Conflict Resolver</h3>
-                <p className="mt-2 text-sm text-slate-500 dark:text-slate-400 leading-relaxed font-medium">AI-driven schedule optimization.</p>
-                <button className="mt-6 inline-flex items-center text-sm font-bold text-orange-600 hover:text-orange-700 dark:text-orange-400 group/btn">
-                  Audit Conflicts 
                   <span className="material-icons-outlined ml-2 text-sm transform group-hover/btn:translate-x-1 transition-transform">arrow_forward</span>
                 </button>
               </div>

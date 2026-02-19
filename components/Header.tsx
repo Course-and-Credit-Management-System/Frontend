@@ -3,6 +3,7 @@ import { User } from '../types';
 import { useUI } from '../context/UIContext';
 import { api } from '../lib/api';
 import { useNavigate } from 'react-router-dom';
+import { toggleTheme } from '../lib/theme';
 
 interface HeaderProps {
   title: string;
@@ -54,18 +55,7 @@ const Header: React.FC<HeaderProps> = ({ title, user }) => {
         <p className="text-sm font-bold text-slate-500 dark:text-slate-400">{title}</p>
       </div>
       
-      <div className="flex items-center space-x-4 md:space-x-8">
-        <div className="relative hidden lg:block group">
-          <span className="absolute inset-y-0 left-0 flex items-center pl-4">
-            <span className="material-icons-outlined text-slate-300 group-focus-within:text-teal-500 transition-colors">search</span>
-          </span>
-          <input 
-            className="w-64 xl:w-80 rounded-2xl border border-slate-100 bg-slate-50/50 py-2.5 pl-12 pr-6 text-sm font-medium focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500/50 focus:bg-white outline-none dark:border-slate-800 dark:bg-slate-900/50 dark:text-slate-200 dark:focus:bg-slate-900 transition-all shadow-sm" 
-            placeholder="Search records or assets..." 
-            type="text"
-          />
-        </div>
-        
+      <div className="flex items-center gap-4 md:gap-6">
         <div className="flex items-center gap-2 md:gap-3">
           <button onClick={openAnnouncements} className="relative rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-700 dark:hover:text-gray-300">
             <span className="material-icons-outlined">notifications</span>
@@ -77,25 +67,11 @@ const Header: React.FC<HeaderProps> = ({ title, user }) => {
               <span className="absolute top-1.5 right-1.5 block h-2 w-2 rounded-full bg-gray-300 ring-2 ring-white dark:ring-surface-dark"></span>
             )}
           </button>
-
-          {/* ✅ Hide notifications for admin */}
-          {user.role !== 'admin' && (
-            <button
-              onClick={openAnnouncements}
-              className="relative rounded-xl p-2.5 text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900 dark:hover:text-slate-200 active:scale-[0.98] transition-all group"
-            >
-              <span className="material-icons-outlined text-[22px] group-hover:scale-110 transition-transform">notifications</span>
-
-              {/* show dot only when unread > 0 */}
-              {unread > 0 && (
-                <span className="absolute top-2.5 right-2.5 block h-2 w-2 rounded-full bg-teal-500 ring-4 ring-white dark:ring-slate-950 animate-pulse"></span>
-              )}
-            </button>
-          )}
           
           <button 
-            onClick={() => document.documentElement.classList.toggle('dark')}
+            onClick={() => toggleTheme()}
             className="rounded-xl p-2.5 text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900 dark:hover:text-slate-200 active:scale-[0.98] transition-all group"
+            aria-label="Toggle dark mode"
           >
             <span className="material-icons-outlined text-[22px] group-hover:rotate-12 transition-transform">dark_mode</span>
           </button>
