@@ -29,14 +29,30 @@ const StudentProgressCurrent: React.FC<{ user: User; onLogout: () => void }> = (
   useEffect(() => {
     api.studentProgressGet()
       .then((doc) => {
-        const pt = (doc?.program_type as string) || "4-year";
+        let pt = (doc?.program_type as string) || "";
+        if (!pt && user?.student_profile) {
+          const sp = user.student_profile || {};
+          const s = String(sp.program_duration || sp.program_type || sp.program || sp.current_year || "").toLowerCase();
+          if (s.includes("5") || s.includes("five") || s.includes("old")) pt = "5-year";
+          else if (s.includes("4") || s.includes("four") || s.includes("new")) pt = "4-year";
+        }
+        if (!pt) pt = "4-year";
         setProgramType(pt === "5-year" ? "5-year" : "4-year");
-        const rn = (doc?.program_rule_note as string) || (pt === "5-year" ? "5-year program (before 2024-2025)" : "4-year program (2024-2025 and later)");
+        const rn =
+          (doc?.program_rule_note as string) ||
+          (pt === "5-year" ? "5-year program (before 2024-2025)" : "4-year program (2024-2025 and later)");
         setRuleNote(rn);
         setCurrentYear(doc?.current_year || "");
         setCurrentSemester(doc?.current_semester || "");
       })
-      .catch(() => {});
+      .catch(() => {
+        // Fallback entirely from user on error
+        const sp = (user?.student_profile || {}) as any;
+        const s = String(sp.program_duration || sp.program_type || sp.program || sp.current_year || "").toLowerCase();
+        const pt = s.includes("5") || s.includes("five") || s.includes("old") ? "5-year" : "4-year";
+        setProgramType(pt);
+        setRuleNote(pt === "5-year" ? "5-year program (before 2024-2025)" : "4-year program (2024-2025 and later)");
+      });
   }, []);
 
   const yearOptions = useMemo(() => {
