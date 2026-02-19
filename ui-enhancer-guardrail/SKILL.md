@@ -11,14 +11,14 @@ This skill provides a strict "Visual Only" workflow for improving User Interface
 
 When this skill is active, you are strictly prohibited from modifying any code that handles data, state, or business logic. Your focus is exclusively on the "Presentation Layer".
 
-### ✅ Permitted Modifications (UI/UX Only)
+###  Permitted Modifications (UI/UX Only)
 - **Tailwind Classes**: Adjusting colors, spacing (padding/margin), typography, shadows, borders, and animations.
 - **JSX/HTML Structure**: Reorganizing elements for better layout flow (e.g., wrapping elements in a div for flex/grid) without breaking event handlers.
 - **CSS**: Adding or modifying styles in CSS/SCSS files.
 - **Static Content**: Fixing typos in labels or improving micro-copy.
 - **Accessibility (A11y)**: Adding `aria-labels`, `alt` text, or improving color contrast.
 
-### ❌ Strictly Prohibited Modifications (Logic/Data)
+###  Strictly Prohibited Modifications (Logic/Data)
 - **State Management**: Do NOT touch `useState`, `useReducer`, `useContext`, or any state-related hooks.
 - **Lifecycle/Side Effects**: Do NOT touch `useEffect`, `useLayoutEffect`, or any lifecycle methods.
 - **Event Handlers**: Do NOT modify the logic inside `onClick`, `onChange`, `onSubmit`, etc. (You may move where they are attached if restructuring JSX, but the function reference must remain intact).

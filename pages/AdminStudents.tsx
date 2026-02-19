@@ -779,7 +779,7 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
 
             <div className="mt-10 p-5 rounded-2xl bg-teal-50/50 dark:bg-teal-900/10 border border-teal-100 dark:border-teal-900/40">
               <p className="text-xs text-teal-700 dark:text-teal-400 leading-relaxed font-bold">
-                🔒 SECURITY NOTICE: <span className="font-medium">Initial credentials will be student ID plus suffix "@123". System will require mandatory reset upon first login.</span>
+                Security Notice: <span className="font-medium">Initial credentials will be student ID plus suffix "@123". System will require mandatory reset upon first login.</span>
               </p>
             </div>
 

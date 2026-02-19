@@ -160,7 +160,7 @@ const StudentDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         <main className="flex-1 overflow-y-auto p-8 lg:p-12 relative animate-in fade-in duration-700 slide-in-from-bottom-4 scrollbar-hide">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-8">
             <div className="min-w-0 space-y-2">
-              <h2 className="text-4xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">Welcome back, {user.name.split(' ')[0]}! 👋</h2>
+              <h2 className="text-4xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">Welcome back, {user.name.split(' ')[0]}!</h2>
               <p className="text-lg font-medium text-slate-400 dark:text-slate-500">Your academic trajectory is looking healthy. Here's the briefing.</p>
             </div>
             <div className="w-full md:w-auto bg-slate-50/50 dark:bg-slate-900/50 px-6 py-3.5 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm flex items-center gap-3 shrink-0">
@@ -493,24 +493,6 @@ const StudentDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                       </button>
                     </div>
                   </div>
-                </div>
-              </div>
-              <div className="bg-surface-light dark:bg-surface-dark rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
-                <div className="p-4 md:p-5 border-b border-gray-200 dark:border-gray-700 flex items-center gap-2">
-                  <span className="material-icons-round text-primary">workspace_premium</span>
-                  <h2 className="text-lg font-bold text-gray-800 dark:text-white">Special Major Access</h2>
-                </div>
-                <div className="p-5 md:p-6">
-                  <p className="text-sm text-gray-700 dark:text-gray-300">
-                    Access special major options with faculty approval. Use this entry point
-                    to review eligibility and proceed when permitted.
-                  </p>
-                  <button
-                    onClick={() => navigate("/student/special-major/access")}
-                    className="mt-4 px-3 py-2 text-xs font-bold text-primary border border-primary/20 hover:bg-primary/5 rounded-xl uppercase tracking-wide"
-                  >
-                    Start Major Access
-                  </button>
                 </div>
               </div>
             </div>

@@ -443,7 +443,7 @@ const AdminEnrollmentSettings: React.FC<AdminEnrollmentSettingsProps> = ({ user,
 
               <div className="p-8 rounded-[32px] bg-teal-50/30 dark:bg-teal-900/10 border border-teal-100/50 dark:border-teal-900/20">
                 <div className="flex gap-4">
-                  <span className="text-2xl">💡</span>
+                  <span className="text-2xl">Tip:</span>
                   <div className="space-y-2">
                     <p className="text-xs font-bold text-teal-800 dark:text-teal-300 uppercase tracking-widest">Operational Tip</p>
                     <p className="text-xs text-teal-700 dark:text-teal-400 leading-relaxed font-medium">

@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>UniPortal CMS</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
@@ -16,9 +16,11 @@
             theme: {
                 extend: {
                     colors: {
-                        primary: "#0d9488", /* teal-600 */
-                        "primary-hover": "#0f766e", /* teal-700 */
-                        "background-light": "#ffffff",
+                        primary: "#077d8a",
+                        "primary-hover": "#066a75",
+                        "action-blue": "#0d4a8f",
+                        "accent-yellow": "#ffc20e",
+                        "background-light": "#f8fafc",
                         "background-dark": "#020617", /* slate-950 */
                         "surface-light": "#ffffff",
                         "surface-dark": "#0f172a", /* slate-900 */
@@ -29,8 +31,8 @@
                     },
                     fontFamily: {
                         sans: ["Roboto", "sans-serif"],
-                        display: ["Roboto", "sans-serif"],
-                        poppins: ["Roboto", "sans-serif"]
+                        display: ["Poppins", "sans-serif"],
+                        poppins: ["Poppins", "sans-serif"]
                     },
                     keyframes: {
                         "fade-in": {
@@ -55,13 +57,80 @@
             }
         }
     </script>
+    <script>
+        (function () {
+            try {
+                var stored = localStorage.getItem("ui_theme_mode");
+                var prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+                var mode = (stored === "dark" || stored === "light") ? stored : (prefersDark ? "dark" : "light");
+                document.documentElement.classList.toggle("dark", mode === "dark");
+            } catch {}
+        })();
+    </script>
     <style>
-        :root { font-size: 16px; }
+        :root {
+            font-size: 16px;
+            --ink-strong: #1e293b;
+            --ink-medium: #334155;
+            --ink-muted: #475569;
+            --ink-soft: #64748b;
+            --surface-subtle: #eaf1f6;
+            --line-soft: #cbd5e1;
+        }
         body { font-family: 'Roboto', sans-serif; font-size: 1rem; }
-        h1, h2, h3, h4, h5, h6 { font-family: inherit; }
+        h1, h2, h3, h4, h5, h6 { font-family: 'Poppins', sans-serif; }
         input, button, select, textarea { font-family: inherit; font-size: inherit; }
-        .font-display { font-family: inherit; }
-        .font-poppins { font-family: inherit; }
+        .font-display { font-family: 'Poppins', sans-serif; }
+        .font-poppins { font-family: 'Poppins', sans-serif; }
+
+        /* Global input style: remove borders from text-like controls */
+        input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+        textarea,
+        select {
+            border: 0 !important;
+            box-shadow: none !important;
+        }
+        input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):focus,
+        textarea:focus,
+        select:focus {
+            border: 0 !important;
+            box-shadow: none !important;
+            outline: none !important;
+        }
+
+        /* Global contrast boost for the existing utility-heavy codebase (light mode). */
+        html:not(.dark) .text-slate-300 { color: var(--ink-soft) !important; }
+        html:not(.dark) .text-slate-400,
+        html:not(.dark) .text-gray-400 { color: var(--ink-muted) !important; }
+        html:not(.dark) .text-slate-500,
+        html:not(.dark) .text-gray-500 { color: var(--ink-medium) !important; }
+        html:not(.dark) .border-slate-100 { border-color: var(--line-soft) !important; }
+        html:not(.dark) [class*="bg-slate-50"] { background-color: var(--surface-subtle) !important; }
+        html:not(.dark) .placeholder\:text-slate-300::placeholder,
+        html:not(.dark) .placeholder\:text-slate-400::placeholder { color: var(--ink-soft) !important; opacity: 1; }
+
+        /* Dark mode readability boost for secondary and helper text. */
+        .dark .text-slate-500,
+        .dark .text-gray-500 { color: #cbd5e1 !important; }
+        .dark .text-slate-400,
+        .dark .text-gray-400 { color: #e2e8f0 !important; }
+        .dark .text-slate-300 { color: #f1f5f9 !important; }
+        .dark .text-white { color: #e2e8f0 !important; }
+        .dark [class*="bg-white"] { background-color: #0f172a !important; }
+        .dark .bg-white { background-color: #0f172a !important; }
+        .dark [class*="bg-gray-50"] { background-color: #111827 !important; }
+        .dark [class*="bg-gray-100"] { background-color: #1f2937 !important; }
+        .dark .border-white,
+        .dark [class*="border-white"] { border-color: #334155 !important; }
+        .dark .ring-white,
+        .dark [class*="ring-white"] { --tw-ring-color: #334155 !important; }
+        .dark [class*="border-gray-100"],
+        .dark [class*="border-gray-200"],
+        .dark [class*="border-gray-300"] { border-color: #334155 !important; }
+        .dark .text-gray-900,
+        .dark .text-gray-800 { color: #f8fafc !important; }
+        .dark .text-gray-700,
+        .dark .text-gray-600 { color: #e2e8f0 !important; }
 
         /* Custom Scrollbar Styling */
         ::-webkit-scrollbar {

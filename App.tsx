@@ -15,13 +15,13 @@ import AdminStudents from "./pages/AdminStudents";
 import AdminGrading from "./pages/AdminGrading";
 import AdminStudentDetails from "./pages/AdminStudentDetails";
 import AdminAnnouncements from "./pages/AdminAnnouncements";
-// ✅ NEW: Manual Enrollment Page
+//  NEW: Manual Enrollment Page
 import AdminManualEnrollment from "./pages/AdminManualEnrollment";
 import AdminEnrollmentSettings from "./pages/AdminEnrollmentSettings";
 import AdminMessages from "./pages/AdminMessages";
 import AdminChatPage from "./pages/AdminChatPage";
 
-// ✅ NEW: admin-only course details page (rename your file to AdminCourseDetails.tsx)
+//  NEW: admin-only course details page (rename your file to AdminCourseDetails.tsx)
 import AdminCourseDetails from "./pages/AdminCourseDetails";
 
 import StudentDashboard from "./pages/StudentDashboard";
@@ -40,13 +40,14 @@ import StudentMessages from "./pages/StudentMessages";import StudentSpecialMajor
 import StudentSpecialMajorError from "./pages/StudentSpecialMajorError";
 import StudentDegreeAudit from "./pages/StudentDegreeAudit";
 
-// ✅ student course details page stays as CourseDetails.tsx (student-facing)
+//  student course details page stays as CourseDetails.tsx (student-facing)
 import CourseDetails from "./pages/CourseDetails";
 import { DetailedCardGridSkeleton, Skeleton } from "./components/Skeleton";
 
 import { User } from "./types";
 import { api } from "./lib/api";
 import { UIProvider } from "./context/UIContext";
+import { applyTheme, getPreferredTheme } from "./lib/theme";
 
 const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -61,6 +62,10 @@ const App: React.FC = () => {
       // non-blocking for app bootstrap
     }
   };
+
+  useEffect(() => {
+    applyTheme(getPreferredTheme());
+  }, []);
 
   useEffect(() => {
     const boot = async () => {
@@ -130,10 +135,10 @@ const App: React.FC = () => {
     <UIProvider>
       <HashRouter>
         <Routes>
-        {/* ✅ Public routes ALWAYS available */}
+        {/*  Public routes ALWAYS available */}
         <Route path="/reset-password-token" element={<ResetPasswordToken />} />
 
-        {/* ✅ Existing in-app reset route (must_reset_password flow) */}
+        {/*  Existing in-app reset route (must_reset_password flow) */}
         <Route
           path="/reset-password"
           element={
@@ -150,7 +155,7 @@ const App: React.FC = () => {
         <Route path="/reset-password-token" element={<ResetPasswordToken />} />
         <Route path="/simple-login" element={<SimpleLogin />} />
 
-        {/* ✅ If user must reset password, force all routes to reset page */}
+        {/*  If user must reset password, force all routes to reset page */}
         {user?.must_reset_password ? (
           <>
             {/* duplicate public routes inside this branch for safety */}
@@ -194,7 +199,7 @@ const App: React.FC = () => {
                   element={<AdminCourses user={user} onLogout={handleLogout} />}
                 />
 
-                {/* ✅ FIX: admin course details uses AdminCourseDetails (NOT CourseDetails) */}
+                {/*  FIX: admin course details uses AdminCourseDetails (NOT CourseDetails) */}
                 <Route
                   path="/admin/courses/:courseId"
                   element={<AdminCourseDetails user={user} onLogout={handleLogout} />}
@@ -294,7 +299,7 @@ const App: React.FC = () => {
                   element={<StudentChatPage user={user} onLogout={handleLogout} />}
                 />
 
-                {/* ✅ student course details stays CourseDetails */}
+                {/*  student course details stays CourseDetails */}
                 <Route
                   path="/student/courses/:courseId"
                   element={<CourseDetails user={user} onLogout={handleLogout} />}

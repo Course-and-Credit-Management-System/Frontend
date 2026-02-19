@@ -32,7 +32,7 @@ async function testFrontendAPI() {
     }
     
     const data = await resultsResponse.json();
-    console.log('✅ Frontend API test successful!');
+    console.log(' Frontend API test successful!');
     console.log('Student:', data.student.name);
     console.log('Credits:', data.academic_summary.total_credits_earned);
     console.log('CGPA:', data.academic_summary.cgpa);

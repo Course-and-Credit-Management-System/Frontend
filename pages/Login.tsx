@@ -13,7 +13,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // ✅ modal open/close via query param so login stays behind it
+  //  modal open/close via query param so login stays behind it
   const params = new URLSearchParams(location.search);
   const showForgot = params.get("forgot") === "1";
 
@@ -58,7 +58,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         throw new Error("Login succeeded but no user returned.");
       }
 
-      // ✅ store must_reset_password locally too
+      //  store must_reset_password locally too
       const mustReset = !!data?.must_reset_password;
 
       // IMPORTANT: attach it to the user so App.tsx can guard routes
@@ -75,7 +75,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
 
       onLogin(userWithFlag);
 
-      // ✅ force reset immediately
+      //  force reset immediately
       if (mustReset) {
         navigate("/reset-password", { replace: true });
       }
@@ -89,7 +89,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
   return (
     <>
       <div className="bg-white dark:bg-slate-950 min-h-screen flex flex-col font-poppins transition-colors duration-500 relative overflow-hidden">
-        <header className="w-full flex items-center justify-between whitespace-nowrap border-b border-slate-100 dark:border-slate-800 px-8 lg:px-24 py-6 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md z-50">
+        <header className="w-full flex items-center whitespace-nowrap border-b border-slate-100 dark:border-slate-800 px-8 lg:px-24 py-6 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md z-50">
           <div className="flex items-center gap-4 text-teal-600">
             <div className="h-10 w-10 rounded-2xl bg-teal-50 dark:bg-teal-900/20 flex items-center justify-center text-teal-600 dark:text-teal-400">
               <svg fill="currentColor" className="w-6 h-6" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
@@ -97,28 +97,6 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
               </svg>
             </div>
             <h2 className="text-slate-900 dark:text-white text-2xl font-black tracking-tight">UniPortal</h2>
-          </div>
-          <div className="flex flex-1 justify-end gap-8 items-center">
-            <div className="hidden md:flex items-center gap-8">
-              <a
-                className="text-slate-400 dark:text-slate-500 text-xs font-black uppercase tracking-widest hover:text-teal-600 dark:hover:text-teal-400 transition-colors"
-                href="#"
-              >
-                Help Desk
-              </a>
-              <a
-                className="text-slate-400 dark:text-slate-500 text-xs font-black uppercase tracking-widest hover:text-teal-600 dark:hover:text-teal-400 transition-colors"
-                href="#"
-              >
-                System Status
-              </a>
-            </div>
-            <button
-              type="button"
-              className="px-6 py-2.5 rounded-2xl bg-slate-900 dark:bg-teal-600 text-white text-[10px] font-black uppercase tracking-widest hover:bg-slate-800 dark:hover:bg-teal-700 transition-all shadow-lg active:scale-95"
-            >
-              Contact IT
-            </button>
           </div>
         </header>
 
@@ -286,7 +264,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         <div className="fixed bottom-0 left-0 -z-0 w-[500px] h-[500px] bg-indigo-500/[0.03] dark:bg-indigo-500/[0.02] rounded-full blur-[100px] pointer-events-none -translate-x-1/2 translate-y-1/2" />
       </div>
 
-      {/* ✅ Forgot Password modal on top of login page */}
+      {/*  Forgot Password modal on top of login page */}
       {showForgot && <ForgotPassword onClose={closeForgot} />}
     </>
   );

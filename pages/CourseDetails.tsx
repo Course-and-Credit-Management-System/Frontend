@@ -32,7 +32,7 @@ const CourseDetails: React.FC<CourseDetailsProps> = ({ user, onLogout }) => {
 
         const data: any = await api.studentCourseDetails(courseId);
 
-        // ✅ schedule can be array OR string (supports legacy DB + current validator differences)
+        //  schedule can be array OR string (supports legacy DB + current validator differences)
         const scheduleRaw = data?.schedule;
         const scheduleArr: string[] = Array.isArray(scheduleRaw)
           ? scheduleRaw.filter((x: any) => typeof x === 'string' && x.trim().length > 0)
