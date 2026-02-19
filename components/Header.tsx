@@ -68,12 +68,12 @@ const Header: React.FC<HeaderProps> = ({ title, user }) => {
             )}
           </button>
           
+          
           <button 
             onClick={() => toggleTheme()}
             className="rounded-xl p-2.5 text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900 dark:hover:text-slate-200 active:scale-[0.98] transition-all group"
             aria-label="Toggle dark mode"
           >
-            <span className="material-icons-outlined text-[22px] group-hover:rotate-12 transition-transform">dark_mode</span>
           </button>
         </div>
 
