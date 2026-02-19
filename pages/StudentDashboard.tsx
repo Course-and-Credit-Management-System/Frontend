@@ -12,7 +12,7 @@ interface DashboardProps {
 
 const StudentDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   const [alerts, setAlerts] = useState<StudentAlert[]>([]);
-  const [majorState, setMajorState] = useState<{ program_type?: string; selected_track?: string; selected_major?: string; status?: string; profile_major_id?: string; profile_major_track?: string } | null>(null);
+  const [majorState, setMajorState] = useState<{ program_type?: string; selected_track?: string; selected_major?: string; status?: string; profile_major_id?: string; profile_major_track?: string; current_year?: string; current_semester?: string } | null>(null);
   const [eligibility, setEligibility] = useState<any | null>(null);
   const [startLoading, setStartLoading] = useState(false);
   const [gpa, setGpa] = useState<number | null>(null);
@@ -66,9 +66,19 @@ const StudentDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
       .catch(() => setEligibility(null));
     api.studentDashboardSummary()
       .then((sum) => {
-        if (sum && typeof sum.gpa === "number") setGpa(sum.gpa);
+        console.log("Dashboard Summary API Response:", sum);
+        if (sum && typeof sum.gpa === "number") {
+          console.log("Setting GPA to:", sum.gpa);
+          setGpa(sum.gpa);
+        } else {
+          console.log("Invalid GPA response:", sum);
+          setGpa(null);
+        }
       })
-      .catch(() => {});
+      .catch((err) => {
+        console.error("Failed to fetch dashboard summary:", err);
+        setGpa(null);
+      });
     api.studentDegreeAudit()
       .then((audit) => setDegreeAudit(audit))
       .catch(() => setDegreeAudit(null));
