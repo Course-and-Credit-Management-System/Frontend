@@ -77,27 +77,12 @@ const Header: React.FC<HeaderProps> = ({ title, user }) => {
               <span className="absolute top-1.5 right-1.5 block h-2 w-2 rounded-full bg-gray-300 ring-2 ring-white dark:ring-surface-dark"></span>
             )}
           </button>
-
-          {/* ✅ Hide notifications for admin */}
-          {user.role !== 'admin' && (
-            <button
-              onClick={openAnnouncements}
-              className="relative rounded-xl p-2.5 text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900 dark:hover:text-slate-200 active:scale-[0.98] transition-all group"
-            >
-              <span className="material-icons-outlined text-[22px] group-hover:scale-110 transition-transform">notifications</span>
-
-              {/* show dot only when unread > 0 */}
-              {unread > 0 && (
-                <span className="absolute top-2.5 right-2.5 block h-2 w-2 rounded-full bg-teal-500 ring-4 ring-white dark:ring-slate-950 animate-pulse"></span>
-              )}
-            </button>
-          )}
+          
           
           <button 
             onClick={() => document.documentElement.classList.toggle('dark')}
             className="rounded-xl p-2.5 text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900 dark:hover:text-slate-200 active:scale-[0.98] transition-all group"
           >
-            <span className="material-icons-outlined text-[22px] group-hover:rotate-12 transition-transform">dark_mode</span>
           </button>
         </div>
 
