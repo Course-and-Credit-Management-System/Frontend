@@ -21,6 +21,7 @@ interface ExamResult {
   grade: string;
   grade_point: number;
   status: string;
+  is_retake: boolean; // Add the is_retake field
 }
 
 interface EditedScore {
@@ -83,7 +84,11 @@ const AdminGrading: React.FC<GradingProps> = ({ user, onLogout }) => {
       const res = await fetch(`${API_BASE}/admin/exam-results?${params}`, { credentials: 'include' });
       if (res.ok) {
         const data = await res.json();
-        setResults(data);
+        // Filter to show only Passed and Failed students
+        const filteredData = data.filter((result: any) => 
+          result.status === 'Passed' || result.status === 'Failed'
+        );
+        setResults(filteredData);
         setEditedScores({}); // Reset edited scores when fetching new data
       }
     } catch (err) {
@@ -146,6 +151,7 @@ const AdminGrading: React.FC<GradingProps> = ({ user, onLogout }) => {
     try {
       let successCount = 0;
       let errorCount = 0;
+      let firstErrorMsg = '';
 
       for (const [key, newScore] of edits) {
         const result = results.find(r => getResultKey(r) === key);
@@ -154,10 +160,10 @@ const AdminGrading: React.FC<GradingProps> = ({ user, onLogout }) => {
         const payload = {
           student_id: result.student_id,
           course_code: result.course_code,
-          year: result.year,
-          semester: result.semester,
-          section: result.section,
-          major: result.major,
+          year: result.year ?? 1,
+          semester: result.semester ?? 1,
+          section: result.section ?? (result.year >= 1 && result.year <= 3 ? 'A' : null),
+          major: result.major ?? (result.year >= 4 ? 'SE' : null),
           exam_score: newScore,
         };
 
@@ -172,10 +178,28 @@ const AdminGrading: React.FC<GradingProps> = ({ user, onLogout }) => {
           successCount++;
         } else {
           errorCount++;
+          if (!firstErrorMsg) {
+            try {
+              const err = await res.json();
+              const detail = err?.detail || res.statusText;
+              firstErrorMsg = Array.isArray(detail) ? detail.map((x: { msg?: string }) => x?.msg).filter(Boolean).join('; ') : String(detail);
+            } catch {
+              firstErrorMsg = `HTTP ${res.status}`;
+            }
+          }
         }
       }
 
-      setMessage({ type: 'success', text: `Saved ${successCount} grade(s)${errorCount > 0 ? `, ${errorCount} failed` : ''}` });
+      if (errorCount === 0) {
+        setMessage({ type: 'success', text: `Saved ${successCount} grade(s)` });
+      } else {
+        setMessage({
+          type: 'error',
+          text: firstErrorMsg
+            ? `Save failed: ${firstErrorMsg}`
+            : `Saved ${successCount} grade(s), ${errorCount} failed`,
+        });
+      }
       setEditedScores({});
       fetchResults();
     } catch (err) {
@@ -495,15 +519,16 @@ const AdminGrading: React.FC<GradingProps> = ({ user, onLogout }) => {
                     <th className="px-10 py-5 text-center w-48">Scaled Evaluation</th>
                     <th className="px-10 py-5 text-center w-32">Grade</th>
                     <th className="px-10 py-5 text-center w-40">Integrity</th>
+                    <th className="px-10 py-5 text-center w-32">Retake</th>
                     <th className="px-10 py-5 text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
                   {loading ? (
-                    <TableSkeletonRows rows={10} cols={7} />
+                    <TableSkeletonRows rows={10} cols={8} />
                   ) : results.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="px-10 py-32 text-center text-slate-300 font-black uppercase tracking-[0.4em] italic">Zero Records Discovered</td>
+                      <td colSpan={8} className="px-10 py-32 text-center text-slate-300 font-black uppercase tracking-[0.4em] italic">Zero Records Discovered</td>
                     </tr>
                   ) : (
                     results.map((r, i) => (
@@ -544,6 +569,13 @@ const AdminGrading: React.FC<GradingProps> = ({ user, onLogout }) => {
                             'bg-rose-50 text-rose-700 border-rose-100 dark:bg-rose-900/20 dark:text-rose-400'
                           }`}>
                             {r.status}
+                          </span>
+                        </td>
+                        <td className="px-10 py-6 text-center">
+                          <span className={`inline-flex px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border shadow-sm ${
+                            r.is_retake ? 'bg-violet-50 text-violet-700 border-violet-100 dark:bg-violet-900/20 dark:text-violet-400' : 'bg-slate-50 text-slate-500 border-slate-100 dark:bg-slate-900/20 dark:text-slate-400'
+                          }`}>
+                            {r.is_retake ? 'YES' : 'NO'}
                           </span>
                         </td>
                         <td className="px-10 py-6 text-right">

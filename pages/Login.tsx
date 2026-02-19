@@ -69,6 +69,8 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
       sessionStorage.setItem("must_reset_password", String(mustReset));
       if (typeof data?.access_token === "string" && data.access_token.length > 0) {
         localStorage.setItem("access_token", data.access_token);
+        // Also set cookie for backend compatibility
+        document.cookie = `access_token=${data.access_token}; path=/; max-age=86400; SameSite=Lax`;
       }
 
       onLogin(userWithFlag);

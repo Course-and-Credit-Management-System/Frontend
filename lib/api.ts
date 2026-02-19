@@ -82,6 +82,12 @@ async function request<T = any>(path: string, options: RequestOptions = {}): Pro
     "Content-Type": "application/json",
   };
 
+  // Add Authorization header if token exists in localStorage
+  const token = localStorage.getItem("access_token");
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
   const res = await fetch(`${API_BASE}${path}`, {
     method: options.method ?? "GET",
     headers,
