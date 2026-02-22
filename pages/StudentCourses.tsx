@@ -247,7 +247,7 @@ const StudentCourses: React.FC<CoursesProps> = ({ user, onLogout }) => {
               <h2 className="text-4xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">Academic Load</h2>
               <p className="text-lg font-medium text-slate-400 dark:text-slate-500">{data.semester_name} • Current Inventory</p>
             </div>
-            <div className="bg-slate-50/50 dark:bg-slate-900/50 px-8 py-5 rounded-[32px] border border-slate-100 dark:border-slate-800 shadow-sm flex items-center gap-10">
+            <div className="bg-slate-50/50 dark:bg-slate-900/85 px-8 py-5 rounded-[32px] border border-slate-100 dark:border-slate-700 shadow-sm dark:shadow-[0_14px_36px_rgba(2,6,23,0.45)] flex items-center gap-10">
               <div className="space-y-1">
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Credit Volume</p>
                 <div className="flex items-baseline gap-2">
@@ -292,7 +292,7 @@ const StudentCourses: React.FC<CoursesProps> = ({ user, onLogout }) => {
               <div 
                 key={index} 
                 onClick={() => handleCourseClick(course.code)}
-                className="group bg-white dark:bg-slate-900 rounded-[32px] border border-slate-100 dark:border-slate-800 p-8 shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all relative overflow-hidden cursor-pointer"
+                className="group bg-white dark:bg-slate-900/95 rounded-[32px] border border-slate-100 dark:border-slate-700 p-8 shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all relative overflow-hidden cursor-pointer"
               >
                 <div className="absolute top-0 right-0 h-24 w-24 bg-teal-500/[0.03] rounded-bl-full transform translate-x-4 -translate-y-4 group-hover:scale-110 transition-transform duration-700" />
                 
@@ -333,15 +333,15 @@ const StudentCourses: React.FC<CoursesProps> = ({ user, onLogout }) => {
             ))}
           </div>
 
-          <div className="mt-12 bg-slate-900 dark:bg-teal-600 rounded-[40px] p-10 flex flex-col md:flex-row items-center justify-between gap-8 shadow-2xl relative overflow-hidden group">
-            <div className="absolute top-0 right-0 h-full w-1/2 bg-white/[0.02] transform skew-x-12 translate-x-20 pointer-events-none" />
+          <div className="mt-12 bg-slate-900 dark:bg-white rounded-[40px] p-10 flex flex-col md:flex-row items-center justify-between gap-8 shadow-2xl dark:shadow-[0_22px_56px_rgba(2,6,23,0.42)] border border-transparent dark:border-slate-200/70 relative overflow-hidden group">
+            <div className="absolute top-0 right-0 h-full w-1/2 bg-white/[0.02] dark:bg-teal-500/8 transform skew-x-12 translate-x-20 pointer-events-none" />
             <div className="flex items-center gap-8 relative z-10 text-center md:text-left">
-                <div className="h-16 w-16 bg-white/10 backdrop-blur-md rounded-[24px] flex items-center justify-center text-white border border-white/10 transform transition-transform duration-700 group-hover:rotate-12">
+                <div className="h-16 w-16 bg-white/10 dark:bg-teal-50 backdrop-blur-md rounded-[24px] flex items-center justify-center text-white dark:text-teal-700 border border-white/10 dark:border-teal-100 transform transition-transform duration-700 group-hover:rotate-12">
                     <span className="material-icons-outlined text-3xl">print</span>
                 </div>
                 <div>
-                    <h4 className="text-2xl font-black text-white tracking-tight mb-1">Schedule Export</h4>
-                    <p className="text-sm font-medium text-white/60">Generate a high-fidelity cryptographic ledger of your current courses.</p>
+                    <h4 className="text-2xl font-black text-white dark:text-slate-900 tracking-tight mb-1">Schedule Export</h4>
+                    <p className="text-sm font-medium text-white/60 dark:text-slate-600">Generate a high-fidelity cryptographic ledger of your current courses.</p>
                 </div>
             </div>
             <button
@@ -349,8 +349,8 @@ const StudentCourses: React.FC<CoursesProps> = ({ user, onLogout }) => {
               disabled={downloadingSchedule}
               className={`px-10 py-4 text-[10px] font-black uppercase tracking-[0.3em] rounded-2xl transition-all shadow-xl active:scale-[0.98] whitespace-nowrap relative z-10 ${
                 downloadingSchedule
-                  ? 'bg-white/10 text-white/40 cursor-not-allowed'
-                  : 'bg-white text-slate-900 hover:bg-slate-50 hover:shadow-white/10'
+                  ? 'bg-white/10 text-white/40 dark:bg-slate-100 dark:text-slate-400 cursor-not-allowed'
+                  : 'bg-white text-slate-900 hover:bg-slate-50 hover:shadow-white/10 dark:bg-teal-600 dark:text-white dark:hover:bg-teal-700'
               }`}
             >
                 {downloadingSchedule ? 'SYCHRONIZING...' : 'Download PDF Manifest'}

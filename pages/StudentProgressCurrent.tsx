@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
@@ -7,12 +7,32 @@ import { User } from "../types";
 
 const StudentProgressCurrent: React.FC<{ user: User; onLogout: () => void }> = ({ user, onLogout }) => {
   const navigate = useNavigate();
+  const draftKey = "student_progress_current_draft";
   const [programType, setProgramType] = useState<"4-year" | "5-year">("4-year");
   const [ruleNote, setRuleNote] = useState<string>("4-year program (2024-2025 and later)");
-  const [currentYear, setCurrentYear] = useState("");
-  const [currentSemester, setCurrentSemester] = useState("");
+  const [currentYear, setCurrentYear] = useState(() => {
+    try {
+      const raw = sessionStorage.getItem(draftKey);
+      if (!raw) return "";
+      const draft = JSON.parse(raw) as { currentYear?: string };
+      return draft.currentYear || "";
+    } catch {
+      return "";
+    }
+  });
+  const [currentSemester, setCurrentSemester] = useState(() => {
+    try {
+      const raw = sessionStorage.getItem(draftKey);
+      if (!raw) return "";
+      const draft = JSON.parse(raw) as { currentSemester?: string };
+      return draft.currentSemester || "";
+    } catch {
+      return "";
+    }
+  });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const hasUserEditedRef = useRef(false);
 
   const location = useLocation();
   useEffect(() => {
@@ -27,8 +47,14 @@ const StudentProgressCurrent: React.FC<{ user: User; onLogout: () => void }> = (
   }, [location.state]);
 
   useEffect(() => {
+    sessionStorage.setItem(draftKey, JSON.stringify({ currentYear, currentSemester }));
+  }, [currentYear, currentSemester]);
+
+  useEffect(() => {
+    let cancelled = false;
     api.studentProgressGet()
       .then((doc) => {
+        if (cancelled) return;
         let pt = (doc?.program_type as string) || "";
         if (!pt && user?.student_profile) {
           const sp = user.student_profile || {};
@@ -42,10 +68,16 @@ const StudentProgressCurrent: React.FC<{ user: User; onLogout: () => void }> = (
           (doc?.program_rule_note as string) ||
           (pt === "5-year" ? "5-year program (before 2024-2025)" : "4-year program (2024-2025 and later)");
         setRuleNote(rn);
-        setCurrentYear(doc?.current_year || "");
-        setCurrentSemester(doc?.current_semester || "");
+        // Do not overwrite fields after user starts typing/selecting.
+        if (!hasUserEditedRef.current) {
+          const serverYear = doc?.current_year || "";
+          const serverSemester = doc?.current_semester || "";
+          if (serverYear) setCurrentYear(serverYear);
+          if (serverSemester) setCurrentSemester(serverSemester);
+        }
       })
       .catch(() => {
+        if (cancelled) return;
         // Fallback entirely from user on error
         const sp = (user?.student_profile || {}) as any;
         const s = String(sp.program_duration || sp.program_type || sp.program || sp.current_year || "").toLowerCase();
@@ -53,6 +85,9 @@ const StudentProgressCurrent: React.FC<{ user: User; onLogout: () => void }> = (
         setProgramType(pt);
         setRuleNote(pt === "5-year" ? "5-year program (before 2024-2025)" : "4-year program (2024-2025 and later)");
       });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const yearOptions = useMemo(() => {
@@ -72,6 +107,7 @@ const StudentProgressCurrent: React.FC<{ user: User; onLogout: () => void }> = (
     setLoading(true);
     try {
       const resp: any = await api.studentProgressSaveCurrent({ current_year: currentYear, current_semester: currentSemester });
+      sessionStorage.removeItem(draftKey);
       const yr = (currentYear || "").toLowerCase();
       const yearNum = yr.includes("first") ? 1 : yr.includes("second") ? 2 : yr.includes("third") ? 3 : yr.includes("fourth") ? 4 : yr.includes("fifth") ? 5 : 0;
       if (yearNum <= 2) {
@@ -110,7 +146,10 @@ const StudentProgressCurrent: React.FC<{ user: User; onLogout: () => void }> = (
                 <div className="font-semibold text-[#0d1a1c] dark:text-gray-200 mb-1">Current Study Year</div>
                 <select
                   value={currentYear}
-                  onChange={(e) => setCurrentYear(e.target.value)}
+                  onChange={(e) => {
+                    hasUserEditedRef.current = true;
+                    setCurrentYear(e.target.value);
+                  }}
                   className="w-full h-11 px-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-[#0d1a1c] text-[#0d1a1c] dark:text-white"
                 >
                   <option value="">Select year</option>
@@ -123,7 +162,10 @@ const StudentProgressCurrent: React.FC<{ user: User; onLogout: () => void }> = (
                 <div className="font-semibold text-[#0d1a1c] dark:text-gray-200 mb-1">Current Semester</div>
                 <select
                   value={currentSemester}
-                  onChange={(e) => setCurrentSemester(e.target.value)}
+                  onChange={(e) => {
+                    hasUserEditedRef.current = true;
+                    setCurrentSemester(e.target.value);
+                  }}
                   className="w-full h-11 px-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-[#0d1a1c] text-[#0d1a1c] dark:text-white"
                 >
                   <option value="">Select semester</option>
