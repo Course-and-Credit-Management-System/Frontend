@@ -72,6 +72,8 @@ function shouldAutoLogout(path: string) {
   if (path === "/api/v1/auth/forgot-password") return false;
   if (path === "/api/v1/auth/reset-password-with-token") return false;
   if (path.includes("/api/v1/admin/messages/") && path.endsWith("/read")) return false;
+  // Allow enrollment errors to be handled by UI instead of auto-redirecting to login
+  if (path.includes("/courses/enrollment")) return false;
   return true;
 }
 // -----------------------------------------------

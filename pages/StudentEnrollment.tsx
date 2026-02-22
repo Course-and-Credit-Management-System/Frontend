@@ -194,6 +194,7 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
   });
 
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
     const stored = localStorage.getItem("current_credits");
@@ -431,6 +432,7 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
       });
       return;
     }
+    setErrorMessage(null);
     try {
       // 1. Prepare Payload
       const selectedCodes = Array.from(selectedRegistry.keys()).join(',');
@@ -442,8 +444,18 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
         setIsFinalized(true);
         setSuccessMessage(res.message);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Enrollment failed", error);
+      // Check for 403 error or access denied
+      if (error?.response?.status === 403 || error?.response?.status === 403) {
+        setErrorMessage("You can't enroll now");
+      } else if (error?.response?.data?.message) {
+        setErrorMessage(error.response.data.message);
+      } else if (error instanceof Error) {
+        setErrorMessage(error.message);
+      } else {
+        setErrorMessage("Enrollment failed. Please try again.");
+      }
     }
   };
 
@@ -497,7 +509,7 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
                 <h2 className="text-4xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">Course Selection</h2>
                 <p className="text-lg font-medium text-slate-400 dark:text-slate-500">Academic Period: {user.student_profile?.year ? `Year ${user.student_profile.year}` : 'Upcoming Cycle'}</p>
               </div>
-              <div className="flex items-center gap-8 bg-slate-50/50 dark:bg-slate-900/50 px-8 py-5 rounded-[32px] border border-slate-100 dark:border-slate-800 shadow-sm transition-all hover:shadow-md">
+              <div className="flex items-center gap-8 bg-slate-50/50 dark:bg-slate-900/85 px-8 py-5 rounded-[32px] border border-slate-100 dark:border-slate-700 shadow-sm transition-all hover:shadow-md dark:shadow-[0_14px_38px_rgba(2,6,23,0.45)]">
                 <div className="space-y-1">
                   <span className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Credit Utilization</span>
                   <div className="flex items-baseline gap-2">
@@ -513,7 +525,7 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
               </div>
             </div>
 
-            <div className="bg-slate-50/30 dark:bg-slate-900/30 p-10 rounded-[40px] border border-slate-100 dark:border-slate-800 shadow-sm mb-12 transition-all hover:bg-white dark:hover:bg-slate-900 hover:shadow-md">
+            <div className="bg-slate-50/30 dark:bg-slate-900/85 p-10 rounded-[40px] border border-slate-100 dark:border-slate-700 shadow-sm mb-12 transition-all hover:bg-white dark:hover:bg-slate-900 hover:shadow-md dark:shadow-[0_18px_44px_rgba(2,6,23,0.45)]">
               <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
                 <div className="space-y-3">
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Enrollment State</p>
@@ -542,7 +554,7 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
               {settingError && <p className="mt-6 text-xs font-bold text-rose-500 italic">Sync Error: {settingError}</p>}
             </div>
 
-            <div className="bg-white dark:bg-slate-900 p-8 rounded-[32px] border border-slate-100 dark:border-slate-800 shadow-sm mb-12 flex flex-col md:flex-row gap-8 items-center justify-between transition-all hover:shadow-md">
+            <div className="bg-white dark:bg-slate-900/95 p-8 rounded-[32px] border border-slate-100 dark:border-slate-700 shadow-sm mb-12 flex flex-col md:flex-row gap-8 items-center justify-between transition-all hover:shadow-md dark:shadow-[0_14px_36px_rgba(2,6,23,0.45)]">
               <div className="relative flex-1 w-full group">
                 <span className="material-icons-outlined absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-teal-500 transition-colors text-xl">search</span>
                 <input 
@@ -550,7 +562,7 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
                     placeholder="Filter institutional courses..."
                     value={searchQuery}
                     onChange={e => setSearchQuery(e.target.value)}
-                    className="w-full pl-14 pr-6 py-4 text-base font-bold rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/50 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all dark:text-white placeholder:text-slate-300"
+                    className="w-full pl-14 pr-6 py-4 text-base font-bold rounded-2xl border border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-950/75 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all dark:text-white placeholder:text-slate-300 dark:placeholder:text-slate-500"
                 />
               </div>
               <div className="flex flex-wrap items-center gap-3">
@@ -576,7 +588,7 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
               </div>
             </div>
 
-            <section className="bg-slate-50/50 dark:bg-slate-900/30 p-10 rounded-[40px] border border-slate-100 dark:border-slate-800 shadow-sm mb-12 transition-all hover:bg-white dark:hover:bg-slate-900 hover:shadow-md group">
+            <section className="bg-slate-50/50 dark:bg-slate-900/85 p-10 rounded-[40px] border border-slate-100 dark:border-slate-700 shadow-sm mb-12 transition-all hover:bg-white dark:hover:bg-slate-900 hover:shadow-md dark:shadow-[0_18px_44px_rgba(2,6,23,0.45)] group">
               <div className="flex items-center gap-6 mb-10">
                 <div className="h-14 w-14 rounded-3xl bg-teal-50 dark:bg-teal-900/20 flex items-center justify-center text-teal-600 dark:text-teal-400 border border-teal-100/50 dark:border-teal-800/50 group-hover:scale-110 transition-transform duration-500">
                   <span className="material-icons-outlined text-3xl">smart_toy</span>
@@ -601,7 +613,7 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
                     value={aiMessage}
                     onChange={(e) => setAiMessage(e.target.value)}
                     placeholder={`Try: Optimize for 2 electives while maintaining sub-${maxCreditsLimit} volume...`}
-                    className="w-full pl-14 pr-6 py-4 text-base font-medium rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950 focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500/50 outline-none transition-all dark:text-white shadow-sm"
+                    className="w-full pl-14 pr-6 py-4 text-base font-medium rounded-2xl border border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-950/85 focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500/50 outline-none transition-all dark:text-white shadow-sm"
                   />
                 </div>
                 <button
@@ -626,7 +638,7 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
               {aiLoading && (
                 <div className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-6">
                   {[1, 2].map((item) => (
-                    <div key={item} className="animate-pulse border border-slate-100 dark:border-slate-800 rounded-[32px] p-8 bg-white dark:bg-slate-900/50">
+                    <div key={item} className="animate-pulse border border-slate-100 dark:border-slate-700 rounded-[32px] p-8 bg-white dark:bg-slate-900/85">
                       <div className="h-4 w-2/5 bg-slate-100 dark:bg-slate-800 rounded-full mb-6"></div>
                       <div className="space-y-3">
                         <div className="h-2 w-full bg-slate-50 dark:bg-slate-800 rounded-full"></div>
@@ -649,7 +661,7 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
                     const selected = selectedRegistry.has(course.code);
                     const isLocked = course.enrollable === false;
                     return (
-                      <div key={`${course.code}-${course.title}`} className="group/card bg-white dark:bg-slate-900 rounded-[32px] p-8 border border-slate-100 dark:border-slate-800 shadow-sm transition-all hover:shadow-xl hover:-translate-y-1">
+                      <div key={`${course.code}-${course.title}`} className="group/card bg-white dark:bg-slate-900/95 rounded-[32px] p-8 border border-slate-100 dark:border-slate-700 shadow-sm transition-all hover:shadow-xl hover:-translate-y-1">
                         <div className="flex justify-between gap-4 mb-6">
                           <div className="min-w-0">
                             <h4 className="font-black text-slate-900 dark:text-white tracking-tight truncate">{course.title}</h4>
@@ -694,9 +706,9 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
                  <div 
                    key={course.code} 
                    onClick={() => navigate(`/student/enrollment/view/${course.code}`)} 
-                   className={`group relative bg-white dark:bg-slate-900 rounded-[32px] p-8 border transition-all shadow-sm cursor-pointer hover:shadow-2xl hover:-translate-y-1 ${
+                   className={`group relative bg-white dark:bg-slate-900/95 rounded-[32px] p-8 border transition-all shadow-sm cursor-pointer hover:shadow-2xl hover:-translate-y-1 ${
                    course.status === 'selected' ? 'border-teal-500 ring-4 ring-teal-500/5 shadow-xl' : 
-                   course.status === 'locked' ? 'border-slate-50 opacity-40 grayscale' : 'border-slate-100 dark:border-slate-800 hover:border-teal-500/30'
+                    course.status === 'locked' ? 'border-slate-50 opacity-40 grayscale' : 'border-slate-100 dark:border-slate-700 hover:border-teal-500/30'
                  }`}>
                    {course.status === 'selected' && (showValidation || isFinalized) && (
                      <div className="absolute top-4 right-4 bg-teal-600 text-white text-[8px] font-black uppercase tracking-widest px-3 py-1 rounded-lg shadow-lg z-10 animate-in zoom-in-95">Selected</div>
@@ -853,7 +865,7 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
               )}
 
               {isOverLimit && (
-                <div className="bg-slate-50/50 dark:bg-slate-950/50 border border-slate-100 dark:border-slate-800 rounded-[32px] p-6 space-y-6 animate-in fade-in duration-700">
+                <div className="bg-slate-50/50 dark:bg-slate-900/80 border border-slate-100 dark:border-slate-700 rounded-[32px] p-6 space-y-6 animate-in fade-in duration-700">
                   <div className="flex items-center justify-between gap-4">
                     <div className="flex items-center gap-3">
                       <div className="h-8 w-8 rounded-xl bg-teal-500 flex items-center justify-center text-white shadow-lg shadow-teal-500/20">
@@ -935,6 +947,15 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
             </div>
             
             <div className="p-8 border-t border-slate-50 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-950/20">
+              {errorMessage && (
+                <div className="p-6 mb-4 bg-[#fdecea] border border-red-200 dark:border-red-800 rounded-[16px] text-center animate-in zoom-in-95 duration-500">
+                  <div className="h-10 w-10 rounded-xl bg-white dark:bg-slate-950 flex items-center justify-center text-[#e74c3c] mx-auto mb-3 shadow-sm">
+                    <span className="material-icons-outlined text-xl">error_outline</span>
+                  </div>
+                  <h4 className="text-base font-black text-[#e74c3c] tracking-tight mb-1">Access Denied</h4>
+                  <p className="text-xs font-medium text-red-700/70 dark:text-red-400/70">{errorMessage}</p>
+                </div>
+              )}
               {successMessage ? (
                 <div className="p-8 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-900/40 rounded-[32px] text-center animate-in zoom-in-95 duration-500 shadow-lg shadow-emerald-500/5">
                   <div className="h-12 w-12 rounded-2xl bg-white dark:bg-slate-950 flex items-center justify-center text-emerald-600 mx-auto mb-4 shadow-sm">
