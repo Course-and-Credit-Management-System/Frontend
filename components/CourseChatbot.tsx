@@ -72,11 +72,11 @@ const CourseChatbot: React.FC<CourseChatbotProps> = ({ courseId }) => {
   };
 
   return (
-    <div className="fixed bottom-8 right-8 z-50">
+    <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-[70]">
       {isOpen ? (
-        <div className="flex flex-col w-[calc(100vw-2rem)] sm:w-[440px] h-[80vh] sm:h-[650px] max-h-[800px] rounded-[40px] border border-slate-100 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl shadow-[0_32px_64px_-12px_rgba(0,0,0,0.2)] overflow-hidden animate-in slide-in-from-bottom-8 duration-500">
+        <div className="flex flex-col w-[min(92vw,380px)] h-[min(70vh,560px)] sm:h-[min(72vh,600px)] rounded-[30px] border border-slate-100 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl shadow-[0_32px_64px_-12px_rgba(0,0,0,0.2)] overflow-hidden animate-in slide-in-from-bottom-8 duration-500">
           {/* Header */}
-          <div className="flex items-center justify-between px-8 py-6 border-b border-slate-50 dark:border-slate-800 shrink-0">
+          <div className="sticky top-0 z-20 flex items-center justify-between px-5 py-4 sm:px-6 sm:py-5 border-b border-slate-50 dark:border-slate-800 shrink-0 bg-white/95 dark:bg-slate-900/95 backdrop-blur">
             <div className="flex items-center gap-4">
               <div className="h-10 w-10 rounded-2xl bg-teal-50 dark:bg-teal-900/20 flex items-center justify-center text-teal-600 dark:text-teal-400 border border-teal-100 dark:border-teal-800/50">
                 <span className="material-icons-outlined text-xl">psychology</span>
@@ -88,7 +88,8 @@ const CourseChatbot: React.FC<CourseChatbotProps> = ({ courseId }) => {
             </div>
             <button 
               onClick={() => setIsOpen(false)}
-              className="h-10 w-10 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all active:scale-90"
+              className="h-10 w-10 shrink-0 rounded-full flex items-center justify-center text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all active:scale-90"
+              aria-label="Close course assistant"
             >
               <span className="material-icons-outlined text-xl">close</span>
             </button>
@@ -97,7 +98,7 @@ const CourseChatbot: React.FC<CourseChatbotProps> = ({ courseId }) => {
           {/* Messages */}
           <div 
             ref={scrollRef}
-            className="flex-1 overflow-y-auto px-8 py-10 space-y-2 scrollbar-hide"
+            className="flex-1 overflow-y-auto px-5 py-6 sm:px-6 sm:py-7 space-y-2 scrollbar-hide"
           >
             {messages.length === 0 ? (
               <div className="h-full flex flex-col items-center justify-center text-center p-6 animate-in fade-in duration-700">
@@ -113,7 +114,7 @@ const CourseChatbot: React.FC<CourseChatbotProps> = ({ courseId }) => {
           </div>
 
           {/* Input */}
-          <div className="p-8 bg-transparent border-t border-slate-50 dark:border-slate-800 shrink-0">
+          <div className="p-4 sm:p-5 bg-transparent border-t border-slate-50 dark:border-slate-800 shrink-0">
             <form 
               onSubmit={handleSend}
               className="flex flex-col gap-3 p-4 bg-slate-50/50 dark:bg-slate-950/50 rounded-[32px] border border-slate-100 dark:border-slate-800 shadow-inner focus-within:ring-4 focus-within:ring-teal-500/10 focus-within:border-teal-500/50 transition-all"

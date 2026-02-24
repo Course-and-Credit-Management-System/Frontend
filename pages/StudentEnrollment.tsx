@@ -682,11 +682,11 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
                             isLocked
                               ? 'bg-slate-50 dark:bg-slate-800 text-slate-300 cursor-not-allowed'
                               : selected
-                                ? 'bg-rose-50 text-rose-600 border border-rose-100 hover:bg-rose-100'
+                                ? 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700'
                                 : 'bg-slate-900 dark:bg-teal-600 text-white hover:bg-slate-800 dark:hover:bg-teal-700 shadow-lg shadow-teal-500/10'
                           }`}
                         >
-                          {selected ? 'PURGE FROM MATRIX' : 'ADD TO SELECTION'}
+                          {selected ? 'REMOVE FROM SELECTION' : 'ADD TO SELECTION'}
                         </button>
                       </div>
                     );
@@ -702,7 +702,28 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
                   Access window terminated. Synchronization with enrollment nexus is currently offline.
                 </div>
               )}
-               {displayCourses.map((course) => (
+               {loading ? (
+                 Array.from({ length: 6 }).map((_, idx) => (
+                   <div
+                     key={`course-skeleton-${idx}`}
+                     className="animate-pulse rounded-[32px] p-8 border border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-900/90 shadow-sm"
+                   >
+                     <div className="flex justify-between items-start mb-8">
+                       <div className="h-12 w-12 rounded-[18px] bg-slate-100 dark:bg-slate-800" />
+                       <div className="h-10 w-24 rounded-2xl bg-slate-100 dark:bg-slate-800" />
+                     </div>
+                     <div className="space-y-3 mb-8">
+                       <div className="h-5 w-2/3 rounded-full bg-slate-100 dark:bg-slate-800" />
+                       <div className="h-3 w-1/3 rounded-full bg-slate-100 dark:bg-slate-800" />
+                     </div>
+                     <div className="space-y-2 mb-8">
+                       <div className="h-3 w-full rounded-full bg-slate-100 dark:bg-slate-800" />
+                       <div className="h-3 w-4/5 rounded-full bg-slate-100 dark:bg-slate-800" />
+                     </div>
+                     <div className="h-10 w-full rounded-2xl bg-slate-100 dark:bg-slate-800" />
+                   </div>
+                 ))
+               ) : displayCourses.map((course) => (
                  <div 
                    key={course.code} 
                    onClick={() => navigate(`/student/enrollment/view/${course.code}`)} 
@@ -735,12 +756,12 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
                            e.stopPropagation();
                            toggleCourse(course);
                          }}
-                         className={`h-10 px-6 rounded-2xl border text-[9px] font-black uppercase tracking-widest transition-all active:scale-[0.98] ${
-                         course.status === 'selected' ? 'bg-rose-50 text-rose-600 border-rose-100 hover:bg-rose-100 shadow-sm' :
-                         course.status === 'locked' ? 'border-slate-100 text-slate-300 cursor-not-allowed bg-slate-50/50' : 'bg-slate-900 dark:bg-teal-600 text-white border-transparent hover:bg-slate-800 dark:hover:bg-teal-700 shadow-lg'
-                       }`}>
-                          {course.status === 'selected' ? 'PURGE' : course.status === 'locked' ? 'RESTRICTED' : 'ENROLL'}
-                       </button>
+                          className={`h-10 px-6 rounded-2xl border text-[9px] font-black uppercase tracking-widest transition-all active:scale-[0.98] ${
+                          course.status === 'selected' ? 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 shadow-sm' :
+                          course.status === 'locked' ? 'border-slate-100 text-slate-300 cursor-not-allowed bg-slate-50/50' : 'bg-slate-900 dark:bg-teal-600 text-white border-transparent hover:bg-slate-800 dark:hover:bg-teal-700 shadow-lg'
+                        }`}>
+                           {course.status === 'selected' ? 'CANCEL' : course.status === 'locked' ? 'RESTRICTED' : 'ENROLL'}
+                        </button>
                      </div>
                      
                      <div className="min-w-0">
@@ -771,8 +792,8 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
                      </div>
                    )}
                  </div>
-               ))}
-            </div>
+                ))}
+             </div>
 
             {totalPages > 1 && (
               <div className="flex justify-center items-center gap-8 mt-16 pb-8">

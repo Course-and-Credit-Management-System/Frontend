@@ -22,6 +22,9 @@ const AdminEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
   const [advanceLoading, setAdvanceLoading] = useState<SemesterKey | null>(null);
   const [advanceDetail, setAdvanceDetail] = useState<string | null>(null);
   const [advanceState, setAdvanceState] = useState<'success' | 'error' | 'info'>('info');
+  const [semesterFilter, setSemesterFilter] = useState<string>('all');
+  const [academicYearFilter, setAcademicYearFilter] = useState<string>('all');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
   const [currentSemester, setCurrentSemester] = useState<SemesterKey>(() => {
     const raw = localStorage.getItem("admin_current_semester");
     return raw === "summer" ? "summer" : "fall";
@@ -44,10 +47,13 @@ const AdminEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
       
       const mapped: EnrollmentRequest[] = items.map((item: any) => ({
         id: item._id, // Updated ID mapping
+        studentId: item.student_id || item.user_id || item.studentId,
         studentName: item.student_name || 'Unknown Student',
         studentInitials: getInitials(item.student_name || 'Unknown Student'),
         studentAvatar: item.student_avatar,
         courseName: item.course_title || 'Unknown Course',
+        semester: item.semesterAttend || 'N/A',
+        academicYear: item.academic_year || 'N/A',
         status: item.status || 'Pending',
       }));
       setRequests(mapped);
@@ -85,9 +91,57 @@ const AdminEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
     setSortConfig({ key, direction });
   };
 
+  const semesterOptions = React.useMemo(() => {
+    const parseSemester = (value: string) => {
+      const parts = value.split('.').map((part) => part.trim());
+      const phase = (parts[0] || '').toLowerCase(); // old | new
+      const yearMatch = (parts[1] || '').match(/(\d+)/);
+      const year = yearMatch ? Number(yearMatch[1]) : Number.MAX_SAFE_INTEGER;
+      const sem = (parts[2] || '').toLowerCase(); // first sem | second sem
+
+      const phaseOrder = phase === 'old' ? 0 : phase === 'new' ? 1 : 2;
+      const semOrder = sem.includes('first') ? 0 : sem.includes('second') ? 1 : 2;
+
+      return { phaseOrder, yearOrder: year, semOrder };
+    };
+
+    return Array.from(
+      new Set(
+        requests
+          .map((req) => req.semester)
+          .filter((semester) => semester && semester !== 'N/A')
+      )
+    ).sort((a, b) => {
+      const pa = parseSemester(a);
+      const pb = parseSemester(b);
+      if (pa.phaseOrder !== pb.phaseOrder) return pa.phaseOrder - pb.phaseOrder;
+      if (pa.yearOrder !== pb.yearOrder) return pa.yearOrder - pb.yearOrder;
+      return pa.semOrder - pb.semOrder;
+    });
+  }, [requests]);
+
+  const filteredRequests = React.useMemo(() => {
+    return requests.filter((req) => {
+      const semesterMatch = semesterFilter === 'all' || req.semester === semesterFilter;
+      const academicYearMatch = academicYearFilter === 'all' || req.academicYear === academicYearFilter;
+      const statusMatch = statusFilter === 'all' || req.status === statusFilter;
+      return semesterMatch && academicYearMatch && statusMatch;
+    });
+  }, [requests, semesterFilter, academicYearFilter, statusFilter]);
+
+  const academicYearOptions = React.useMemo(() => {
+    return Array.from(
+      new Set(
+        requests
+          .map((req) => req.academicYear)
+          .filter((year) => year && year !== 'N/A')
+      )
+    ).sort((a, b) => a.localeCompare(b));
+  }, [requests]);
+
   const sortedRequests = React.useMemo(() => {
-    if (!sortConfig) return requests;
-    return [...requests].sort((a, b) => {
+    if (!sortConfig) return filteredRequests;
+    return [...filteredRequests].sort((a, b) => {
       if (a[sortConfig.key] < b[sortConfig.key]) {
         return sortConfig.direction === 'asc' ? -1 : 1;
       }
@@ -96,7 +150,7 @@ const AdminEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
       }
       return 0;
     });
-  }, [requests, sortConfig]);
+  }, [filteredRequests, sortConfig]);
 
   const openRejectModal = (id: string) => {
     setSelectedRequestId(id);
@@ -220,14 +274,49 @@ const AdminEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
-            <div className="rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm lg:col-span-8 overflow-hidden">
+          <div className="space-y-8">
+            <div className="rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
                <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 px-8 py-6">
                 <div className="space-y-1">
                   <h3 className="text-lg font-extrabold text-slate-900 dark:text-white tracking-tight">Recent Requests</h3>
                   <p className="text-xs font-medium text-slate-400 dark:text-slate-500">Live feed of student submissions</p>
                 </div>
                 <div className="flex items-center gap-3">
+                  <label className="sr-only" htmlFor="semesterFilter">Filter by semester</label>
+                  <select
+                    id="semesterFilter"
+                    value={semesterFilter}
+                    onChange={(e) => setSemesterFilter(e.target.value)}
+                    className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 text-xs font-bold text-slate-600 dark:text-slate-300 outline-none hover:bg-slate-50 dark:hover:bg-slate-800"
+                  >
+                    <option value="all">All Semesters</option>
+                    {semesterOptions.map((semester) => (
+                      <option key={semester} value={semester}>{semester}</option>
+                    ))}
+                  </select>
+                  <label className="sr-only" htmlFor="statusFilter">Filter by status</label>
+                  <select
+                    id="statusFilter"
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value)}
+                    className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 text-xs font-bold text-slate-600 dark:text-slate-300 outline-none hover:bg-slate-50 dark:hover:bg-slate-800"
+                  >
+                    <option value="all">All Status</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Enrolled">Enrolled</option>
+                  </select>
+                  <label className="sr-only" htmlFor="academicYearFilter">Filter by academic year</label>
+                  <select
+                    id="academicYearFilter"
+                    value={academicYearFilter}
+                    onChange={(e) => setAcademicYearFilter(e.target.value)}
+                    className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 text-xs font-bold text-slate-600 dark:text-slate-300 outline-none hover:bg-slate-50 dark:hover:bg-slate-800"
+                  >
+                    <option value="all">All Academic Years</option>
+                    {academicYearOptions.map((year) => (
+                      <option key={year} value={year}>{year}</option>
+                    ))}
+                  </select>
                   <button 
                     onClick={() => handleSort('status')} 
                     className="flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all"
@@ -246,6 +335,12 @@ const AdminEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
                       <th className="px-8 py-4 cursor-pointer hover:text-slate-900 dark:hover:text-white transition-colors" onClick={() => handleSort('courseName')}>
                         <div className="flex items-center">Course {sortConfig?.key === 'courseName' && <span className="material-icons-outlined text-xs ml-1">{sortConfig.direction === 'asc' ? 'north' : 'south'}</span>}</div>
                       </th>
+                      <th className="px-8 py-4 cursor-pointer hover:text-slate-900 dark:hover:text-white transition-colors" onClick={() => handleSort('semester')}>
+                        <div className="flex items-center">Semester {sortConfig?.key === 'semester' && <span className="material-icons-outlined text-xs ml-1">{sortConfig.direction === 'asc' ? 'north' : 'south'}</span>}</div>
+                      </th>
+                      <th className="px-8 py-4 cursor-pointer hover:text-slate-900 dark:hover:text-white transition-colors" onClick={() => handleSort('academicYear')}>
+                        <div className="flex items-center">Academic Year {sortConfig?.key === 'academicYear' && <span className="material-icons-outlined text-xs ml-1">{sortConfig.direction === 'asc' ? 'north' : 'south'}</span>}</div>
+                      </th>
                       <th className="px-8 py-4 cursor-pointer hover:text-slate-900 dark:hover:text-white transition-colors" onClick={() => handleSort('status')}>
                         <div className="flex items-center">Status {sortConfig?.key === 'status' && <span className="material-icons-outlined text-xs ml-1">{sortConfig.direction === 'asc' ? 'north' : 'south'}</span>}</div>
                       </th>
@@ -254,16 +349,21 @@ const AdminEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
                     {loading ? (
-                      <TableSkeletonRows rows={6} cols={4} />
+                      <TableSkeletonRows rows={6} cols={6} />
                     ) : error ? (
-                      <tr><td colSpan={4} className="px-8 py-12 text-center text-rose-500 font-bold">{error}</td></tr>
+                      <tr><td colSpan={6} className="px-8 py-12 text-center text-rose-500 font-bold">{error}</td></tr>
                     ) : sortedRequests.length === 0 ? (
-                      <tr><td colSpan={4} className="px-8 py-12 text-center text-slate-400 italic">No pending requests found.</td></tr>
+                      <tr><td colSpan={6} className="px-8 py-12 text-center text-slate-400 italic">No pending requests found.</td></tr>
                     ) : (
                       sortedRequests.map((req, i) => (
                       <tr key={i} className="group hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors">
                          <td className="px-8 py-5">
-                          <div className="flex items-center gap-4">
+                          <button
+                            onClick={() => req.studentId && navigate(`/admin/students/${encodeURIComponent(req.studentId)}`)}
+                            disabled={!req.studentId}
+                            className="flex items-center gap-4 text-left disabled:cursor-not-allowed"
+                            title={req.studentId ? 'View student details' : 'Student ID unavailable'}
+                          >
                             {req.studentAvatar ? (
                               <img 
                                 src={req.studentAvatar} 
@@ -276,10 +376,16 @@ const AdminEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
                                 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
                               }`}>{req.studentInitials}</div>
                             )}
-                            <div className="font-bold text-slate-900 dark:text-white group-hover:text-teal-600 transition-colors">{req.studentName}</div>
-                          </div>
+                            <div className={`font-bold transition-colors ${
+                              req.studentId
+                                ? 'text-slate-900 dark:text-white group-hover:text-teal-600'
+                                : 'text-slate-500 dark:text-slate-400'
+                            }`}>{req.studentName}</div>
+                          </button>
                         </td>
                         <td className="px-8 py-5 text-slate-600 dark:text-slate-400 font-medium">{req.courseName}</td>
+                        <td className="px-8 py-5 text-slate-600 dark:text-slate-400 font-medium">{req.semester}</td>
+                        <td className="px-8 py-5 text-slate-600 dark:text-slate-400 font-medium">{req.academicYear}</td>
                         <td className="px-8 py-5">
                            <div className="flex items-center">
                             <span className={`inline-flex rounded-lg px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider border ${
@@ -313,69 +419,67 @@ const AdminEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
               </div>
             </div>
 
-            <div className="flex flex-col gap-8 lg:col-span-4">
-              <div className="rounded-3xl bg-slate-50/50 dark:bg-slate-900/30 p-8 border border-slate-200/60 dark:border-slate-800/60 shadow-sm">
-                <h3 className="text-lg font-extrabold text-slate-900 dark:text-white tracking-tight">Advance Semester</h3>
-                <p className="mt-2 text-sm text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
-                  Switch the institutional active period.
-                </p>
+            <div className="rounded-3xl bg-slate-50/50 dark:bg-slate-900/30 p-8 border border-slate-200/60 dark:border-slate-800/60 shadow-sm">
+              <h3 className="text-lg font-extrabold text-slate-900 dark:text-white tracking-tight">Advance Semester</h3>
+              <p className="mt-2 text-sm text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
+                Switch the institutional active period.
+              </p>
 
-                <div className="mt-8 space-y-4">
-                  {([
-                    { key: 'fall' as SemesterKey, title: 'Fall Semester', subtitle: 'Academic Period 1', icon: 'wb_sunny' },
-                    { key: 'summer' as SemesterKey, title: 'Summer Semester', subtitle: 'Academic Period 2', icon: 'dark_mode' },
-                  ]).map((item) => {
-                    const isActive = currentSemester === item.key;
-                    const isLoading = advanceLoading === item.key;
-                    return (
-                      <button
-                        key={item.key}
-                        onClick={() => handleAdvanceSemester(item.key)}
-                        disabled={isLoading || isActive || advanceLoading !== null}
-                        className={`w-full rounded-2xl border p-5 text-left transition-all relative group ${
-                          isActive
-                            ? 'border-teal-500 bg-white dark:bg-slate-900 shadow-md'
-                            : 'border-slate-200 dark:border-slate-800 bg-transparent hover:border-slate-300 dark:hover:border-slate-700'
-                        } disabled:cursor-not-allowed`}
-                      >
-                        {isActive && (
-                          <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-teal-500" />
-                        )}
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-4">
-                            <span className={`material-icons-outlined ${isActive ? 'text-teal-600 dark:text-teal-400' : 'text-slate-400 dark:text-slate-600'}`}>
-                              {item.icon}
-                            </span>
-                            <div>
-                              <p className={`text-sm font-bold ${isActive ? 'text-slate-900 dark:text-white' : 'text-slate-600 dark:text-slate-400'}`}>{item.title}</p>
-                              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{item.subtitle}</p>
-                            </div>
-                          </div>
-                          <div className={`px-2 py-1 rounded-md text-[9px] font-extrabold uppercase tracking-widest ${
-                            isActive ? 'bg-teal-50 text-teal-700 dark:bg-teal-900/40 dark:text-teal-400' : 'bg-slate-100 text-slate-500 dark:bg-slate-800'
-                          }`}>
-                            {isActive ? 'Active' : isLoading ? '...' : 'Switch'}
+              <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2">
+                {([
+                  { key: 'fall' as SemesterKey, title: 'Fall Semester', subtitle: 'Academic Period 1', icon: 'wb_sunny' },
+                  { key: 'summer' as SemesterKey, title: 'Summer Semester', subtitle: 'Academic Period 2', icon: 'dark_mode' },
+                ]).map((item) => {
+                  const isActive = currentSemester === item.key;
+                  const isLoading = advanceLoading === item.key;
+                  return (
+                    <button
+                      key={item.key}
+                      onClick={() => handleAdvanceSemester(item.key)}
+                      disabled={isLoading || isActive || advanceLoading !== null}
+                      className={`w-full rounded-2xl border p-5 text-left transition-all relative group ${
+                        isActive
+                          ? 'border-teal-500 bg-white dark:bg-slate-900 shadow-md'
+                          : 'border-slate-200 dark:border-slate-800 bg-transparent hover:border-slate-300 dark:hover:border-slate-700'
+                      } disabled:cursor-not-allowed`}
+                    >
+                      {isActive && (
+                        <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-teal-500" />
+                      )}
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                          <span className={`material-icons-outlined ${isActive ? 'text-teal-600 dark:text-teal-400' : 'text-slate-400 dark:text-slate-600'}`}>
+                            {item.icon}
+                          </span>
+                          <div>
+                            <p className={`text-sm font-bold ${isActive ? 'text-slate-900 dark:text-white' : 'text-slate-600 dark:text-slate-400'}`}>{item.title}</p>
+                            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{item.subtitle}</p>
                           </div>
                         </div>
-                      </button>
-                    );
-                  })}
-                </div>
-
-                {advanceDetail && (
-                  <div
-                    className={`mt-6 rounded-2xl px-5 py-4 text-xs font-bold leading-relaxed animate-in fade-in slide-in-from-top-2 ${
-                      advanceState === 'success'
-                        ? 'bg-emerald-50 text-emerald-700 border border-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-900/40'
-                        : advanceState === 'error'
-                        ? 'bg-rose-50 text-rose-700 border border-rose-100 dark:bg-rose-950/40 dark:text-rose-400 dark:border-rose-900/40'
-                        : 'bg-indigo-50 text-indigo-700 border border-indigo-100 dark:bg-indigo-950/40 dark:text-indigo-400 dark:border-indigo-900/40'
-                    }`}
-                  >
-                    <span className="mr-2">Info:</span> {advanceDetail}
-                  </div>
-                )}
+                        <div className={`px-2 py-1 rounded-md text-[9px] font-extrabold uppercase tracking-widest ${
+                          isActive ? 'bg-teal-50 text-teal-700 dark:bg-teal-900/40 dark:text-teal-400' : 'bg-slate-100 text-slate-500 dark:bg-slate-800'
+                        }`}>
+                          {isActive ? 'Active' : isLoading ? '...' : 'Switch'}
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
+
+              {advanceDetail && (
+                <div
+                  className={`mt-6 rounded-2xl px-5 py-4 text-xs font-bold leading-relaxed animate-in fade-in slide-in-from-top-2 ${
+                    advanceState === 'success'
+                      ? 'bg-emerald-50 text-emerald-700 border border-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-900/40'
+                      : advanceState === 'error'
+                      ? 'bg-rose-50 text-rose-700 border border-rose-100 dark:bg-rose-950/40 dark:text-rose-400 dark:border-rose-900/40'
+                      : 'bg-indigo-50 text-indigo-700 border border-indigo-100 dark:bg-indigo-950/40 dark:text-indigo-400 dark:border-indigo-900/40'
+                  }`}
+                >
+                  <span className="mr-2">Info:</span> {advanceDetail}
+                </div>
+              )}
             </div>
           </div>
           
