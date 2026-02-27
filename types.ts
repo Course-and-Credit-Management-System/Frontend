@@ -33,10 +33,13 @@ export interface Course {
 
 export interface EnrollmentRequest {
   id: string;
+  studentId?: string;
   studentName: string;
   studentInitials: string;
   studentAvatar?: string;
   courseName: string;
+  semester: string;
+  academicYear: string;
   status: 'Enrolled' | 'Pending' | 'Conflict' | 'Waitlisted';
 }
 
