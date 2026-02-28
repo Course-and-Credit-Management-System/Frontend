@@ -17,6 +17,13 @@ type EnrollmentRow = {
   credits: number;
   grade: string;
   status: string;
+  semester?: string;
+};
+
+type AcademicHistoryEntry = {
+  semester: string;
+  enrollments: string[];
+  GPA: number;
 };
 
 type StudentDetailsResponse = {
@@ -36,6 +43,7 @@ type StudentDetailsResponse = {
   status: string;
   avatar: string;
   enrollments: EnrollmentRow[];
+  academic_history?: AcademicHistoryEntry[];
 };
 
 type CourseOption = { course_code: string; title: string; credits: number };
@@ -310,14 +318,10 @@ const AdminStudentDetails: React.FC<StudentDetailsProps> = ({ user, onLogout }) 
 
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-8 pt-4">
                   <div className="space-y-1">
-                    <span className="block text-[10px] font-black text-slate-300 dark:text-slate-600 uppercase tracking-[0.2em]">Aggregate GPA</span>
-                    <span className="text-3xl font-black text-slate-900 dark:text-white tabular-nums tracking-tighter">{student.gpa?.toFixed?.(2) ?? student.gpa ?? '0.00'}</span>
+                    <span className="block text-[10px] font-black text-slate-300 dark:text-slate-600 uppercase tracking-[0.2em]">Accumulated CU</span>
+                    <span className="text-3xl font-black text-slate-900 dark:text-white tabular-nums tracking-tighter">{currentCredits.toFixed(1)} CU</span>
                   </div>
                   <div className="space-y-1 border-l border-slate-100 dark:border-slate-800 pl-8">
-                    <span className="block text-[10px] font-black text-slate-300 dark:text-slate-600 uppercase tracking-[0.2em]">Accumulated CU</span>
-                    <span className="text-3xl font-black text-slate-900 dark:text-white tabular-nums tracking-tighter">{student.creditsEarned ?? 0}</span>
-                  </div>
-                  <div className="col-span-2 md:col-span-1 space-y-1 border-l border-slate-100 dark:border-slate-800 pl-8">
                     <span className="block text-[10px] font-black text-slate-300 dark:text-slate-600 uppercase tracking-[0.2em]">Academic Cycle</span>
                     <span className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">{displayYear}{displaySemester !== '—' ? ` / S${String(displaySemester)}` : ''}</span>
                   </div>
@@ -365,13 +369,14 @@ const AdminStudentDetails: React.FC<StudentDetailsProps> = ({ user, onLogout }) 
                       <tr>
                         <th className="px-10 py-6">Curriculum Node</th>
                         <th className="px-10 py-6 text-center">Volume</th>
+                        <th className="px-10 py-6">Semester</th>
                         <th className="px-10 py-6">State</th>
                         <th className="px-10 py-6 text-right">Intervention</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-50 dark:divide-slate-800/50">
                       {(student.enrollments || []).length === 0 ? (
-                        <tr><td colSpan={4} className="px-10 py-20 text-center space-y-4">
+                        <tr><td colSpan={5} className="px-10 py-20 text-center space-y-4">
                           <div className="h-16 w-16 rounded-[24px] bg-slate-50 dark:bg-slate-950 flex items-center justify-center text-slate-200 dark:text-slate-800 mx-auto border border-slate-100 dark:border-slate-800">
                             <span className="material-icons-outlined text-3xl">inbox</span>
                           </div>
@@ -388,6 +393,9 @@ const AdminStudentDetails: React.FC<StudentDetailsProps> = ({ user, onLogout }) 
                             </td>
                             <td className="px-10 py-8 text-center">
                               <span className="text-xs font-black text-slate-400 tabular-nums">{course.credits.toFixed(1)} CU</span>
+                            </td>
+                            <td className="px-10 py-8">
+                              <span className="text-xs font-black text-slate-400 uppercase tracking-tighter">{course.semester || '—'}</span>
                             </td>
                             <td className="px-10 py-8">
                               <span className="inline-flex px-3 py-1 rounded-lg bg-teal-50 text-teal-700 border border-teal-100 dark:bg-teal-900/20 dark:text-teal-400 dark:border-teal-900/50 text-[9px] font-black uppercase tracking-widest shadow-sm">
@@ -416,9 +424,88 @@ const AdminStudentDetails: React.FC<StudentDetailsProps> = ({ user, onLogout }) 
                         <td className="px-10 py-6 text-center">
                           <span className="text-xl font-black text-teal-600 dark:text-teal-400 tabular-nums tracking-tighter">{currentCredits.toFixed(1)}</span>
                         </td>
+                        <td></td>
                         <td colSpan={2}></td>
                       </tr>
                     </tfoot>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            {/* Academic History Section */}
+            <div className="xl:col-span-8 space-y-10">
+              <div className="flex items-center justify-between px-2">
+                <div className="flex items-center gap-4">
+                  <div className="h-10 w-10 rounded-2xl bg-white dark:bg-slate-900 flex items-center justify-center border border-slate-100 dark:border-slate-800 shadow-sm text-indigo-600">
+                    <span className="material-icons-outlined text-lg">history_edu</span>
+                  </div>
+                  <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">Academic History</h2>
+                </div>
+              </div>
+
+              <div className="bg-white dark:bg-slate-900 rounded-[40px] border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden transition-all hover:shadow-md">
+                <div className="overflow-x-auto scrollbar-hide">
+                  <table className="w-full text-left">
+                    <thead className="bg-slate-50/50 dark:bg-slate-950/50 text-[9px] uppercase font-black tracking-[0.3em] text-slate-400 border-b border-slate-50 dark:border-slate-800">
+                      <tr>
+                        <th className="px-10 py-6">Academic Semester</th>
+                        <th className="px-10 py-6 text-center">Course Count</th>
+                        <th className="px-10 py-6">Course IDs</th>
+                        <th className="px-10 py-6 text-center">Semester GPA</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-50 dark:divide-slate-800/50">
+                      {(!student.academic_history || student.academic_history.length === 0) ? (
+                        <tr><td colSpan={4} className="px-10 py-20 text-center space-y-4">
+                          <div className="h-16 w-16 rounded-[24px] bg-slate-50 dark:bg-slate-950 flex items-center justify-center text-slate-200 dark:text-slate-800 mx-auto border border-slate-100 dark:border-slate-800">
+                            <span className="material-icons-outlined text-3xl">history</span>
+                          </div>
+                          <p className="text-xs font-black text-slate-300 uppercase tracking-widest">No Academic History Available</p>
+                        </td></tr>
+                      ) : (
+                        student.academic_history.map((entry, index) => (
+                          <tr key={index} className="transition-all group hover:bg-slate-50/50 dark:hover:bg-slate-800/40">
+                            <td className="px-10 py-8">
+                              <div className="flex items-center gap-3">
+                                <div className="h-8 w-8 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center">
+                                  <span className="material-icons-outlined text-sm text-indigo-600 dark:text-indigo-400">school</span>
+                                </div>
+                                <span className="text-sm font-bold text-slate-900 dark:text-white">{entry.semester}</span>
+                              </div>
+                            </td>
+                            <td className="px-10 py-8 text-center">
+                              <span className="inline-flex px-3 py-1 rounded-lg bg-indigo-50 text-indigo-700 border border-indigo-100 dark:bg-indigo-900/20 dark:text-indigo-400 dark:border-indigo-900/50 text-[9px] font-black uppercase tracking-widest shadow-sm">
+                                {entry.enrollments.length} Courses
+                              </span>
+                            </td>
+                            <td className="px-10 py-8">
+                              <div className="max-w-md">
+                                <div className="flex flex-wrap gap-1">
+                                  {entry.enrollments.map((courseCode, courseIndex) => (
+                                    <span key={courseIndex} className="inline-block px-2 py-1 bg-slate-50 dark:bg-slate-800 text-[8px] font-mono text-slate-600 dark:text-slate-300 rounded border border-slate-100 dark:border-slate-700">
+                                      {courseCode}
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+                            </td>
+                            <td className="px-10 py-8 text-center">
+                              <div className="flex flex-col items-center gap-1">
+                                <span className="text-lg font-black text-indigo-600 dark:text-indigo-400 tabular-nums tracking-tighter">
+                                  {entry.GPA.toFixed(2)}
+                                </span>
+                                <div className="flex gap-1">
+                                  {[...Array(4)].map((_, i) => (
+                                    <div key={i} className={`w-1 h-1 rounded-full ${i < Math.floor(entry.GPA) ? 'bg-indigo-400' : 'bg-slate-200 dark:bg-slate-700'}`} />
+                                  ))}
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
                   </table>
                 </div>
               </div>
