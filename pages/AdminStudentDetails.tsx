@@ -18,12 +18,29 @@ type EnrollmentRow = {
   grade: string;
   status: string;
   semester?: string;
+  grade_points?: number;
+  grade_points_earned?: number;
+};
+
+type AcademicHistoryCourse = {
+  course_code: string;
+  course_title: string;
+  grade: string;
+  status: string;
+  credits: number;
+  grade_points?: number;
+  grade_points_earned?: number;
+  credits_earned?: number;
 };
 
 type AcademicHistoryEntry = {
   semester: string;
-  enrollments: string[];
-  GPA: number;
+  courses?: AcademicHistoryCourse[];
+  enrollments?: string[];
+  total_credits_earned?: number;
+  total_grade_points?: number;
+  gpa?: number;
+  GPA?: number;
 };
 
 type StudentDetailsResponse = {
@@ -37,6 +54,7 @@ type StudentDetailsResponse = {
   semester?: number;
   section?: string | null;
   gpa: number;
+  cgpa?: number;
   advisor: string;
   creditsEarned: number;
   creditsRequired: number;
@@ -346,7 +364,7 @@ const AdminStudentDetails: React.FC<StudentDetailsProps> = ({ user, onLogout }) 
           </div>
 
           <div className="grid grid-cols-1 xl:grid-cols-12 gap-12">
-            <div className="xl:col-span-8 space-y-10">
+            <div className="xl:col-span-12 space-y-10">
               <div className="flex items-center justify-between px-2">
                 <div className="flex items-center gap-4">
                   <div className="h-10 w-10 rounded-2xl bg-white dark:bg-slate-900 flex items-center justify-center border border-slate-100 dark:border-slate-800 shadow-sm text-teal-600">
@@ -434,7 +452,7 @@ const AdminStudentDetails: React.FC<StudentDetailsProps> = ({ user, onLogout }) 
             </div>
 
             {/* Academic History Section */}
-            <div className="xl:col-span-8 space-y-10">
+            <div className="xl:col-span-12 space-y-10">
               <div className="flex items-center justify-between px-2">
                 <div className="flex items-center gap-4">
                   <div className="h-10 w-10 rounded-2xl bg-white dark:bg-slate-900 flex items-center justify-center border border-slate-100 dark:border-slate-800 shadow-sm text-indigo-600">
@@ -446,85 +464,134 @@ const AdminStudentDetails: React.FC<StudentDetailsProps> = ({ user, onLogout }) 
 
               <div className="bg-white dark:bg-slate-900 rounded-[40px] border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden transition-all hover:shadow-md">
                 <div className="overflow-x-auto scrollbar-hide">
-                  <table className="w-full text-left">
-                    <thead className="bg-slate-50/50 dark:bg-slate-950/50 text-[9px] uppercase font-black tracking-[0.3em] text-slate-400 border-b border-slate-50 dark:border-slate-800">
-                      <tr>
-                        <th className="px-10 py-6">Academic Semester</th>
-                        <th className="px-10 py-6 text-center">Course Count</th>
-                        <th className="px-10 py-6">Course IDs</th>
-                        <th className="px-10 py-6 text-center">Semester GPA</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-50 dark:divide-slate-800/50">
-                      {(!student.academic_history || student.academic_history.length === 0) ? (
-                        <tr><td colSpan={4} className="px-10 py-20 text-center space-y-4">
-                          <div className="h-16 w-16 rounded-[24px] bg-slate-50 dark:bg-slate-950 flex items-center justify-center text-slate-200 dark:text-slate-800 mx-auto border border-slate-100 dark:border-slate-800">
-                            <span className="material-icons-outlined text-3xl">history</span>
-                          </div>
-                          <p className="text-xs font-black text-slate-300 uppercase tracking-widest">No Academic History Available</p>
-                        </td></tr>
-                      ) : (
-                        student.academic_history.map((entry, index) => (
-                          <tr key={index} className="transition-all group hover:bg-slate-50/50 dark:hover:bg-slate-800/40">
-                            <td className="px-10 py-8">
-                              <div className="flex items-center gap-3">
-                                <div className="h-8 w-8 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center">
-                                  <span className="material-icons-outlined text-sm text-indigo-600 dark:text-indigo-400">school</span>
-                                </div>
-                                <span className="text-sm font-bold text-slate-900 dark:text-white">{entry.semester}</span>
-                              </div>
-                            </td>
-                            <td className="px-10 py-8 text-center">
-                              <span className="inline-flex px-3 py-1 rounded-lg bg-indigo-50 text-indigo-700 border border-indigo-100 dark:bg-indigo-900/20 dark:text-indigo-400 dark:border-indigo-900/50 text-[9px] font-black uppercase tracking-widest shadow-sm">
-                                {entry.enrollments.length} Courses
-                              </span>
-                            </td>
-                            <td className="px-10 py-8">
-                              <div className="max-w-md">
-                                <div className="flex flex-wrap gap-1">
-                                  {entry.enrollments.map((courseCode, courseIndex) => (
-                                    <span key={courseIndex} className="inline-block px-2 py-1 bg-slate-50 dark:bg-slate-800 text-[8px] font-mono text-slate-600 dark:text-slate-300 rounded border border-slate-100 dark:border-slate-700">
-                                      {courseCode}
-                                    </span>
-                                  ))}
-                                </div>
-                              </div>
-                            </td>
-                            <td className="px-10 py-8 text-center">
-                              <div className="flex flex-col items-center gap-1">
-                                <span className="text-lg font-black text-indigo-600 dark:text-indigo-400 tabular-nums tracking-tighter">
-                                  {entry.GPA.toFixed(2)}
-                                </span>
-                                <div className="flex gap-1">
-                                  {[...Array(4)].map((_, i) => (
-                                    <div key={i} className={`w-1 h-1 rounded-full ${i < Math.floor(entry.GPA) ? 'bg-indigo-400' : 'bg-slate-200 dark:bg-slate-700'}`} />
-                                  ))}
-                                </div>
-                              </div>
-                            </td>
-                          </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
+	                  <table className="w-full text-left">
+		                    <thead className="bg-slate-50/50 dark:bg-slate-950/50 text-[10px] uppercase font-black tracking-[0.26em] text-slate-400 border-b border-slate-50 dark:border-slate-800">
+		                      <tr>
+		                        <th className="px-6 py-5 min-w-[220px]">Academic Semester</th>
+		                        <th className="px-6 py-5 text-center min-w-[130px]">Course Count</th>
+	                        <th className="px-6 py-5 min-w-[460px]">Courses</th>
+	                        <th className="px-6 py-5 text-center min-w-[150px]">Credits Earned</th>
+	                        <th className="px-6 py-5 text-center min-w-[140px]">Semester GPA</th>
+		                      </tr>
+		                    </thead>
+		                    <tbody className="divide-y divide-slate-50 dark:divide-slate-800/50">
+		                      {(!student.academic_history || student.academic_history.length === 0) ? (
+		                        <tr><td colSpan={5} className="px-6 py-20 text-center space-y-4">
+		                          <div className="h-16 w-16 rounded-[24px] bg-slate-50 dark:bg-slate-950 flex items-center justify-center text-slate-200 dark:text-slate-800 mx-auto border border-slate-100 dark:border-slate-800">
+		                            <span className="material-icons-outlined text-3xl">history</span>
+		                          </div>
+	                          <p className="text-xs font-black text-slate-300 uppercase tracking-widest">No Academic History Available</p>
+	                        </td></tr>
+	                      ) : (
+	                        student.academic_history.map((entry, index) => {
+                            const historyCourses = Array.isArray(entry.courses) ? entry.courses : [];
+                            const courseCodes = historyCourses.map((course) => course.course_code).filter(Boolean);
+                            const fallbackCodes = Array.isArray(entry.enrollments) ? entry.enrollments : [];
+                            const codes = courseCodes.length > 0 ? courseCodes : fallbackCodes;
+                            const courseCount = historyCourses.length > 0 ? historyCourses.length : fallbackCodes.length;
+                            const creditsEarned = typeof entry.total_credits_earned === 'number'
+                              ? entry.total_credits_earned
+                              : historyCourses.reduce((sum, course) => sum + Number(course.credits_earned ?? course.credits ?? 0), 0);
+                            const semesterGpa = typeof entry.gpa === 'number'
+                              ? entry.gpa
+                              : (typeof entry.GPA === 'number' ? entry.GPA : 0);
+                            return (
+	                          <tr key={index} className="transition-all group hover:bg-slate-50/50 dark:hover:bg-slate-800/40 align-top">
+	                            <td className="px-6 py-6">
+	                              <div className="flex items-center gap-3">
+	                                <div className="h-8 w-8 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center">
+	                                  <span className="material-icons-outlined text-sm text-indigo-600 dark:text-indigo-400">school</span>
+	                                </div>
+	                                <div className="space-y-1">
+                                      <span className="block text-lg font-black text-slate-900 dark:text-white leading-tight">{entry.semester}</span>
+                                      {typeof entry.total_grade_points === 'number' ? (
+                                        <span className="block text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                          Grade Points: {entry.total_grade_points.toFixed(2)}
+                                        </span>
+                                      ) : null}
+                                    </div>
+	                              </div>
+	                            </td>
+	                            <td className="px-6 py-6 text-center">
+	                              <span className="inline-flex px-3 py-1 rounded-lg bg-indigo-50 text-indigo-700 border border-indigo-100 dark:bg-indigo-900/20 dark:text-indigo-400 dark:border-indigo-900/50 text-[9px] font-black uppercase tracking-widest shadow-sm">
+	                                {courseCount} Courses
+	                              </span>
+	                            </td>
+	                            <td className="px-6 py-6">
+	                              <div className="max-w-3xl">
+                                  {historyCourses.length > 0 ? (
+	                                  <div className="space-y-2">
+                                      {historyCourses.map((course, courseIndex) => (
+                                        <div key={`${course.course_code}-${courseIndex}`} className="flex items-center justify-between gap-3 rounded-xl border border-slate-100 dark:border-slate-700 bg-slate-50/60 dark:bg-slate-800/50 px-3 py-2">
+                                          <div className="min-w-0">
+                                            <div className="text-[10px] font-black font-mono text-slate-500 dark:text-slate-300 uppercase tracking-wider">{course.course_code}</div>
+                                            <div className="text-xs font-bold text-slate-900 dark:text-white truncate">{course.course_title || 'Untitled course'}</div>
+                                          </div>
+                                          <div className="shrink-0 flex items-center gap-2">
+                                            {course.grade ? (
+                                              <span className="inline-flex px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-600 dark:bg-indigo-900/20 dark:text-indigo-300 text-[9px] font-black uppercase tracking-wider">
+                                                {course.grade}
+                                              </span>
+                                            ) : null}
+                                            <span className="text-[10px] font-black text-slate-500 dark:text-slate-300 tabular-nums">
+                                              {Number(course.credits ?? 0).toFixed(1)} CU
+                                            </span>
+                                          </div>
+                                        </div>
+                                      ))}
+	                                  </div>
+                                  ) : (
+	                                  <div className="flex flex-wrap gap-1">
+	                                    {codes.map((courseCode, courseIndex) => (
+	                                      <span key={courseIndex} className="inline-block px-2 py-1 bg-slate-50 dark:bg-slate-800 text-[8px] font-mono text-slate-600 dark:text-slate-300 rounded border border-slate-100 dark:border-slate-700">
+	                                        {courseCode}
+	                                      </span>
+	                                    ))}
+	                                  </div>
+                                  )}
+	                              </div>
+	                            </td>
+	                            <td className="px-6 py-6 text-center">
+                                <span className="text-lg font-black text-slate-700 dark:text-slate-300 tabular-nums">
+	                                  {Number(creditsEarned).toFixed(2)}
+	                                </span>
+	                            </td>
+	                            <td className="px-6 py-6 text-center">
+	                              <div className="flex flex-col items-center gap-1">
+	                                <span className="text-lg font-black text-indigo-600 dark:text-indigo-400 tabular-nums tracking-tighter">
+	                                  {Number(semesterGpa).toFixed(2)}
+	                                </span>
+	                                <div className="flex gap-1">
+	                                  {[...Array(4)].map((_, i) => (
+	                                    <div key={i} className={`w-1 h-1 rounded-full ${i < Math.floor(Number(semesterGpa)) ? 'bg-indigo-400' : 'bg-slate-200 dark:bg-slate-700'}`} />
+	                                  ))}
+	                                </div>
+	                              </div>
+	                            </td>
+	                          </tr>
+                            );
+                          })
+	                      )}
+	                    </tbody>
+	                  </table>
                 </div>
               </div>
             </div>
 
-            <div className="xl:col-span-4 space-y-10">
-              <div className="bg-white dark:bg-slate-900 rounded-[40px] border border-slate-100 dark:border-slate-800 p-10 shadow-sm transition-all hover:shadow-md group">
-                <div className="flex items-center gap-4 mb-10">
-                  <div className="h-10 w-10 rounded-2xl bg-white dark:bg-slate-900 flex items-center justify-center border border-slate-100 dark:border-slate-800 shadow-sm text-teal-600">
-                    <span className="material-icons-outlined text-lg">track_changes</span>
-                  </div>
-                  <h3 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">Curriculum Audit</h3>
-                </div>
-                
-                <div className="space-y-8">
-                  <div className="space-y-4">
-                    <div className="flex items-end justify-between">
-                      <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Completion Yield</span>
-                      <span className="text-sm font-black text-teal-600 tabular-nums">
+	            <div className="xl:col-span-12 space-y-10">
+	              <div className="bg-white dark:bg-slate-900 rounded-[40px] border border-slate-100 dark:border-slate-800 p-8 lg:p-10 shadow-sm transition-all hover:shadow-md group">
+	                <div className="flex items-center gap-4 mb-8">
+	                  <div className="h-10 w-10 rounded-2xl bg-white dark:bg-slate-900 flex items-center justify-center border border-slate-100 dark:border-slate-800 shadow-sm text-teal-600">
+	                    <span className="material-icons-outlined text-lg">track_changes</span>
+	                  </div>
+	                  <h3 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">Curriculum Audit</h3>
+	                </div>
+	                
+	                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+	                  <div className="space-y-4 lg:col-span-1">
+	                    <div className="flex items-end justify-between">
+	                      <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Completion Yield</span>
+	                      <span className="text-sm font-black text-teal-600 tabular-nums">
                         {student.creditsRequired ? Math.min(100, Math.round((student.creditsEarned / student.creditsRequired) * 100)) : 0}%
                       </span>
                     </div>
@@ -539,23 +606,23 @@ const AdminStudentDetails: React.FC<StudentDetailsProps> = ({ user, onLogout }) 
                     </p>
                   </div>
 
-                  <div className="pt-8 border-t border-slate-50 dark:border-slate-800 space-y-6">
-                    <div className="flex items-start gap-4">
-                      <span className="material-icons-outlined text-slate-200 text-lg">school</span>
-                      <div>
-                        <p className="text-[9px] font-black text-slate-300 dark:text-slate-600 uppercase tracking-widest mb-1">Academic Advisor</p>
-                        <p className="text-sm font-bold text-slate-900 dark:text-white tracking-tight">{student.advisor || 'System Default'}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-4">
-                      <span className="material-icons-outlined text-slate-200 text-lg">alternate_email</span>
-                      <div>
-                        <p className="text-[9px] font-black text-slate-300 dark:text-slate-600 uppercase tracking-widest mb-1">Dispatch Origin</p>
-                        <p className="text-sm font-bold text-slate-900 dark:text-white tracking-tight truncate max-w-[200px]">{student.email}</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+	                  <div className="pt-6 lg:pt-0 lg:pl-8 border-t lg:border-t-0 lg:border-l border-slate-50 dark:border-slate-800 space-y-6 lg:col-span-2">
+	                    <div className="flex items-start gap-4">
+	                      <span className="material-icons-outlined text-slate-200 text-lg">school</span>
+	                      <div>
+	                        <p className="text-[9px] font-black text-slate-300 dark:text-slate-600 uppercase tracking-widest mb-1">Academic Advisor</p>
+	                        <p className="text-sm font-bold text-slate-900 dark:text-white tracking-tight">{student.advisor || 'System Default'}</p>
+	                      </div>
+	                    </div>
+	                    <div className="flex items-start gap-4">
+	                      <span className="material-icons-outlined text-slate-200 text-lg">alternate_email</span>
+	                      <div>
+	                        <p className="text-[9px] font-black text-slate-300 dark:text-slate-600 uppercase tracking-widest mb-1">Dispatch Origin</p>
+	                        <p className="text-sm font-bold text-slate-900 dark:text-white tracking-tight break-all">{student.email}</p>
+	                      </div>
+	                    </div>
+	                  </div>
+	                </div>
               </div>
             </div>
           </div>
