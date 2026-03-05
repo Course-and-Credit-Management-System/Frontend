@@ -40,6 +40,20 @@ interface StudentFormData {
 // and Vite's dev proxy forwards to the backend. This keeps cookie-based auth working.
 const API_BASE = "/api/v1";
 
+const formatOrdinal = (num: number): string => {
+  const abs = Math.abs(num);
+  const mod100 = abs % 100;
+  if (mod100 >= 11 && mod100 <= 13) return `${num}th`;
+  const mod10 = abs % 10;
+  if (mod10 === 1) return `${num}st`;
+  if (mod10 === 2) return `${num}nd`;
+  if (mod10 === 3) return `${num}rd`;
+  return `${num}th`;
+};
+
+const formatYearLabel = (year: number): string => `${formatOrdinal(year)} Year`;
+const formatSemesterLabel = (semester: number): string => `${formatOrdinal(semester)} Semester`;
+
 
 const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
   const navigate = useNavigate();
@@ -555,13 +569,16 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
                       <tr>
                         <td colSpan={8} className="px-8 py-20 text-center text-slate-400 italic">No records found matching your filters</td>
                       </tr>
-                    ) : (
-                      students.map((s) => (
-                        <tr 
-                          key={s.id} 
-                          onClick={() => handleStudentClick(s.user_id)}
-                          className="group hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-all cursor-pointer"
-                        >
+	                    ) : (
+	                      students.map((s) => {
+                          const hasMajor = Boolean(s.major && s.major.trim());
+                          const majorLabel = hasMajor ? s.major : "None";
+                          return (
+	                        <tr
+	                          key={s.id} 
+	                          onClick={() => handleStudentClick(s.user_id)}
+	                          className="group hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-all cursor-pointer"
+	                        >
                           <td className="px-8 py-5 font-bold text-xs text-slate-400 dark:text-slate-500 uppercase tracking-tighter">{s.user_id}</td>
                           <td className="px-8 py-5">
                             <div className="flex items-center gap-4">
@@ -573,16 +590,22 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
                                 <div className="text-[11px] font-medium text-slate-400 truncate max-w-[180px]">{s.email}</div>
                               </div>
                             </div>
-                          </td>
-                          <td className="px-8 py-5">
-                            <span className="px-2 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] font-bold uppercase tracking-widest border border-slate-200 dark:border-slate-700">
-                              {s.major}
-                            </span>
-                          </td>
-                          <td className="px-8 py-5 text-center">
-                            <div className="text-sm font-bold text-slate-700 dark:text-slate-300">{s.year}</div>
-                            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Sem {s.semester}</div>
-                          </td>
+	                          </td>
+	                          <td className="px-8 py-5">
+	                            <span
+                                className={`px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-widest border ${
+                                  hasMajor
+                                    ? "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700"
+                                    : "bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800"
+                                }`}
+                              >
+	                              {majorLabel}
+	                            </span>
+	                          </td>
+	                          <td className="px-8 py-5 text-center">
+	                            <div className="text-sm font-bold text-slate-700 dark:text-slate-300">{formatYearLabel(s.year)}</div>
+	                            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">{formatSemesterLabel(s.semester)}</div>
+	                          </td>
                           <td className="px-8 py-5 text-center font-bold text-slate-600 dark:text-slate-400">{s.section ?? '—'}</td>
                           <td className="px-8 py-5">
                             <div className="flex flex-col gap-1.5 min-w-[100px]">
@@ -632,11 +655,12 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
                                   <span className="material-icons-outlined text-lg">delete</span>
                               </button>
                             </div>
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
+	                          </td>
+	                        </tr>
+                          );
+	                        })
+		                    )}
+	                  </tbody>
                 </table>
              </div>
              <div className="flex items-center justify-between border-t border-slate-100 dark:border-slate-800 px-8 py-6 bg-slate-50/30 dark:bg-slate-950/30">
