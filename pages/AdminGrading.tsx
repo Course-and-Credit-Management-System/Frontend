@@ -3,6 +3,7 @@ import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
 import { TableSkeletonRows } from '../components/Skeleton';
 import { User } from '../types';
+import { API_BASE_URL } from '../lib/apiBase';
 
 interface GradingProps {
   user: User;
@@ -29,8 +30,8 @@ interface EditedScore {
 }
 
 // Use relative /api/v1 when proxied (same as AdminStudents)
-const API_BASE = (import.meta.env.VITE_API_BASE_URL || "").trim()
-  ? ((import.meta.env.VITE_API_BASE_URL || "").replace(/\/$/, "")) + "/api/v1"
+const API_BASE = API_BASE_URL
+  ? `${API_BASE_URL}/api/v1`
   : "/api/v1";
 
 const AdminGrading: React.FC<GradingProps> = ({ user, onLogout }) => {

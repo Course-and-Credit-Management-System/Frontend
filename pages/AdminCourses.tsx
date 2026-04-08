@@ -4,6 +4,7 @@ import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
 import { User } from "../types";
 import { api } from "../lib/api";
+import { API_BASE_URL } from "../lib/apiBase";
 
 interface CoursesProps {
   user: User;
@@ -29,7 +30,7 @@ type CourseRow = {
   track?: string;
 };
 
-const API_BASE = (import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000").replace(/\/$/, "");
+const API_BASE = API_BASE_URL;
 
 /**
  *  Semester dropdown options (edit as you like)

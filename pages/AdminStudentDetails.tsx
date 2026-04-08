@@ -4,6 +4,7 @@ import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
 import { DetailedCardGridSkeleton } from '../components/Skeleton';
 import { User } from '../types';
+import { API_BASE_URL } from '../lib/apiBase';
 
 interface StudentDetailsProps {
   user: User;
@@ -66,8 +67,8 @@ type StudentDetailsResponse = {
 
 type CourseOption = { course_code: string; title: string; credits: number };
 
-const API_BASE = (import.meta.env.VITE_API_BASE_URL || "").trim()
-  ? ((import.meta.env.VITE_API_BASE_URL || "").replace(/\/$/, "")) + "/api/v1"
+const API_BASE = API_BASE_URL
+  ? `${API_BASE_URL}/api/v1`
   : "/api/v1";
 
 const AdminStudentDetails: React.FC<StudentDetailsProps> = ({ user, onLogout }) => {
