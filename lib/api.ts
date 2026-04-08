@@ -296,7 +296,7 @@ export const api = {
 
   // --- Admin Messages ---
   adminMessages: () => request("/api/v1/admin/messages"),
-  adminStudents: () => request("/api/v1/admin/students"),
+  adminStudents: () => request("/api/v1/admin/students/"),
   adminStudentIds: () => request("/api/v1/admin/students/ids"),
   adminStudentOptions: () => request("/api/v1/admin/students/options"),
 

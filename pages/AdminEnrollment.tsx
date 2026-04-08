@@ -6,6 +6,70 @@ import { User, EnrollmentRequest } from '../types';
 import { api } from '../lib/api';
 import { useNavigate } from 'react-router-dom';
 
+function CustomSelect({ 
+  value, 
+  onChange, 
+  options, 
+  placeholder 
+}: { 
+  value: string, 
+  onChange: (val: string) => void, 
+  options: {value: string, label: string}[], 
+  placeholder?: string 
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = React.useRef<HTMLDivElement>(null);
+  
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  const selectedTitle = options.find(o => o.value === value)?.label || placeholder || "Select...";
+
+  return (
+    <div className="relative group" ref={ref}>
+      <button 
+        type="button"
+        onClick={() => setOpen(!open)}
+        className="flex items-center justify-between gap-2 min-w-[140px] rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all focus:ring-2 focus:ring-teal-500/20 outline-none"
+      >
+        <span className="truncate">{selectedTitle}</span>
+        <span className="material-icons-outlined text-[14px] text-slate-400 group-hover:text-teal-500 transition-colors shrink-0">
+          {open ? 'expand_less' : 'expand_more'}
+        </span>
+      </button>
+      
+      {open && (
+        <div className="absolute top-full mt-1.5 right-0 min-w-full w-max max-h-64 overflow-y-auto rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xl z-50 py-1.5 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-300 dark:[&::-webkit-scrollbar-thumb]:bg-slate-700 [&::-webkit-scrollbar-thumb]:rounded-full">
+          {options.map((opt) => {
+            const isSelected = value === opt.value;
+            return (
+              <button
+                key={opt.value}
+                onClick={() => { onChange(opt.value); setOpen(false); }}
+                className={`w-full text-left px-4 py-2.5 text-xs font-bold transition-colors flex items-center justify-between gap-3 ${
+                  isSelected
+                    ? "bg-teal-50/80 dark:bg-teal-900/30 text-teal-700 dark:text-teal-400"
+                    : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+                }`}
+              >
+                <span className="truncate">{opt.label}</span>
+                {isSelected && <span className="material-icons-outlined text-[14px] shrink-0">check</span>}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
 interface EnrollmentProps {
   user: User;
   onLogout: () => void;
@@ -282,41 +346,33 @@ const AdminEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
                   <p className="text-xs font-medium text-slate-400 dark:text-slate-500">Live feed of student submissions</p>
                 </div>
                 <div className="flex items-center gap-3">
-                  <label className="sr-only" htmlFor="semesterFilter">Filter by semester</label>
-                  <select
-                    id="semesterFilter"
+                  <CustomSelect
                     value={semesterFilter}
-                    onChange={(e) => setSemesterFilter(e.target.value)}
-                    className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 text-xs font-bold text-slate-600 dark:text-slate-300 outline-none hover:bg-slate-50 dark:hover:bg-slate-800"
-                  >
-                    <option value="all">All Semesters</option>
-                    {semesterOptions.map((semester) => (
-                      <option key={semester} value={semester}>{semester}</option>
-                    ))}
-                  </select>
-                  <label className="sr-only" htmlFor="statusFilter">Filter by status</label>
-                  <select
-                    id="statusFilter"
+                    onChange={setSemesterFilter}
+                    options={[
+                      { value: "all", label: "All Semesters" },
+                      ...semesterOptions.map(s => ({ value: s, label: s }))
+                    ]}
+                  />
+
+                  <CustomSelect
                     value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value)}
-                    className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 text-xs font-bold text-slate-600 dark:text-slate-300 outline-none hover:bg-slate-50 dark:hover:bg-slate-800"
-                  >
-                    <option value="all">All Status</option>
-                    <option value="Pending">Pending</option>
-                    <option value="Enrolled">Enrolled</option>
-                  </select>
-                  <label className="sr-only" htmlFor="academicYearFilter">Filter by academic year</label>
-                  <select
-                    id="academicYearFilter"
+                    onChange={setStatusFilter}
+                    options={[
+                      { value: "all", label: "All Status" },
+                      { value: "Pending", label: "Pending" },
+                      { value: "Enrolled", label: "Enrolled" }
+                    ]}
+                  />
+
+                  <CustomSelect
                     value={academicYearFilter}
-                    onChange={(e) => setAcademicYearFilter(e.target.value)}
-                    className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 text-xs font-bold text-slate-600 dark:text-slate-300 outline-none hover:bg-slate-50 dark:hover:bg-slate-800"
-                  >
-                    <option value="all">All Academic Years</option>
-                    {academicYearOptions.map((year) => (
-                      <option key={year} value={year}>{year}</option>
-                    ))}
-                  </select>
+                    onChange={setAcademicYearFilter}
+                    options={[
+                      { value: "all", label: "All Academic Years" },
+                      ...academicYearOptions.map(y => ({ value: y, label: y }))
+                    ]}
+                  />
                   <button 
                     onClick={() => handleSort('status')} 
                     className="flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all"
