@@ -44,6 +44,10 @@ Use these viewport widths for manual checks:
 - Header/toolbars with buttons that do not wrap on mobile
 - Filter rows forced into one line instead of responsive grid
 - Action buttons overflowing card width on small screens
+- Equal-height dashboard cards creating large dead white space
+- Bottom-pinned card content (`mt-auto`, `justify-between`) making cards feel empty
+- Tall summary cards trying to match the height of content-heavy neighbors
+- Horizontal compaction attempted too aggressively, causing label/button collisions
 
 ## Recommended Fix Patterns
 - Prefer `min-h-screen` over forced `h-screen` when content can grow
@@ -52,6 +56,16 @@ Use these viewport widths for manual checks:
 - Use `w-full` on mobile buttons; restore inline layout at larger breakpoints
 - Avoid double scroll regions; keep one primary scroll container per view
 - Use `truncate` only for non-critical labels; allow wrapping for content text
+- For dashboard summary cards, prefer compact internal horizontal layouts over tall vertical stacks
+- Do not use equal-height stretching when one card is much denser than its siblings unless the extra area is intentionally filled
+- If two smaller cards must visually relate to one taller card, stack the smaller cards in one column and let their combined height plus gap match the larger card
+- When white space appears inside cards, check for:
+  - `mt-auto`
+  - `justify-between`
+  - `flex-1` on decorative wrappers
+  - grid row stretching (`auto-rows-fr`, `items-stretch`)
+- Prefer "measure and match" only when visual alignment is required; otherwise let compact cards size to content
+- If a horizontal layout causes overlap, revert to a simpler vertical flow instead of forcing side-by-side compression
 
 ## Quick Verification Checklist
 - No horizontal scrollbar at any target breakpoint
@@ -60,6 +74,34 @@ Use these viewport widths for manual checks:
 - Back navigation and selection views remain usable on mobile
 - Dark mode preserves contrast and readability
 - Keyboard focus styles remain visible
+- Card interiors should not contain obvious dead zones that make the UI feel unfinished
+- Summary cards should communicate their key metric without requiring tall empty columns
+
+## White Space Detector
+Use this quick heuristic before keeping any dashboard/card layout change:
+
+1. Look for empty interior space that is larger than the actual content block beside it.
+2. Check whether the empty area is caused by alignment utilities rather than real content needs.
+3. Try a horizontal composition first for small metric cards:
+   - metric/value on one side
+   - helper label, status badge, or progress band on the other
+4. If one tall card forces neighbors to stretch, restructure the section:
+   - stack smaller cards in one column
+   - keep the dense card in a separate column
+5. Only keep equal heights when the result looks intentional, not padded.
+
+## Dashboard Card Lessons
+
+### Trial D01
+- Date: 2026-04-08
+- Screen/Page: Student Dashboard top summary cards
+- Breakpoint(s): 1280px desktop
+- Problem: `Enrollment Status` and `Academic Index` inherited large empty interiors because they were stretched to visually align with a denser `Major Selection` card.
+- Change Made (UI only): Reworked top-level composition so smaller summary cards can be stacked in one column, and documented preference for horizontal content grouping inside metric cards.
+- Result: Better path forward than forcing all three cards into the same visual rhythm.
+- Regressions Found: Horizontal compression can break labels if applied too aggressively inside complex cards.
+- Final Decision: Keep as a documented pattern.
+- Notes: Simple metric cards should be compact; complex action cards can remain taller.
 
 ## Trial Log Template
 Copy this block per experiment:

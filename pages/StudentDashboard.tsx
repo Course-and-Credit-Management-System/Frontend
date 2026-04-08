@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
 import { User, StudentAlert } from '../types';
@@ -26,6 +26,8 @@ const StudentDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
   const [degreeAudit, setDegreeAudit] = useState<DegreeAuditResponse | null>(null);
   const [recent, setRecent] = useState<Array<{ title: string; sub?: string; when: Date; icon: string; color: string }>>([]);
   const [maxCredits, setMaxCredits] = useState<number | null>(null);
+  const auditCardRef = useRef<HTMLDivElement | null>(null);
+  const [auditCardHeight, setAuditCardHeight] = useState<number | null>(null);
 
   useEffect(() => {
     // Fetch alerts on mount
@@ -103,6 +105,25 @@ const StudentDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
       });
   }, []); 
 
+  useEffect(() => {
+    const node = auditCardRef.current;
+    if (!node || typeof ResizeObserver === "undefined") return;
+
+    const syncHeight = () => {
+      setAuditCardHeight(Math.round(node.getBoundingClientRect().height));
+    };
+
+    syncHeight();
+    const observer = new ResizeObserver(() => syncHeight());
+    observer.observe(node);
+    window.addEventListener("resize", syncHeight);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", syncHeight);
+    };
+  }, [degreeAudit]);
+
   const handleDismissAlert = async (id: string) => {
     try {
       await api.studentDeleteAlert(id);
@@ -126,6 +147,15 @@ const StudentDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     eligibility?.program_type === "5-year" &&
     ((eligibility?.current_year_num === 4 && eligibility?.current_semester_num === 2) ||
       eligibility?.current_year_num === 5);
+  const recordedTrack = majorState?.selected_track || majorState?.profile_major_track || "-";
+  const recordedMajor = majorState?.selected_major || majorState?.profile_major_id || "-";
+  const showRecordedSummary =
+    eligibility &&
+    !eligibility.can_select_major &&
+    !(majorState?.program_type === "5-year" &&
+      majorState?.current_year === "Fourth Year" &&
+      majorState?.current_semester === "First Semester");
+  const majorStatusLabel = majorState?.status?.replace(/_/g, " ") || "Unavailable";
   return (
     <div className="flex h-screen overflow-hidden bg-white dark:bg-slate-950 font-poppins relative">
       {/* Toast Container */}
@@ -169,10 +199,11 @@ const StudentDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-            <div className="bg-white dark:bg-slate-900 p-8 rounded-[32px] border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col justify-between transition-all hover:shadow-xl hover:-translate-y-1 group relative overflow-hidden">
+          <div className="mb-12 grid grid-cols-1 items-stretch gap-8 lg:grid-cols-12">
+            <div className="flex h-full flex-col gap-8 lg:col-span-5">
+            <div className="bg-white dark:bg-slate-900 p-7 rounded-[32px] border border-slate-100 dark:border-slate-800 shadow-sm transition-all hover:shadow-xl hover:-translate-y-1 group relative overflow-hidden flex-1">
               <div className="absolute top-0 right-0 h-24 w-24 bg-emerald-500/5 rounded-bl-full transform translate-x-4 -translate-y-4 transition-transform group-hover:scale-110" />
-              <div className="flex justify-between items-start mb-8 relative z-10">
+              <div className="flex justify-between items-start mb-5 relative z-10">
                 <div>
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Enrollment Status</p>
                   <h3 className="text-3xl font-black text-emerald-600 dark:text-emerald-400 tracking-tight">Active</h3>
@@ -181,58 +212,75 @@ const StudentDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                   <span className="material-icons-round text-2xl">verified</span>
                 </div>
               </div>
-              <div className="relative z-10">
-                <div className="w-full bg-slate-50 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden">
-                  <div
-                    className="bg-emerald-500 h-full rounded-full transition-all duration-700"
-                    style={{
-                      width: (() => {
-                        const cached = Number(localStorage.getItem("max_credits") || "");
-                        const fallback = !Number.isNaN(cached) && cached > 0 ? cached : 24;
-                        const maxC = (maxCredits ?? fallback);
-                        const cur = currentCredits ?? 0;
-                        const pct = maxC > 0 ? Math.max(0, Math.min(100, (cur / maxC) * 100)) : 0;
-                        return `${pct}%`;
-                      })(),
-                    }}
-                  />
+              <div className="relative z-10 mt-6 grid grid-cols-[auto_minmax(0,1fr)] items-end gap-6">
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-slate-500 dark:text-slate-400">Current load</p>
+                  <p className="mt-1 text-2xl font-black text-slate-900 dark:text-white">
+                    {currentCredits !== null ? currentCredits : "-"}
+                    <span className="ml-2 text-sm font-bold text-slate-400 dark:text-slate-500">credits</span>
+                  </p>
                 </div>
-                <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 mt-4 uppercase tracking-widest flex items-center gap-2">
-                  <span className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
-                  Full-time Matrix • {currentCredits !== null ? `${currentCredits} Credits` : "- Credits"}
-                </p>
+                <div className="min-w-0">
+                  <div className="w-full bg-slate-50 dark:bg-slate-800 rounded-full h-2 overflow-hidden">
+                    <div
+                      className="bg-emerald-500 h-full rounded-full transition-all duration-700"
+                      style={{
+                        width: (() => {
+                          const cached = Number(localStorage.getItem("max_credits") || "");
+                          const fallback = !Number.isNaN(cached) && cached > 0 ? cached : 24;
+                          const maxC = (maxCredits ?? fallback);
+                          const cur = currentCredits ?? 0;
+                          const pct = maxC > 0 ? Math.max(0, Math.min(100, (cur / maxC) * 100)) : 0;
+                          return `${pct}%`;
+                        })(),
+                      }}
+                    />
+                  </div>
+                  <p className="mt-3 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">
+                    <span className="h-1 w-1 rounded-full bg-emerald-500 animate-pulse" />
+                    Full-time Matrix
+                  </p>
+                </div>
               </div>
             </div>
 
-            <div className="bg-white dark:bg-slate-900 p-8 rounded-[32px] border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col justify-between transition-all hover:shadow-xl hover:-translate-y-1 group relative overflow-hidden">
+            <div className="bg-white dark:bg-slate-900 p-7 rounded-[32px] border border-slate-100 dark:border-slate-800 shadow-sm transition-all hover:shadow-xl hover:-translate-y-1 group relative overflow-hidden flex-1">
               <div className="absolute top-0 right-0 h-24 w-24 bg-blue-500/5 rounded-bl-full transform translate-x-4 -translate-y-4 transition-transform group-hover:scale-110" />
-              <div className="flex justify-between items-start mb-8 relative z-10">
+              <div className="flex justify-between items-start mb-5 relative z-10">
                 <div>
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Academic Index</p>
-                  <h3 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">{gpa !== null ? gpa.toFixed(2) : "—"} <span className="text-lg text-slate-300 dark:text-slate-600 font-bold ml-1">/ 4.0</span></h3>
+                  <h3 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">{gpa !== null ? gpa.toFixed(2) : "�"} <span className="ml-1 text-lg font-bold text-slate-300 dark:text-slate-600">/ 4.0</span></h3>
                 </div>
                 <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-2xl text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-800/50">
                   <span className="material-icons-round text-2xl">analytics</span>
                 </div>
               </div>
-              <div className="flex items-center gap-2 text-emerald-500 text-[10px] font-black uppercase tracking-widest relative z-10">
-                <span className="material-icons-round text-sm">trending_up</span>
-                <span>Optimizing Performance</span>
+              <div className="relative z-10 mt-6 grid grid-cols-[auto_minmax(0,1fr)] items-end gap-6">
+                <div>
+                  <p className="text-sm font-semibold text-slate-500 dark:text-slate-400">Standing</p>
+                  <p className="mt-1 text-2xl font-black text-slate-900 dark:text-white">
+                    {gpa !== null && gpa >= 3 ? "Excellent" : gpa !== null && gpa >= 2 ? "On Track" : "Building"}
+                  </p>
+                </div>
+                <div className="justify-self-start inline-flex items-center gap-2 rounded-2xl bg-emerald-50 px-4 py-3 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400">
+                  <span className="material-icons-round text-sm">trending_up</span>
+                  <span className="text-[10px] font-black uppercase tracking-widest">Optimizing Performance</span>
+                </div>
               </div>
             </div>
-
-            <div className="bg-white dark:bg-slate-900 p-8 rounded-[32px] border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col justify-between group cursor-pointer transition-all hover:shadow-xl hover:-translate-y-1 sm:col-span-2 lg:col-span-1 relative overflow-hidden">
+            </div>
+            <div className="bg-white dark:bg-slate-900 p-7 rounded-[32px] border border-slate-100 dark:border-slate-800 shadow-sm flex min-h-[240px] h-full flex-col group cursor-pointer transition-all hover:shadow-xl hover:-translate-y-1 lg:col-span-7 relative overflow-hidden">
                <div className="absolute top-0 right-0 h-24 w-24 bg-indigo-500/5 rounded-bl-full transform translate-x-4 -translate-y-4 transition-transform group-hover:scale-110" />
-               <div className="flex justify-between items-start mb-8 relative z-10">
-                <div>
+               <div className="flex items-start justify-between gap-4 mb-4 relative z-10">
+                <div className="min-w-0 flex-1">
                   <p className="text-[10px] font-extrabold text-gray-400 uppercase tracking-widest">Next Step</p>
-                  <h3 className="text-xl font-bold mt-1 text-gray-800 dark:text-white">
+                  <h3 className="text-2xl font-black mt-2 leading-tight text-gray-800 dark:text-white">
                     Major Selection
                     {majorState?.program_type === "5-year" &&
                      majorState?.current_year === "Fourth Year" &&
                      majorState?.current_semester === "First Semester" &&
                      (majorState?.selected_major || majorState?.profile_major_id) ? (
-                      <span className="ml-2 text-sm font-bold text-gray-800 dark:text-white">
+                      <span className="block mt-2 text-sm font-semibold text-gray-500 dark:text-gray-300">
                         Major: {majorState?.selected_major || majorState?.profile_major_id}
                       </span>
                     ) : null}
@@ -240,143 +288,159 @@ const StudentDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                   {majorState?.program_type === "5-year" &&
                    majorState?.current_year === "Fourth Year" &&
                    majorState?.current_semester === "First Semester" ? (
-                    <div className="text-[11px] font-semibold text-gray-600 dark:text-gray-300 mt-1">
-                      Major Track: {majorState?.selected_track || majorState?.profile_major_track || "-"}
+                    <div className="mt-2 text-[11px] font-semibold text-gray-600 dark:text-gray-300">
+                      Major Track: {recordedTrack}
                     </div>
                   ) : null}
                   {majorState?.status && !majorState.selected_major && (
-                    <div className="mt-2 text-[10px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 px-2 py-0.5 rounded-md inline-block border border-indigo-100 dark:border-indigo-800">
-                      {majorState.status}
+                    <div className="mt-3 inline-flex items-center rounded-full border border-indigo-100 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-900/20 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400">
+                      {majorStatusLabel}
                     </div>
                   )}
                   {majorState?.program_type === "5-year" &&
                    majorState?.current_year === "Fourth Year" &&
                    majorState?.current_semester === "First Semester" &&
                    majorState?.selected_major ? (
-                    <div className="text-xl font-bold mt-1 text-gray-800 dark:text-white">
+                    <div className="mt-2 text-lg font-bold text-gray-800 dark:text-white">
                       Major: {majorState?.selected_major}
                     </div>
                   ) : null}
                 </div>
-                <div className="p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-800/50">
+                <div className="shrink-0 p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-800/50">
                   <span className="material-icons-round text-2xl">alt_route</span>
                 </div>
               </div>
               {(() => {
                 if (isEarlyYears) {
                   return (
-                    <div className="flex items-center justify-between">
-                      <button onClick={startMajorProcess} disabled={startLoading} className="text-xs font-bold text-primary flex items-center gap-1 group-hover:underline uppercase tracking-wide disabled:opacity-60">
-                        Start Process <span className="material-icons-round text-sm">arrow_forward</span>
-                      </button>
+                    <div className="mt-3 space-y-3 min-w-0">
                       {eligibility && eligibility.reason && (
-                        <span className="text-[11px] text-gray-500 dark:text-gray-400 ml-3">{eligibility.reason}</span>
+                        <p className="text-sm leading-5 text-gray-600 dark:text-gray-300">{eligibility.reason}</p>
                       )}
-                      {eligibility && !eligibility.can_select_major &&
-                       !(majorState?.program_type === "5-year" &&
-                         majorState?.current_year === "Fourth Year" &&
-                         majorState?.current_semester === "First Semester") && (
-                        <span className="text-[11px] text-gray-600 dark:text-gray-300 ml-3 font-bold">
-                          Recorded: Track {majorState?.selected_track || majorState?.profile_major_track || "-"} • Major {majorState?.selected_major || majorState?.profile_major_id || "-"}
-                        </span>
-                      )}
+                      <div className="space-y-3">
+                        {showRecordedSummary ? (
+                          <div className="grid grid-cols-2 gap-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800/40 p-4 min-w-0">
+                            <div>
+                              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Recorded Track</p>
+                              <p className="mt-1 text-sm font-semibold text-slate-700 dark:text-slate-200">{recordedTrack}</p>
+                            </div>
+                            <div>
+                              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Recorded Major</p>
+                              <p className="mt-1 text-sm font-semibold text-slate-700 dark:text-slate-200">{recordedMajor}</p>
+                            </div>
+                          </div>
+                        ) : null}
+                        <button onClick={startMajorProcess} disabled={startLoading} className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-teal-600 px-4 py-3 text-sm font-bold text-white transition hover:bg-teal-500 disabled:opacity-60">
+                          Start Process <span className="material-icons-round text-sm">arrow_forward</span>
+                        </button>
+                      </div>
                     </div>
                   );
                 }
                 if (!majorState?.selected_major) {
                   if (isLockedPhase) {
                     return (
-                      <div className="text-xs text-gray-600 dark:text-gray-300">
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="inline-flex items-center gap-2">
-                            <span className="material-icons-round text-purple-500">lock</span>
-                            <span className="text-[11px] font-bold">Major selection not available</span>
+                      <div className="mt-3 space-y-3 text-sm text-gray-600 dark:text-gray-300 min-w-0">
+                        <div className="inline-flex items-center gap-2 rounded-full border border-purple-100 bg-purple-50 px-3 py-1.5 text-[11px] font-bold text-purple-700 dark:border-purple-800 dark:bg-purple-900/20 dark:text-purple-300">
+                          <span className="material-icons-round text-purple-500">lock</span>
+                          <span>Major selection not available</span>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3 rounded-2xl border border-slate-200 bg-slate-50/80 p-4 dark:border-slate-700 dark:bg-slate-800/40 min-w-0">
+                          <div>
+                            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Selected Major</p>
+                            <p className="mt-1 text-sm font-semibold text-slate-700 dark:text-slate-200">{recordedMajor}</p>
                           </div>
-                          <button onClick={startMajorProcess} disabled={startLoading} className="text-xs font-semibold text-primary flex items-center gap-1 hover:underline disabled:opacity-60">
-                            Start Process <span className="material-icons-round text-sm">arrow_forward</span>
-                          </button>
+                          <div>
+                            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Major Track</p>
+                            <p className="mt-1 text-sm font-semibold text-slate-700 dark:text-slate-200">{recordedTrack}</p>
+                          </div>
                         </div>
-                        <div className="mt-1">
-                          <span className="font-bold">Selected Major:</span> {majorState?.selected_major || majorState?.profile_major_id || "-"}
-                        </div>
-                        <div className="mt-1">
-                          <span className="font-bold">Major Track:</span> {majorState?.selected_track || majorState?.profile_major_track || "-"}
-                        </div>
+                        <button onClick={startMajorProcess} disabled={startLoading} className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-900 px-4 py-3 text-sm font-bold text-white transition hover:bg-slate-700 disabled:opacity-60 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white sm:w-auto">
+                          Start Process <span className="material-icons-round text-sm">arrow_forward</span>
+                        </button>
                       </div>
                     );
                   }
                   return (
-                    <div className="flex items-center justify-between">
-                      <button onClick={startMajorProcess} disabled={startLoading} className="text-xs font-semibold text-primary flex items-center gap-1 group-hover:underline disabled:opacity-60">
-                        Start Process <span className="material-icons-round text-sm">arrow_forward</span>
-                      </button>
+                    <div className="mt-3 space-y-3 min-w-0">
                       {eligibility && eligibility.reason && (
-                        <span className="text-[11px] text-gray-500 dark:text-gray-400 ml-3">{eligibility.reason}</span>
+                        <p className="text-sm leading-5 text-gray-600 dark:text-gray-300">{eligibility.reason}</p>
                       )}
-                      {eligibility && !eligibility.can_select_major &&
-                       !(majorState?.program_type === "5-year" &&
-                         majorState?.current_year === "Fourth Year" &&
-                         majorState?.current_semester === "First Semester") &&
-                       !isLockedPhase && (
-                        <span className="text-[11px] text-gray-600 dark:text-gray-300 ml-3 font-bold">
-                          Recorded: Track {majorState?.selected_track || majorState?.profile_major_track || "-"} • Major {majorState?.selected_major || majorState?.profile_major_id || "-"}
-                        </span>
-                      )}
+                      <div className="space-y-3">
+                        {showRecordedSummary && !isLockedPhase ? (
+                          <div className="grid grid-cols-2 gap-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800/40 p-4 min-w-0">
+                            <div>
+                              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Recorded Track</p>
+                              <p className="mt-1 text-sm font-semibold text-slate-700 dark:text-slate-200">{recordedTrack}</p>
+                            </div>
+                            <div>
+                              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Recorded Major</p>
+                              <p className="mt-1 text-sm font-semibold text-slate-700 dark:text-slate-200">{recordedMajor}</p>
+                            </div>
+                          </div>
+                        ) : null}
+                        <button onClick={startMajorProcess} disabled={startLoading} className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-teal-600 px-4 py-3 text-sm font-bold text-white transition hover:bg-teal-500 disabled:opacity-60">
+                          Start Process <span className="material-icons-round text-sm">arrow_forward</span>
+                        </button>
+                      </div>
                     </div>
                   );
                 }
                 return (
-                  <div className="text-xs text-gray-600 dark:text-gray-300">
-                    <span className="font-semibold">{majorState?.program_type}</span>
+                  <div className="mt-auto space-y-3 text-sm text-gray-600 dark:text-gray-300">
+                    <div className="inline-flex items-center rounded-full border border-teal-100 bg-teal-50 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-teal-700 dark:border-teal-800 dark:bg-teal-900/20 dark:text-teal-300">
+                      {majorState?.program_type}
+                    </div>
                     {(majorState?.program_type === "5-year" ||
                       (majorState?.program_type === "4-year" &&
-                        !(majorState?.current_year === "Third Year" && majorState?.current_semester === "First Semester"))
-                    ) ? (
-                      <>
-                        {majorState?.selected_track
-                          ? ` • Track: ${majorState?.selected_track}`
-                          : (majorState?.profile_major_track ? ` • Track: ${majorState?.profile_major_track}` : "")}
-                        <div className="mt-1">
-                          <span className="font-bold">Major Track:</span> {majorState?.selected_track || majorState?.profile_major_track || "-"}
+                        !(majorState?.current_year === "Third Year" && majorState?.current_semester === "First Semester"))) ? (
+                      <div className="grid grid-cols-1 gap-3 rounded-2xl border border-slate-200 bg-slate-50/80 p-4 dark:border-slate-700 dark:bg-slate-800/40 sm:grid-cols-2">
+                        <div>
+                          <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Major Track</p>
+                          <p className="mt-1 text-sm font-semibold text-slate-700 dark:text-slate-200">{recordedTrack}</p>
                         </div>
-                      </>
-                    ) : null}
-                    <div className="mt-1">
-                      <span className="font-bold">Selected Major:</span> {majorState?.selected_major || majorState?.profile_major_id || "Not selected yet"}
-                    </div>
-                    <div className="mt-3 rounded-lg border border-teal-300 bg-teal-50 dark:bg-teal-900/20 p-3">
+                        <div>
+                          <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Selected Major</p>
+                          <p className="mt-1 text-sm font-semibold text-slate-700 dark:text-slate-200">{recordedMajor}</p>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4 dark:border-slate-700 dark:bg-slate-800/40">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Selected Major</p>
+                        <p className="mt-1 text-sm font-semibold text-slate-700 dark:text-slate-200">{recordedMajor}</p>
+                      </div>
+                    )}
+                    <div className="rounded-2xl border border-teal-300 bg-teal-50 p-4 dark:bg-teal-900/20">
                       <div className="flex items-center gap-2">
                         <span className="material-icons-outlined text-teal-600 dark:text-teal-400">school</span>
-                        <span className="text-sm font-bold text-[#0d1a1c] dark:text-white">
-                          {majorState?.selected_major || majorState?.profile_major_id || "Not selected yet"}
-                        </span>
-                        {majorState?.program_type === "5-year" && (
-                          <span className="ml-auto inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold border border-teal-400 text-teal-700 dark:text-teal-300">
-                            Track: {majorState?.selected_track || majorState?.profile_major_track || "-"}
+                        <span className="text-sm font-bold text-[#0d1a1c] dark:text-white">{recordedMajor}</span>
+                        {majorState?.program_type === "5-year" ? (
+                          <span className="ml-auto inline-flex items-center rounded-full border border-teal-400 px-2 py-0.5 text-[11px] font-semibold text-teal-700 dark:text-teal-300">
+                            Track: {recordedTrack}
                           </span>
-                        )}
+                        ) : null}
                       </div>
                     </div>
-                    <div className="mt-2 flex gap-2">
-                      {eligibility?.can_select_major ? (
-                        <button onClick={() => navigate("/student/major/select")} className="text-primary font-semibold hover:underline">Change Major</button>
-                      ) : null}
-                    </div>
+                    {eligibility?.can_select_major ? (
+                      <button onClick={() => navigate("/student/major/select")} className="inline-flex items-center justify-center rounded-2xl border border-teal-200 bg-white px-4 py-3 text-sm font-semibold text-teal-700 transition hover:border-teal-300 hover:bg-teal-50 dark:border-teal-800 dark:bg-slate-900 dark:text-teal-300 dark:hover:bg-teal-950/20">
+                        Change Major
+                      </button>
+                    ) : null}
                   </div>
                 );
               })()}
               {!majorState?.selected_major && majorState?.selected_track && (
-                <div className="mt-2 text-[11px] text-gray-500 dark:text-gray-400">
+                <div className="relative z-10 mt-3 text-[11px] text-gray-500 dark:text-gray-400">
                   Current Track: <span className="font-bold">{majorState.selected_track}</span>
                 </div>
               )}
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             <div className="lg:col-span-7 xl:col-span-8 flex flex-col gap-8">
-              <div className="bg-white dark:bg-slate-900 rounded-[40px] border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden flex-1 transition-all hover:shadow-md">
-                <div className="px-10 py-8 border-b border-slate-50 dark:border-slate-800 flex items-center gap-4 bg-slate-50/30 dark:bg-slate-950/20">
+              <div ref={auditCardRef} className="bg-white dark:bg-slate-900 rounded-[40px] border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden transition-all hover:shadow-md">
+                <div className="px-8 py-7 border-b border-slate-50 dark:border-slate-800 flex items-center gap-4 bg-slate-50/30 dark:bg-slate-950/20">
                   <div className="h-10 w-10 rounded-2xl bg-white dark:bg-slate-900 flex items-center justify-center border border-slate-100 dark:border-slate-800 shadow-sm">
                     <span className="material-icons-round text-teal-600 text-lg">auto_graph</span>
                   </div>
@@ -385,8 +449,8 @@ const StudentDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                     <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mt-0.5">Degree Completion Progress</p>
                   </div>
                 </div>
-                <div className="p-10 lg:p-12">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
+                <div className="p-8 lg:p-9">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
                     <div className="flex items-center justify-center relative">
                       <div className="relative w-48 h-48 md:w-56 md:h-56 transform transition-transform duration-1000 hover:scale-105">
                          <svg className="w-full h-full transform -rotate-90" viewBox="0 0 112 112">
@@ -430,7 +494,7 @@ const StudentDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                          </div>
                       </div>
                     </div>
-                    <div className="space-y-8">
+                    <div className="space-y-6">
                       {(degreeAudit?.progress_bars
                         ? degreeAudit.progress_bars.map(pb => ({
                             label: pb.label === 'Core' ? 'Core Requirements'
@@ -498,8 +562,11 @@ const StudentDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
             </div>
 
             <div className="lg:col-span-5 xl:col-span-4 flex flex-col gap-8">
-              <div className="bg-white dark:bg-slate-900 rounded-[40px] border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col flex-1 min-h-[500px] overflow-hidden transition-all hover:shadow-md">
-                <div className="px-10 py-8 border-b border-slate-50 dark:border-slate-800 flex justify-between items-center bg-slate-50/30 dark:bg-slate-950/20">
+              <div
+                className="bg-white dark:bg-slate-900 rounded-[40px] border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col overflow-hidden transition-all hover:shadow-md"
+                style={auditCardHeight ? { height: `${auditCardHeight}px` } : undefined}
+              >
+                <div className="px-8 py-7 min-h-[104px] border-b border-slate-50 dark:border-slate-800 flex items-center gap-4 bg-slate-50/30 dark:bg-slate-950/20">
                   <div className="flex items-center gap-4">
                     <div className="h-10 w-10 rounded-2xl bg-white dark:bg-slate-900 flex items-center justify-center border border-slate-100 dark:border-slate-800 shadow-sm text-teal-600">
                       <span className="material-icons-round text-lg">history</span>
@@ -509,9 +576,8 @@ const StudentDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                       <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mt-0.5">Recent Ledger Activity</p>
                     </div>
                   </div>
-                  <a className="text-[9px] font-black uppercase tracking-widest text-teal-600 hover:text-teal-700 pb-0.5 border-b-2 border-teal-600/10 transition-colors" href="#">Archive</a>
                 </div>
-                <div className="divide-y divide-gray-100 dark:divide-gray-800 overflow-y-auto max-h-[500px]">
+                <div className="divide-y divide-gray-100 dark:divide-gray-800 overflow-y-auto flex-1 min-h-0">
                   {recent.map((act, i) => (
                     <div key={i} className="p-4 md:p-5 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors flex gap-4 items-start">
                       <div className={`${act.color} dark:bg-opacity-20 rounded-xl h-10 w-10 flex items-center justify-center shrink-0`}>
@@ -541,3 +607,12 @@ const StudentDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
 };
 
 export default StudentDashboard;
+
+
+
+
+
+
+
+
+
