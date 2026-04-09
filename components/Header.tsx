@@ -4,6 +4,7 @@ import { useUI } from '../context/UIContext';
 import { api } from '../lib/api';
 import { useNavigate } from 'react-router-dom';
 import { toggleTheme } from '../lib/theme';
+import { LanguageSwitcher } from './LanguageSwitcher';
 
 interface HeaderProps {
   title: string;
@@ -88,6 +89,8 @@ const Header: React.FC<HeaderProps> = ({ title, user }) => {
               {themeMode === "dark" ? "light_mode" : "dark_mode"}
             </span>
           </button>
+          
+          <LanguageSwitcher />
         </div>
 
         <div className="flex items-center gap-4 pl-6 border-l border-slate-100 dark:border-slate-800">

@@ -5,6 +5,7 @@ import Header from '../components/Header';
 import { User } from '../types';
 import { api } from '../lib/api';
 import { API_BASE_URL } from '../lib/apiBase';
+import { useTranslation } from 'react-i18next';
 
 const API_BASE = API_BASE_URL;
 
@@ -63,6 +64,7 @@ const buildSemesterPanelId = (semester: Semester, index: number) =>
   `${semester.academic_year}-${semester.semester}-${index}`;
 
 const StudentResults: React.FC<ResultsProps> = ({ user, onLogout }) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [academicData, setAcademicData] = useState<AcademicData | null>(null);
@@ -214,7 +216,7 @@ const StudentResults: React.FC<ResultsProps> = ({ user, onLogout }) => {
       downloadFile(blob, `grading_certificate_${semesterKey.replace(/\s+/g, '_')}.pdf`);
     } catch (error) {
       console.error('Error downloading semester certificate:', error);
-      alert('Failed to download semester certificate. Please try again.');
+      alert(t("Failed to download semester certificate. Please try again."));
     } finally {
       setDownloading(false);
     }
@@ -232,7 +234,7 @@ const StudentResults: React.FC<ResultsProps> = ({ user, onLogout }) => {
       downloadFile(blob, `grading_certificate_${yearLevel.replace(/\s+/g, '_')}.pdf`);
     } catch (error) {
       console.error('Error downloading year certificate:', error);
-      alert('Failed to download year certificate. Please try again.');
+      alert(t("Failed to download year certificate. Please try again."));
     } finally {
       setDownloading(false);
     }
@@ -249,7 +251,7 @@ const StudentResults: React.FC<ResultsProps> = ({ user, onLogout }) => {
       downloadFile(blob, 'complete_grading_certificate.pdf');
     } catch (error) {
       console.error('Error downloading complete certificate:', error);
-      alert('Failed to download complete certificate. Please try again.');
+      alert(t("Failed to download complete certificate. Please try again."));
     } finally {
       setDownloading(false);
     }
@@ -327,13 +329,13 @@ const StudentResults: React.FC<ResultsProps> = ({ user, onLogout }) => {
     >
       <Sidebar user={user} onLogout={onLogout} />
       <div className="flex flex-1 flex-col overflow-hidden relative">
-        <Header title="Academic Portfolio" user={user} />
+        <Header title={t("Academic Portfolio")} user={user} />
         <main className="flex-1 overflow-y-auto p-10 lg:p-16 scrollbar-hide animate-in fade-in duration-1000 slide-in-from-bottom-4">
           <div className="mb-12 flex flex-col xl:flex-row xl:items-end xl:justify-between gap-8">
             <div className="space-y-2">
-               <h2 className="text-4xl font-black text-slate-900 dark:text-white tracking-tight">Academic Records</h2>
+               <h2 className="text-4xl font-black text-slate-900 dark:text-white tracking-tight">{t("Academic Records")}</h2>
                <p className="text-lg font-medium text-slate-400 dark:text-slate-500">
-                 Integrated transcript for <span className="text-slate-900 dark:text-white font-bold">{academicData?.student?.name || 'Authorized Member'}</span>
+                 {t("Integrated transcript for")} <span className="text-slate-900 dark:text-white font-bold">{academicData?.student?.name || t("Authorized Member")}</span>
                </p>
             </div>
             
@@ -345,7 +347,7 @@ const StudentResults: React.FC<ResultsProps> = ({ user, onLogout }) => {
                 className="flex items-center gap-4 px-8 py-4 bg-slate-900 dark:bg-teal-600 text-white rounded-2xl text-xs font-black uppercase tracking-[0.2em] hover:bg-slate-800 dark:hover:bg-teal-700 transition-all shadow-2xl shadow-slate-200 dark:shadow-teal-900/20 active:scale-[0.98] disabled:opacity-30 disabled:cursor-not-allowed w-full sm:w-auto"
               >
                 <span className="material-icons-outlined text-lg">{downloading ? 'sync' : 'verified_user'}</span>
-                {downloading ? 'Processing...' : (shouldDisableDownload() ? 'Access Restricted' : 'Export Transcript')}
+                {downloading ? t("Processing...") : (shouldDisableDownload() ? t("Access Restricted") : t("Export Transcript"))}
                 <span className="material-icons-outlined text-lg ml-2">
                   {downloadMenuOpen ? 'expand_less' : 'expand_more'}
                 </span>
@@ -358,10 +360,10 @@ const StudentResults: React.FC<ResultsProps> = ({ user, onLogout }) => {
                   <div className="p-8 border-b border-slate-50 dark:border-slate-800">
                     <div className="flex items-center justify-between mb-6 px-1">
                       <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                        Semester Dispatches
+                        {t("Semester Dispatches")}
                       </p>
                       <span className="text-[10px] font-black bg-slate-50 dark:bg-slate-800 px-2 py-0.5 rounded-md text-slate-400">
-                        {academicData?.academic_summary?.semesters?.length || 0} Records
+                        {academicData?.academic_summary?.semesters?.length || 0} {t("Records")}
                       </span>
                     </div>
                     
@@ -387,7 +389,7 @@ const StudentResults: React.FC<ResultsProps> = ({ user, onLogout }) => {
                   <div className="p-8 border-b border-slate-50 dark:border-slate-800">
                     <div className="flex items-center justify-between mb-6 px-1">
                       <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                        Academic Cycles
+                        {t("Academic Cycles")}
                       </p>
                     </div>
                     
@@ -406,7 +408,7 @@ const StudentResults: React.FC<ResultsProps> = ({ user, onLogout }) => {
                                 {year}
                               </p>
                               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">
-                                {semesters.length} periods • {totalCredits} units
+                                {semesters.length} {t("periods")} • {totalCredits} {t("units")}
                               </p>
                             </div>
                             <span className="material-icons-outlined text-slate-300 group-hover:text-teal-500 transition-colors">archive</span>
@@ -427,8 +429,8 @@ const StudentResults: React.FC<ResultsProps> = ({ user, onLogout }) => {
                           <span className="material-icons-outlined text-2xl text-white">layers</span>
                         </div>
                         <div className="text-left">
-                          <p className="font-black tracking-tight">Comprehensive Export</p>
-                          <p className="text-[10px] font-bold uppercase tracking-widest opacity-60">All validated intervals</p>
+                          <p className="font-black tracking-tight">{t("Comprehensive Export")}</p>
+                          <p className="text-[10px] font-bold uppercase tracking-widest opacity-60">{t("All validated intervals")}</p>
                         </div>
                       </div>
                       <span className="text-2xl material-icons-outlined group-hover:translate-y-1 transition-transform">south</span>
@@ -442,7 +444,7 @@ const StudentResults: React.FC<ResultsProps> = ({ user, onLogout }) => {
           <div className="bg-slate-900 dark:bg-slate-900 rounded-[40px] p-10 lg:p-12 text-white shadow-2xl mb-12 relative overflow-hidden transition-all hover:shadow-teal-500/5 group border border-white/5">
              <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-10">
                 <div className="space-y-4">
-                   <h3 className="text-slate-400 font-black text-[10px] uppercase tracking-[0.3em]">Institutional Standing</h3>
+                   <h3 className="text-slate-400 font-black text-[10px] uppercase tracking-[0.3em]">{t("Institutional Standing")}</h3>
                    <div className="flex items-baseline gap-4">
                       <span className="text-6xl font-black tracking-tighter tabular-nums group-hover:text-teal-400 transition-colors">
                         {loading ? '—' : (academicData?.academic_summary?.cgpa?.toFixed(2) || '0.00')}
@@ -454,24 +456,24 @@ const StudentResults: React.FC<ResultsProps> = ({ user, onLogout }) => {
                 <div className="h-20 w-px bg-white/5 hidden md:block" />
                 
                 <div className="space-y-1">
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Interval Performance</p>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">{t("Interval Performance")}</p>
                     <h3 className="text-4xl font-black tracking-tighter tabular-nums">
                       {loading ? '—' : (academicData?.academic_summary?.semesters?.[academicData.academic_summary.semesters.length - 1]?.gpa?.toFixed(2) || '0.00')}
                     </h3>
                     <div className="flex items-center gap-2 text-teal-400 text-[10px] font-black uppercase tracking-widest mt-2">
                       <span className="material-icons-round text-sm">trending_up</span>
-                      <span>Operational Peak</span>
+                      <span>{t("Operational Peak")}</span>
                     </div>
                 </div>
 
                 <div className="h-20 w-px bg-white/5 hidden md:block" />
 
                 <div className="space-y-1">
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Unit Accumulation</p>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">{t("Unit Accumulation")}</p>
                     <h3 className="text-4xl font-black tracking-tighter tabular-nums">
                       {loading ? '—' : (academicData?.academic_summary?.total_credits_earned || 0)}
                     </h3>
-                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mt-2">Validated Credits</p>
+                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mt-2">{t("Validated Credits")}</p>
                 </div>
              </div>
              
@@ -487,7 +489,7 @@ const StudentResults: React.FC<ResultsProps> = ({ user, onLogout }) => {
               </span>
               <input 
                 type="text" 
-                placeholder="Filter course dispatches by code or title..." 
+                placeholder={t("Filter course dispatches by code or title...")}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-16 pr-8 py-5 text-base font-medium border border-slate-100 dark:border-slate-800 rounded-3xl w-full bg-slate-50/50 dark:bg-slate-900/50 focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500/50 focus:bg-white outline-none transition-all shadow-sm"
@@ -536,7 +538,7 @@ const StudentResults: React.FC<ResultsProps> = ({ user, onLogout }) => {
                           </h3>
                           <div className="flex items-center gap-4 mt-2">
                             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
-                              {courses.length} DISPATCHES • {semesterData.total_credit_unit} UNITS
+                              {courses.length} {t("DISPATCHES")} • {semesterData.total_credit_unit} {t("UNITS")}
                             </p>
                           </div>
                         </div>
@@ -544,12 +546,12 @@ const StudentResults: React.FC<ResultsProps> = ({ user, onLogout }) => {
                       
                       <div className="flex flex-wrap items-center gap-10 xl:gap-16">
                         <div className="space-y-1">
-                          <p className="text-[9px] font-black text-slate-300 dark:text-slate-600 uppercase tracking-widest">GPA Metrics</p>
+                          <p className="text-[9px] font-black text-slate-300 dark:text-slate-600 uppercase tracking-widest">{t("GPA Metrics")}</p>
                           <p className="font-black text-3xl text-teal-600 dark:text-teal-500 tabular-nums">{semesterData.gpa.toFixed(2)}</p>
                         </div>
                         <div className="h-12 w-px bg-slate-100 dark:bg-slate-800 hidden sm:block"></div>
                         <div className="space-y-2">
-                          <p className="text-[9px] font-black text-slate-300 dark:text-slate-600 uppercase tracking-widest">Standing</p>
+                          <p className="text-[9px] font-black text-slate-300 dark:text-slate-600 uppercase tracking-widest">{t("Standing")}</p>
                           {(() => {
                             const hasFailedCourses = courses.some(c => c.status === 'Failed' || c.grade === 'F');
                             const isInProgress = courses.length > 0 && courses.every(c => c.grade === 'W' || !c.grade);
@@ -562,7 +564,7 @@ const StudentResults: React.FC<ResultsProps> = ({ user, onLogout }) => {
                                     ? 'bg-emerald-50 text-emerald-700 border-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-900/50'
                                     : 'bg-rose-50 text-rose-700 border-rose-100 dark:bg-rose-900/20 dark:text-rose-400 dark:border-rose-900/50'
                               }`}>
-                                {isInProgress ? 'Synchronizing' : hasFailedCourses ? 'Deficit Detected' : 'Optimal'}
+                                {isInProgress ? t("Synchronizing") : hasFailedCourses ? t("Deficit Detected") : t("Optimal")}
                               </span>
                             );
                           })()}
@@ -579,12 +581,12 @@ const StudentResults: React.FC<ResultsProps> = ({ user, onLogout }) => {
                           <table className="w-full text-left">
                             <thead className="bg-slate-50/50 dark:bg-slate-950/50 text-[9px] uppercase font-black tracking-[0.3em] text-slate-400 dark:text-slate-500 border-b border-slate-50 dark:border-slate-800">
                               <tr>
-                                <th className="px-10 py-5">Course Code</th>
-                                <th className="px-10 py-5">Nomenclature</th>
-                                <th className="px-10 py-5">Volume</th>
-                                <th className="px-10 py-5">Index</th>
-                                <th className="px-10 py-5">Yield</th>
-                                <th className="px-10 py-5 text-right">Integrity</th>
+                                <th className="px-10 py-5">{t("Course Code")}</th>
+                                <th className="px-10 py-5">{t("Nomenclature")}</th>
+                                <th className="px-10 py-5">{t("Volume")}</th>
+                                <th className="px-10 py-5">{t("Index")}</th>
+                                <th className="px-10 py-5">{t("Yield")}</th>
+                                <th className="px-10 py-5 text-right">{t("Integrity")}</th>
                               </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-50 dark:divide-slate-800/50">
@@ -625,13 +627,13 @@ const StudentResults: React.FC<ResultsProps> = ({ user, onLogout }) => {
                                   </td>
                                   <td className="px-10 py-6 text-right">
                                     <span className={`inline-flex px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border shadow-sm ${
-                                      course.status === 'Passed' 
-                                        ? 'bg-emerald-50 text-emerald-700 border-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-900/50' 
-                                        : course.status === 'Failed'
-                                        ? 'bg-rose-50 text-rose-700 border-rose-100 dark:bg-rose-900/20 dark:text-rose-400 dark:border-rose-900/50'
-                                        : 'bg-slate-50 text-slate-400 border-slate-100 dark:bg-slate-800 dark:text-slate-500 dark:border-slate-700'
+                                      course.grade === 'W' || !course.grade
+                                        ? 'bg-slate-50 text-slate-400 border-slate-100 dark:bg-slate-800 dark:text-slate-500'
+                                        : course.grade !== 'F' && course.status !== 'Failed'
+                                          ? 'bg-emerald-50 text-emerald-700 border-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-900/50'
+                                          : 'bg-rose-50 text-rose-700 border-rose-100 dark:bg-rose-900/20 dark:text-rose-400 dark:border-rose-900/50'
                                     }`}>
-                                      {course.status}
+                                      {course.grade === 'W' || !course.grade ? t("Pending") : course.grade !== 'F' && course.status !== 'Failed' ? t("Validated") : t("Failed")}
                                     </span>
                                   </td>
                                 </tr>
@@ -640,11 +642,10 @@ const StudentResults: React.FC<ResultsProps> = ({ user, onLogout }) => {
                           </table>
                         </div>
                       ) : (
-                        <div className="p-20 text-center space-y-4">
-                          <div className="h-16 w-16 rounded-[24px] bg-slate-50 dark:bg-slate-950 flex items-center justify-center text-slate-200 dark:text-slate-800 mx-auto border border-slate-100 dark:border-slate-800 shadow-inner">
-                            <span className="material-icons-outlined text-3xl">inbox</span>
-                          </div>
-                          <p className="text-sm font-black text-slate-300 uppercase tracking-widest">Null Set Discovered</p>
+                        <div className="p-20 text-center">
+                          <p className="text-slate-400 font-medium">
+                            {searchQuery ? t("No courses match your active filter.") : t("No dispatches available for this interval.")}
+                          </p>
                         </div>
                       )}
                     </div>
@@ -654,10 +655,6 @@ const StudentResults: React.FC<ResultsProps> = ({ user, onLogout }) => {
             })}
           </div>
         </main>
-
-        {/* Global UI Decoration */}
-        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-teal-500/[0.02] rounded-full blur-[120px] pointer-events-none -translate-y-1/2 translate-x-1/2 -z-10" />
-        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-indigo-500/[0.02] rounded-full blur-[100px] pointer-events-none translate-y-1/2 -translate-x-1/2 -z-10" />
       </div>
     </div>
   );

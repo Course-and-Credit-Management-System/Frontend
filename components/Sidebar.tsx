@@ -1,5 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { User } from '../types';
 import { useUI } from '../context/UIContext';
 
@@ -18,27 +19,27 @@ interface SidebarLink {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ user, onLogout }) => {
+  const { t } = useTranslation();
   const { isSidebarOpen, closeSidebar } = useUI();
   const isAdmin = user.role === 'admin';
-  const prefix = isAdmin ? 'admin' : 'student';
 
   const adminLinks: SidebarLink[] = [
-    { to: '/admin/dashboard', icon: 'dashboard', label: 'Dashboard' },
-    { to: '/admin/enrollment', icon: 'group_add', label: 'Enrollment', section: 'Student Management' },
-    { to: '/admin/students', icon: 'school', label: 'Students List' },
-    { to: "/admin/messages", icon: "mail", label: "Messages"},
-    { to: '/admin/courses', icon: 'library_books', label: 'Courses', section: 'Academic' },
-    { to: '/admin/announcements', icon: 'campaign', label: 'Announcements'},
-    { to: '/admin/grading', icon: 'assessment', label: 'Exam Results' },
-    { to: '/admin/chatbot', icon: 'smart_toy', label: 'AI Assistant', section: 'System', badge: 'AI' },
+    { to: '/admin/dashboard', icon: 'dashboard', label: t('Dashboard') },
+    { to: '/admin/enrollment', icon: 'group_add', label: t('Enrollment'), section: t('Student Management') },
+    { to: '/admin/students', icon: 'school', label: t('Students List') },
+    { to: '/admin/messages', icon: 'mail', label: t('Messages') },
+    { to: '/admin/courses', icon: 'library_books', label: t('Courses'), section: t('Academic') },
+    { to: '/admin/announcements', icon: 'campaign', label: t('Announcements') },
+    { to: '/admin/grading', icon: 'assessment', label: t('Exam Results') },
+    { to: '/admin/chatbot', icon: 'smart_toy', label: t('AI Assistant'), section: t('System'), badge: 'AI' },
   ];
 
   const studentLinks: SidebarLink[] = [
-    { to: '/student/dashboard', icon: 'dashboard', label: 'Dashboard' },
-    { to: '/student/courses', icon: 'class', label: 'My Courses', section: 'Academics' },
-    { to: '/student/enrollment', icon: 'app_registration', label: 'Course Enrollment' },
-    { to: '/student/results', icon: 'assignment_turned_in', label: 'Review Results' },
-    { to: '/student/messages', icon: 'mail', label: 'Messages' },
+    { to: '/student/dashboard', icon: 'dashboard', label: t('Dashboard') },
+    { to: '/student/courses', icon: 'class', label: t('My Courses'), section: t('Academics') },
+    { to: '/student/enrollment', icon: 'app_registration', label: t('Course Enrollment') },
+    { to: '/student/results', icon: 'assignment_turned_in', label: t('Review Results') },
+    { to: '/student/messages', icon: 'mail', label: t('Messages') },
   ];
 
   const links = isAdmin ? adminLinks : studentLinks;
@@ -122,7 +123,7 @@ const Sidebar: React.FC<SidebarProps> = ({ user, onLogout }) => {
               className="w-full flex items-center justify-center gap-3 py-3 rounded-xl bg-white dark:bg-slate-950 text-slate-600 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 border border-slate-100 dark:border-slate-800 transition-all text-xs font-black uppercase tracking-widest active:scale-[0.98] shadow-sm hover:shadow-md"
             >
               <span className="material-icons-round text-sm">logout</span>
-              <span>Secure Sign Out</span>
+              <span>{t('Secure Sign Out')}</span>
             </button>
           </div>
         </div>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
 import { DetailedCardGridSkeleton, Skeleton } from '../components/Skeleton';
@@ -12,6 +13,7 @@ interface CoursesProps {
 }
 
 const StudentCourses: React.FC<CoursesProps> = ({ user, onLogout }) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [data, setData] = useState<CurrentCoursesResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -32,7 +34,7 @@ const StudentCourses: React.FC<CoursesProps> = ({ user, onLogout }) => {
       // Store current total credits in localStorage as requested
       localStorage.setItem("current_credits", String(res.total_credits));
     } catch (err: any) {
-      setError(err.message || "Failed to fetch courses");
+      setError(err.message || t("Failed to fetch courses"));
     } finally {
       setLoading(false);
     }
@@ -88,7 +90,7 @@ const StudentCourses: React.FC<CoursesProps> = ({ user, onLogout }) => {
       return;
     }
 
-    if (!window.confirm(`Confirm dropping ${selectedToDrop.length} selected course(s)?`)) return;
+    if (!window.confirm(`${t("Confirm dropping")} ${selectedToDrop.length} ${t("selected course(s)?")}`)) return;
 
     try {
       setLoading(true);
@@ -100,7 +102,7 @@ const StudentCourses: React.FC<CoursesProps> = ({ user, onLogout }) => {
       setSelectedToDrop([]);
       setShowTradeOff(false);
     } catch (err) {
-      setError("An error occurred while dropping courses.");
+      setError(t("An error occurred while dropping courses."));
       setLoading(false);
     }
   };
@@ -140,7 +142,7 @@ const StudentCourses: React.FC<CoursesProps> = ({ user, onLogout }) => {
       applyDropRecommendation(recommendation);
     } catch (err: any) {
       setDropRecommendation(null);
-      setDropRecommendationError(err?.message || "Failed to load drop recommendations.");
+      setDropRecommendationError(err?.message || t("Failed to load drop recommendations."));
     } finally {
       setDropRecommendationLoading(false);
     }
@@ -153,7 +155,7 @@ const StudentCourses: React.FC<CoursesProps> = ({ user, onLogout }) => {
   }, [showTradeOff, data?.total_credits, data?.max_credits]);
 
   const handleDropCourse = async (courseCode: string) => {
-    if (!window.confirm(`Are you sure you want to drop ${courseCode}?`)) return;
+    if (!window.confirm(`${t("Are you sure you want to drop")} ${courseCode}?`)) return;
     
     try {
       await api.dropCourse(courseCode);
@@ -171,7 +173,7 @@ const StudentCourses: React.FC<CoursesProps> = ({ user, onLogout }) => {
         localStorage.setItem('current_credits', updatedCredits.toString());
       }
     } catch (err) {
-      setError("Failed to drop course.");
+      setError(t("Failed to drop course."));
     }
   };
 
@@ -189,7 +191,7 @@ const StudentCourses: React.FC<CoursesProps> = ({ user, onLogout }) => {
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
     } catch (err: any) {
-      alert(err?.message || 'Failed to download schedule. Please try again.');
+      alert(err?.message || t('Failed to download schedule. Please try again.'));
     } finally {
       setDownloadingSchedule(false);
     }
@@ -217,10 +219,10 @@ const StudentCourses: React.FC<CoursesProps> = ({ user, onLogout }) => {
         <div className="flex flex-1 flex-col overflow-hidden items-center justify-center p-8">
            <div className="bg-red-50 text-red-600 p-4 rounded-lg border border-red-100 max-w-md text-center">
               <span className="material-icons-outlined text-4xl mb-2">error_outline</span>
-              <p className="font-bold">Error</p>
-              <p className="text-sm">{error || "No data available"}</p>
+              <p className="font-bold">{t("Error")}</p>
+              <p className="text-sm">{error || t("No data available")}</p>
               <button onClick={() => window.location.reload()} className="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors">
-                 Try Again
+                 {t("Try Again")}
               </button>
            </div>
         </div>
@@ -240,30 +242,30 @@ const StudentCourses: React.FC<CoursesProps> = ({ user, onLogout }) => {
     <div className="flex h-screen overflow-hidden bg-white dark:bg-slate-950 font-poppins relative">
       <Sidebar user={user} onLogout={onLogout} />
       <div className={`flex flex-1 flex-col overflow-hidden transition-all duration-700 ${isConflict ? 'blur-2xl scale-[0.98] pointer-events-none' : ''}`}>
-        <Header title="My Courses" user={user} />
+        <Header title={t("My Courses")} user={user} />
         <main className="flex-1 overflow-y-auto p-10 lg:p-12 animate-in fade-in duration-1000 slide-in-from-bottom-4 scrollbar-hide max-w-[1600px] mx-auto w-full">
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-8">
             <div className="space-y-2">
-              <h2 className="text-4xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">Academic Load</h2>
-              <p className="text-lg font-medium text-slate-400 dark:text-slate-500">{data.semester_name} • Current Inventory</p>
+              <h2 className="text-4xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">{t("Academic Load")}</h2>
+              <p className="text-lg font-medium text-slate-400 dark:text-slate-500">{data.semester_name} • {t("Current Inventory")}</p>
             </div>
             <div className="bg-slate-50/50 dark:bg-slate-900/85 px-8 py-5 rounded-[32px] border border-slate-100 dark:border-slate-700 shadow-sm dark:shadow-[0_14px_36px_rgba(2,6,23,0.45)] flex items-center gap-10">
               <div className="space-y-1">
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Credit Volume</p>
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">{t("Credit Volume")}</p>
                 <div className="flex items-baseline gap-2">
                     <span className="text-3xl font-black text-teal-600 tabular-nums">{data.total_credits}</span>
-                    <span className="text-[10px] font-black text-slate-300 dark:text-slate-600 uppercase">Limit: {data.max_credits}</span>
+                    <span className="text-[10px] font-black text-slate-300 dark:text-slate-600 uppercase">{t("Limit")}: {data.max_credits}</span>
                 </div>
               </div>
               <div className="w-px h-10 bg-slate-200 dark:bg-slate-800"></div>
               <div className="space-y-1">
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Registrations</p>
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">{t("Registrations")}</p>
                 <span className="text-3xl font-black text-slate-900 dark:text-white tabular-nums">{data.courses_count}</span>
               </div>
             </div>
           </div>
 
-          {data.total_credits > data.max_credits && (
+          {isConflict && (
             <div className="mb-12 bg-rose-50 dark:bg-rose-950/20 border border-rose-100 dark:border-rose-900/40 p-6 rounded-[32px] shadow-sm animate-in slide-in-from-top-4 duration-500">
                 <div className="flex flex-col md:flex-row items-center justify-between gap-6">
                     <div className="flex items-center gap-5">
@@ -271,9 +273,9 @@ const StudentCourses: React.FC<CoursesProps> = ({ user, onLogout }) => {
                           <span className="material-icons-outlined text-2xl">warning_amber</span>
                         </div>
                         <div>
-                            <p className="text-rose-900 dark:text-rose-200 text-lg font-black tracking-tight">Capacity Protocol Breach</p>
+                            <p className="text-rose-900 dark:text-rose-200 text-lg font-black tracking-tight">{t("Capacity Protocol Breach")}</p>
                             <p className="text-rose-700/70 dark:text-rose-400/70 text-sm font-medium">
-                                System indicates an excess of <span className="font-black text-rose-600">{data.total_credits - data.max_credits} credits</span>. Adjustment required.
+                                {t("System indicates an excess of")} <span className="font-black text-rose-600">{data.total_credits - data.max_credits} {t("credits. Adjustment required.")}</span>
                             </p>
                         </div>
                     </div>
@@ -281,7 +283,7 @@ const StudentCourses: React.FC<CoursesProps> = ({ user, onLogout }) => {
                         onClick={() => setShowTradeOff(true)}
                         className="px-8 py-3.5 bg-rose-600 hover:bg-rose-700 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl transition-all active:scale-[0.98] shadow-lg shadow-rose-500/20"
                     >
-                        Resolve Protocol
+                        {t("Resolve Protocol")}
                     </button>
                 </div>
             </div>
@@ -306,7 +308,7 @@ const StudentCourses: React.FC<CoursesProps> = ({ user, onLogout }) => {
                   </span>
                   <div className="text-right">
                     <span className="block text-2xl font-black text-slate-900 dark:text-white tabular-nums tracking-tighter">{course.credits}</span>
-                    <span className="text-[9px] font-black text-slate-300 dark:text-slate-600 uppercase tracking-widest">Units</span>
+                    <span className="text-[9px] font-black text-slate-300 dark:text-slate-600 uppercase tracking-widest">{t("Units")}</span>
                   </div>
                 </div>
                 
@@ -340,8 +342,8 @@ const StudentCourses: React.FC<CoursesProps> = ({ user, onLogout }) => {
                     <span className="material-icons-outlined text-3xl">print</span>
                 </div>
                 <div>
-                    <h4 className="text-2xl font-black text-white dark:text-slate-900 tracking-tight mb-1">Schedule Export</h4>
-                    <p className="text-sm font-medium text-white/60 dark:text-slate-600">Generate a high-fidelity cryptographic ledger of your current courses.</p>
+                    <h4 className="text-2xl font-black text-white dark:text-slate-900 tracking-tight mb-1">{t("Schedule Export")}</h4>
+                    <p className="text-sm font-medium text-white/60 dark:text-slate-600">{t("Generate a high-fidelity cryptographic ledger of your current courses.")}</p>
                 </div>
             </div>
             <button
@@ -353,7 +355,7 @@ const StudentCourses: React.FC<CoursesProps> = ({ user, onLogout }) => {
                   : 'bg-white text-slate-900 hover:bg-slate-50 hover:shadow-white/10 dark:bg-teal-600 dark:text-white dark:hover:bg-teal-700'
               }`}
             >
-                {downloadingSchedule ? 'SYCHRONIZING...' : 'Download PDF Manifest'}
+                {downloadingSchedule ? t('SYCHRONIZING...') : t('Download PDF Manifest')}
             </button>
           </div>
         </main>
@@ -366,17 +368,17 @@ const StudentCourses: React.FC<CoursesProps> = ({ user, onLogout }) => {
                     <span className="material-icons-outlined text-rose-500 text-5xl animate-pulse">lock</span>
                 </div>
                 <div>
-                    <h3 className="text-3xl font-black text-slate-900 dark:text-white font-poppins tracking-tight">Access Restricted</h3>
+                    <h3 className="text-3xl font-black text-slate-900 dark:text-white font-poppins tracking-tight">{t("Access Restricted")}</h3>
                     <p className="text-slate-500 dark:text-slate-400 mt-4 leading-relaxed font-medium">
-                        Your credit volume (<span className="text-rose-500 font-black tabular-nums">{data.total_credits}</span>) violates the institutional ceiling of <span className="font-black tabular-nums">{data.max_credits}</span>.
+                        {t("Your credit volume (")}<span className="text-rose-500 font-black tabular-nums">{data.total_credits}</span>{t(") violates the institutional ceiling of ")}<span className="font-black tabular-nums">{data.max_credits}</span>.
                     </p>
-                    <p className="text-[10px] text-slate-300 dark:text-slate-600 mt-4 uppercase tracking-[0.4em] font-black">Authentication Shield Engaged</p>
+                    <p className="text-[10px] text-slate-300 dark:text-slate-600 mt-4 uppercase tracking-[0.4em] font-black">{t("Authentication Shield Engaged")}</p>
                 </div>
                 <button 
                     onClick={() => setShowTradeOff(true)}
                     className="w-full py-5 bg-slate-900 dark:bg-teal-600 text-white text-xs font-black uppercase tracking-[0.2em] rounded-[24px] shadow-2xl hover:bg-slate-800 dark:hover:bg-teal-700 transition-all active:scale-[0.98]"
                 >
-                    Initiate Resolution
+                    {t("Initiate Resolution")}
                 </button>
             </div>
         </div>
@@ -389,9 +391,9 @@ const StudentCourses: React.FC<CoursesProps> = ({ user, onLogout }) => {
                     <div className="space-y-1">
                         <h3 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-3">
                             <span className="material-icons-outlined text-rose-500">troubleshoot</span>
-                            Conflict Engine
+                            {t("Conflict Engine")}
                         </h3>
-                        <p className="text-slate-400 dark:text-slate-500 text-sm font-medium tracking-tight">Equilibrate load to institutional {data.max_credits} ceiling.</p>
+                        <p className="text-slate-400 dark:text-slate-500 text-sm font-medium tracking-tight">{t("Equilibrate load to institutional")} {data.max_credits} {t("ceiling.")}</p>
                     </div>
                     <button
                         onClick={fetchDropRecommendation}
@@ -402,7 +404,7 @@ const StudentCourses: React.FC<CoursesProps> = ({ user, onLogout }) => {
                                 : 'bg-white dark:bg-slate-800 text-teal-600 border-slate-200 dark:border-slate-700 hover:bg-slate-50'
                         }`}
                     >
-                        {dropRecommendationLoading ? 'CALCULATING...' : 'AI RE-SYNTHESIS'}
+                        {dropRecommendationLoading ? t('CALCULATING...') : t('AI RE-SYNTHESIS')}
                     </button>
                 </div>
                 
@@ -413,7 +415,7 @@ const StudentCourses: React.FC<CoursesProps> = ({ user, onLogout }) => {
                             <div className="h-8 w-8 rounded-xl bg-teal-500 flex items-center justify-center text-white">
                               <span className="material-icons-outlined text-sm">auto_awesome</span>
                             </div>
-                            <p className="text-[10px] font-black text-teal-700 dark:text-teal-400 uppercase tracking-widest">Neural Guidance Output</p>
+                            <p className="text-[10px] font-black text-teal-700 dark:text-teal-400 uppercase tracking-widest">{t("Neural Guidance Output")}</p>
                         </div>
                         {dropRecommendationLoading && (
                             <div className="space-y-4">
@@ -429,8 +431,8 @@ const StudentCourses: React.FC<CoursesProps> = ({ user, onLogout }) => {
                                 <p className="text-sm font-bold text-teal-900 dark:text-teal-200 leading-relaxed italic">"{dropRecommendation.message}"</p>
                                 <div className="mt-6 flex flex-wrap gap-4">
                                   <div className="px-3 py-1.5 bg-white dark:bg-slate-950 rounded-xl border border-teal-100/50 dark:border-teal-900/50">
-                                    <p className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">Delta Requirement</p>
-                                    <p className="text-xs font-black text-teal-600">-{dropRecommendation.credits_to_drop} Units</p>
+                                    <p className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">{t("Delta Requirement")}</p>
+                                    <p className="text-xs font-black text-teal-600">-{dropRecommendation.credits_to_drop} {t("Units")}</p>
                                   </div>
                                 </div>
                             </div>
@@ -444,7 +446,7 @@ const StudentCourses: React.FC<CoursesProps> = ({ user, onLogout }) => {
                             if (electives.length > 1) {
                                 return (
                                     <div className="space-y-6">
-                                        <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.3em] ml-1">Specialization Electives</h4>
+                                        <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.3em] ml-1">{t("Specialization Electives")}</h4>
                                         <div className="grid grid-cols-1 gap-3">
                                             {electives.map(course => (
                                                 <label key={course.code} className={`flex items-center gap-5 p-5 rounded-[24px] border transition-all cursor-pointer group/label ${
@@ -470,15 +472,15 @@ const StudentCourses: React.FC<CoursesProps> = ({ user, onLogout }) => {
                                                     <div className="flex-1 min-w-0">
                                                         <div className="flex justify-between items-start mb-1">
                                                             <span className="font-black text-sm text-slate-900 dark:text-white tracking-tight truncate mr-4">{course.title}</span>
-                                                            <span className="text-[10px] font-black text-teal-600 bg-teal-50 dark:bg-teal-950 px-2 py-0.5 rounded-md uppercase tracking-tighter whitespace-nowrap">{course.credits} UNITS</span>
+                                                            <span className="text-[10px] font-black text-teal-600 bg-teal-50 dark:bg-teal-950 px-2 py-0.5 rounded-md uppercase tracking-tighter whitespace-nowrap">{course.credits} {t("UNITS")}</span>
                                                         </div>
                                                         <div className="flex items-center gap-3">
                                                           <p className="text-[10px] font-bold text-slate-400 font-mono tracking-widest">{course.code}</p>
                                                           {dropReasonByCode.has(course.code) && (
-                                                              <p className="text-[9px] font-black text-teal-600/70 uppercase tracking-tighter">Guidance Match</p>
+                                                              <p className="text-[9px] font-black text-teal-600/70 uppercase tracking-tighter">{t("Guidance Match")}</p>
                                                           )}
                                                         </div>
-                                                        {course.is_retake && <p className="text-[9px] text-rose-500 font-black uppercase tracking-widest mt-2">Core Retake Policy Active</p>}
+                                                        {course.is_retake && <p className="text-[9px] text-rose-500 font-black uppercase tracking-widest mt-2">{t("Core Retake Policy Active")}</p>}
                                                     </div>
                                                 </label>
                                             ))}
@@ -491,7 +493,7 @@ const StudentCourses: React.FC<CoursesProps> = ({ user, onLogout }) => {
 
                         {/* Other Courses */}
                         <div className="space-y-6">
-                             <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.3em] ml-1">Foundation & Core Hierarchy</h4>
+                             <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.3em] ml-1">{t("Foundation & Core Hierarchy")}</h4>
                              <div className="grid grid-cols-1 gap-3">
                                 {data.courses
                                     .filter(c => c.tag?.toUpperCase() !== 'ELECTIVE' || (data.courses.filter(e => e.tag?.toUpperCase() === 'ELECTIVE').length <= 1))
@@ -523,16 +525,16 @@ const StudentCourses: React.FC<CoursesProps> = ({ user, onLogout }) => {
                                                     </p>
                                                     <div className="flex items-center gap-3 mt-1.5">
                                                         <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest">{course.code}</span>
-                                                        <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-tighter">{course.credits} UNITS</span>
+                                                        <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-tighter">{course.credits} {t("UNITS")}</span>
                                                         <span className="px-1.5 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest bg-slate-100 dark:bg-slate-800 text-slate-500">{course.tag}</span>
                                                         {dropReasonByCode.has(course.code) && (
-                                                            <span className="px-1.5 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest bg-teal-50 dark:bg-teal-900/40 text-teal-600">Guidance Apex</span>
+                                                            <span className="px-1.5 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest bg-teal-50 dark:bg-teal-900/40 text-teal-600">{t("Guidance Apex")}</span>
                                                         )}
                                                     </div>
                                                 </div>
                                             </div>
                                             {isSelected && (
-                                                <span className="text-[9px] font-black text-rose-600 uppercase tracking-[0.2em] bg-rose-100 px-3 py-1.5 rounded-xl ml-4 whitespace-nowrap">Marked for Deletion</span>
+                                                <span className="text-[9px] font-black text-rose-600 uppercase tracking-[0.2em] bg-rose-100 px-3 py-1.5 rounded-xl ml-4 whitespace-nowrap">{t("Marked for Deletion")}</span>
                                             )}
                                         </div>
                                     );
@@ -545,19 +547,19 @@ const StudentCourses: React.FC<CoursesProps> = ({ user, onLogout }) => {
                 <div className="p-10 bg-slate-50/50 dark:bg-slate-950/50 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row justify-between items-center gap-8">
                     <div className="flex items-center gap-10">
                         <div className="space-y-1">
-                            <p className="text-[9px] text-slate-400 dark:text-slate-500 uppercase font-black tracking-[0.3em]">Projected Load</p>
+                            <p className="text-[9px] text-slate-400 dark:text-slate-500 uppercase font-black tracking-[0.3em]">{t("Projected Load")}</p>
                             <p className={`text-3xl font-black tabular-nums tracking-tighter transition-colors ${
                                 (data.total_credits - data.courses.filter(c => selectedToDrop.includes(c.code)).reduce((s,c)=>s+c.credits,0)) <= data.max_credits 
                                 ? 'text-emerald-600' 
                                 : 'text-rose-600'
                             }`}>
                                 {data.total_credits - data.courses.filter(c => selectedToDrop.includes(c.code)).reduce((s,c)=>s+c.credits,0)}
-                                <span className="text-sm text-slate-300 dark:text-slate-600 font-bold ml-2">/ {data.max_credits} MAX</span>
+                                <span className="text-sm text-slate-300 dark:text-slate-600 font-bold ml-2">/ {data.max_credits} {t("MAX")}</span>
                             </p>
                         </div>
                         <div className="h-12 w-px bg-slate-200 dark:bg-slate-800 hidden sm:block"></div>
                         <div className="space-y-1">
-                            <p className="text-[9px] text-slate-400 dark:text-slate-500 uppercase font-black tracking-[0.3em]">Delta Volume</p>
+                            <p className="text-[9px] text-slate-400 dark:text-slate-500 uppercase font-black tracking-[0.3em]">{t("Delta Volume")}</p>
                             <p className="text-3xl font-black text-rose-500 tabular-nums tracking-tighter">
                                 -{data.courses.filter(c => selectedToDrop.includes(c.code)).reduce((s,c)=>s+c.credits,0)}
                             </p>
@@ -572,7 +574,7 @@ const StudentCourses: React.FC<CoursesProps> = ({ user, onLogout }) => {
                             : 'bg-slate-200 dark:bg-slate-800 text-slate-400 cursor-not-allowed shadow-none'
                         }`}
                     >
-                        Commit Adjustments
+                        {t("Commit Adjustments")}
                     </button>
                 </div>
             </div>

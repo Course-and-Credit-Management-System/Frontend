@@ -4,6 +4,7 @@ import Header from '../components/Header';
 import { User, StudentAlert } from '../types';
 import { api } from '../lib/api';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 interface DashboardProps {
   user: User;
@@ -11,6 +12,7 @@ interface DashboardProps {
 }
 
 const StudentDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
+  const { t } = useTranslation();
   const [alerts, setAlerts] = useState<StudentAlert[]>([]);
   const [majorState, setMajorState] = useState<{ program_type?: string; selected_track?: string; selected_major?: string; status?: string; profile_major_id?: string; profile_major_track?: string; current_year?: string; current_semester?: string } | null>(null);
   const [eligibility, setEligibility] = useState<any | null>(null);
@@ -41,7 +43,7 @@ const StudentDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         try {
           const annItems = (anns || []).slice(0, 10).map((a: any) => ({
             id: a._id || a.id || "",
-            title: a.title || "Announcement",
+            title: a.title || t("Announcement"),
             sub: (a.content || "").slice(0, 80),
             when: new Date(a.date_posted || a.created_at || Date.now()),
             icon: "campaign",
@@ -49,7 +51,7 @@ const StudentDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
           }));
           const alertItems = (Array.isArray(alerts) ? alerts : []).slice(0, 10).map((al: any) => ({
             id: al._id || al.id || "",
-            title: "New Alert",
+            title: t("New Alert"),
             sub: al.message || "",
             when: new Date(al.created_at || Date.now()),
             icon: "notifications",
@@ -105,7 +107,7 @@ const StudentDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         const cached = Number(localStorage.getItem("max_credits") || "");
         if (!Number.isNaN(cached) && cached > 0) setMaxCredits(cached);
       });
-  }, []); 
+  }, [t]); 
 
   useEffect(() => {
     const node = auditCardRef.current;
@@ -157,7 +159,7 @@ const StudentDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     !(majorState?.program_type === "5-year" &&
       majorState?.current_year === "Fourth Year" &&
       majorState?.current_semester === "First Semester");
-  const majorStatusLabel = majorState?.status?.replace(/_/g, " ") || "Unavailable";
+  const majorStatusLabel = majorState?.status?.replace(/_/g, " ") || t("Unavailable");
   return (
     <div className="flex h-screen overflow-hidden bg-white dark:bg-slate-950 font-poppins relative">
       {/* Toast Container */}
@@ -188,16 +190,16 @@ const StudentDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
 
       <Sidebar user={user} onLogout={onLogout} />
       <div className="flex flex-1 flex-col overflow-hidden">
-        <Header title={`Dashboard Overview`} user={user} />
+        <Header title={t("Dashboard Overview")} user={user} />
         <main className="flex-1 overflow-y-auto p-8 lg:p-12 relative animate-in fade-in duration-700 slide-in-from-bottom-4 scrollbar-hide">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-8">
             <div className="min-w-0 space-y-2">
-              <h2 className="text-4xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">Welcome back, {user.name.split(' ')[0]}!</h2>
-              <p className="text-lg font-medium text-slate-400 dark:text-slate-500">Your academic trajectory is looking healthy. Here's the briefing.</p>
+              <h2 className="text-4xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">{t("Welcome back")}, {user.name.split(' ')[0]}!</h2>
+              <p className="text-lg font-medium text-slate-400 dark:text-slate-500">{t("Your academic trajectory is looking healthy. Here's the briefing.")}</p>
             </div>
             <div className="w-full md:w-auto bg-slate-50/50 dark:bg-slate-900/50 px-6 py-3.5 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm flex items-center gap-3 shrink-0">
               <span className="material-icons-round text-teal-600 text-base">calendar_today</span>
-              <span className="text-xs font-black uppercase tracking-widest text-slate-600 dark:text-slate-300">Fall '24 • Week 08</span>
+              <span className="text-xs font-black uppercase tracking-widest text-slate-600 dark:text-slate-300">{t("Fall '24 • Week 08")}</span>
             </div>
           </div>
 
@@ -207,8 +209,8 @@ const StudentDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
               <div className="absolute top-0 right-0 h-24 w-24 bg-emerald-500/5 rounded-bl-full transform translate-x-4 -translate-y-4 transition-transform group-hover:scale-110" />
               <div className="flex justify-between items-start mb-5 relative z-10">
                 <div>
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Enrollment Status</p>
-                  <h3 className="text-3xl font-black text-emerald-600 dark:text-emerald-400 tracking-tight">Active</h3>
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">{t("Enrollment Status")}</p>
+                  <h3 className="text-3xl font-black text-emerald-600 dark:text-emerald-400 tracking-tight">{t("Active")}</h3>
                 </div>
                 <div className="p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-2xl text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-800/50">
                   <span className="material-icons-round text-2xl">verified</span>
@@ -216,10 +218,10 @@ const StudentDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
               </div>
               <div className="relative z-10 mt-6 grid grid-cols-[auto_minmax(0,1fr)] items-end gap-6">
                 <div className="min-w-0">
-                  <p className="text-sm font-semibold text-slate-500 dark:text-slate-400">Current load</p>
+                  <p className="text-sm font-semibold text-slate-500 dark:text-slate-400">{t("Current load")}</p>
                   <p className="mt-1 text-2xl font-black text-slate-900 dark:text-white">
                     {currentCredits !== null ? currentCredits : "-"}
-                    <span className="ml-2 text-sm font-bold text-slate-400 dark:text-slate-500">credits</span>
+                    <span className="ml-2 text-sm font-bold text-slate-400 dark:text-slate-500">{t("credits")}</span>
                   </p>
                 </div>
                 <div className="min-w-0">
@@ -240,7 +242,7 @@ const StudentDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                   </div>
                   <p className="mt-3 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">
                     <span className="h-1 w-1 rounded-full bg-emerald-500 animate-pulse" />
-                    Full-time Matrix
+                    {t("Full-time Matrix")}
                   </p>
                 </div>
               </div>
@@ -250,8 +252,8 @@ const StudentDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
               <div className="absolute top-0 right-0 h-24 w-24 bg-blue-500/5 rounded-bl-full transform translate-x-4 -translate-y-4 transition-transform group-hover:scale-110" />
               <div className="flex justify-between items-start mb-5 relative z-10">
                 <div>
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Academic Index</p>
-                  <h3 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">{gpa !== null ? gpa.toFixed(2) : "�"} <span className="ml-1 text-lg font-bold text-slate-300 dark:text-slate-600">/ 4.0</span></h3>
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">{t("Academic Index")}</p>
+                  <h3 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">{gpa !== null ? gpa.toFixed(2) : ""} <span className="ml-1 text-lg font-bold text-slate-300 dark:text-slate-600">/ 4.0</span></h3>
                 </div>
                 <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-2xl text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-800/50">
                   <span className="material-icons-round text-2xl">analytics</span>
@@ -259,14 +261,14 @@ const StudentDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
               </div>
               <div className="relative z-10 mt-6 grid grid-cols-[auto_minmax(0,1fr)] items-end gap-6">
                 <div>
-                  <p className="text-sm font-semibold text-slate-500 dark:text-slate-400">Standing</p>
+                  <p className="text-sm font-semibold text-slate-500 dark:text-slate-400">{t("Standing")}</p>
                   <p className="mt-1 text-2xl font-black text-slate-900 dark:text-white">
-                    {gpa !== null && gpa >= 3 ? "Excellent" : gpa !== null && gpa >= 2 ? "On Track" : "Building"}
+                    {gpa !== null && gpa >= 3 ? t("Excellent") : gpa !== null && gpa >= 2 ? t("On Track") : t("Building")}
                   </p>
                 </div>
                 <div className="justify-self-start inline-flex items-center gap-2 rounded-2xl bg-emerald-50 px-4 py-3 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400">
                   <span className="material-icons-round text-sm">trending_up</span>
-                  <span className="text-[10px] font-black uppercase tracking-widest">Optimizing Performance</span>
+                  <span className="text-[10px] font-black uppercase tracking-widest">{t("Optimizing Performance")}</span>
                 </div>
               </div>
             </div>
@@ -275,15 +277,15 @@ const StudentDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                <div className="absolute top-0 right-0 h-24 w-24 bg-indigo-500/5 rounded-bl-full transform translate-x-4 -translate-y-4 transition-transform group-hover:scale-110" />
                <div className="flex items-start justify-between gap-4 mb-4 relative z-10">
                 <div className="min-w-0 flex-1">
-                  <p className="text-[10px] font-extrabold text-gray-400 uppercase tracking-widest">Next Step</p>
+                  <p className="text-[10px] font-extrabold text-gray-400 uppercase tracking-widest">{t("Next Step")}</p>
                   <h3 className="text-2xl font-black mt-2 leading-tight text-gray-800 dark:text-white">
-                    Major Selection
+                    {t("Major Selection")}
                     {majorState?.program_type === "5-year" &&
                      majorState?.current_year === "Fourth Year" &&
                      majorState?.current_semester === "First Semester" &&
                      (majorState?.selected_major || majorState?.profile_major_id) ? (
                       <span className="block mt-2 text-sm font-semibold text-gray-500 dark:text-gray-300">
-                        Major: {majorState?.selected_major || majorState?.profile_major_id}
+                        {t("Major")}: {majorState?.selected_major || majorState?.profile_major_id}
                       </span>
                     ) : null}
                   </h3>
@@ -291,10 +293,10 @@ const StudentDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                    majorState?.current_year === "Fourth Year" &&
                    majorState?.current_semester === "First Semester" ? (
                     <div className="mt-2 text-[11px] font-semibold text-gray-600 dark:text-gray-300">
-                      Major Track: {recordedTrack}
+                      {t("Major Track")}: {recordedTrack}
                     </div>
                   ) : null}
-                  {majorState?.status && !majorState.selected_major && (
+                  {majorStatusLabel && !majorState?.selected_major && (
                     <div className="mt-3 inline-flex items-center rounded-full border border-indigo-100 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-900/20 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400">
                       {majorStatusLabel}
                     </div>
@@ -304,7 +306,7 @@ const StudentDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                    majorState?.current_semester === "First Semester" &&
                    majorState?.selected_major ? (
                     <div className="mt-2 text-lg font-bold text-gray-800 dark:text-white">
-                      Major: {majorState?.selected_major}
+                      {t("Major")}: {majorState?.selected_major}
                     </div>
                   ) : null}
                 </div>
@@ -323,17 +325,17 @@ const StudentDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                         {showRecordedSummary ? (
                           <div className="grid grid-cols-2 gap-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800/40 p-4 min-w-0">
                             <div>
-                              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Recorded Track</p>
+                              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t("Recorded Track")}</p>
                               <p className="mt-1 text-sm font-semibold text-slate-700 dark:text-slate-200">{recordedTrack}</p>
                             </div>
                             <div>
-                              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Recorded Major</p>
+                              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t("Recorded Major")}</p>
                               <p className="mt-1 text-sm font-semibold text-slate-700 dark:text-slate-200">{recordedMajor}</p>
                             </div>
                           </div>
                         ) : null}
                         <button onClick={startMajorProcess} disabled={startLoading} className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-teal-600 px-4 py-3 text-sm font-bold text-white transition hover:bg-teal-500 disabled:opacity-60">
-                          Start Process <span className="material-icons-round text-sm">arrow_forward</span>
+                          {t("Start Process")} <span className="material-icons-round text-sm">arrow_forward</span>
                         </button>
                       </div>
                     </div>
@@ -345,20 +347,20 @@ const StudentDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                       <div className="mt-3 space-y-3 text-sm text-gray-600 dark:text-gray-300 min-w-0">
                         <div className="inline-flex items-center gap-2 rounded-full border border-purple-100 bg-purple-50 px-3 py-1.5 text-[11px] font-bold text-purple-700 dark:border-purple-800 dark:bg-purple-900/20 dark:text-purple-300">
                           <span className="material-icons-round text-purple-500">lock</span>
-                          <span>Major selection not available</span>
+                          <span>{t("Major selection not available")}</span>
                         </div>
                         <div className="grid grid-cols-2 gap-3 rounded-2xl border border-slate-200 bg-slate-50/80 p-4 dark:border-slate-700 dark:bg-slate-800/40 min-w-0">
                           <div>
-                            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Selected Major</p>
+                            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t("Selected Major")}</p>
                             <p className="mt-1 text-sm font-semibold text-slate-700 dark:text-slate-200">{recordedMajor}</p>
                           </div>
                           <div>
-                            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Major Track</p>
+                            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t("Major Track")}</p>
                             <p className="mt-1 text-sm font-semibold text-slate-700 dark:text-slate-200">{recordedTrack}</p>
                           </div>
                         </div>
                         <button onClick={startMajorProcess} disabled={startLoading} className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-900 px-4 py-3 text-sm font-bold text-white transition hover:bg-slate-700 disabled:opacity-60 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white sm:w-auto">
-                          Start Process <span className="material-icons-round text-sm">arrow_forward</span>
+                          {t("Start Process")} <span className="material-icons-round text-sm">arrow_forward</span>
                         </button>
                       </div>
                     );
@@ -372,17 +374,17 @@ const StudentDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                         {showRecordedSummary && !isLockedPhase ? (
                           <div className="grid grid-cols-2 gap-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800/40 p-4 min-w-0">
                             <div>
-                              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Recorded Track</p>
+                              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t("Recorded Track")}</p>
                               <p className="mt-1 text-sm font-semibold text-slate-700 dark:text-slate-200">{recordedTrack}</p>
                             </div>
                             <div>
-                              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Recorded Major</p>
+                              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t("Recorded Major")}</p>
                               <p className="mt-1 text-sm font-semibold text-slate-700 dark:text-slate-200">{recordedMajor}</p>
                             </div>
                           </div>
                         ) : null}
                         <button onClick={startMajorProcess} disabled={startLoading} className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-teal-600 px-4 py-3 text-sm font-bold text-white transition hover:bg-teal-500 disabled:opacity-60">
-                          Start Process <span className="material-icons-round text-sm">arrow_forward</span>
+                          {t("Start Process")} <span className="material-icons-round text-sm">arrow_forward</span>
                         </button>
                       </div>
                     </div>
@@ -398,17 +400,17 @@ const StudentDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                         !(majorState?.current_year === "Third Year" && majorState?.current_semester === "First Semester"))) ? (
                       <div className="grid grid-cols-1 gap-3 rounded-2xl border border-slate-200 bg-slate-50/80 p-4 dark:border-slate-700 dark:bg-slate-800/40 sm:grid-cols-2">
                         <div>
-                          <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Major Track</p>
+                          <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t("Major Track")}</p>
                           <p className="mt-1 text-sm font-semibold text-slate-700 dark:text-slate-200">{recordedTrack}</p>
                         </div>
                         <div>
-                          <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Selected Major</p>
+                          <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t("Selected Major")}</p>
                           <p className="mt-1 text-sm font-semibold text-slate-700 dark:text-slate-200">{recordedMajor}</p>
                         </div>
                       </div>
                     ) : (
                       <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4 dark:border-slate-700 dark:bg-slate-800/40">
-                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Selected Major</p>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t("Selected Major")}</p>
                         <p className="mt-1 text-sm font-semibold text-slate-700 dark:text-slate-200">{recordedMajor}</p>
                       </div>
                     )}
@@ -418,14 +420,14 @@ const StudentDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                         <span className="text-sm font-bold text-[#0d1a1c] dark:text-white">{recordedMajor}</span>
                         {majorState?.program_type === "5-year" ? (
                           <span className="ml-auto inline-flex items-center rounded-full border border-teal-400 px-2 py-0.5 text-[11px] font-semibold text-teal-700 dark:text-teal-300">
-                            Track: {recordedTrack}
+                            {t("Track")}: {recordedTrack}
                           </span>
                         ) : null}
                       </div>
                     </div>
                     {eligibility?.can_select_major ? (
                       <button onClick={() => navigate("/student/major/select")} className="inline-flex items-center justify-center rounded-2xl border border-teal-200 bg-white px-4 py-3 text-sm font-semibold text-teal-700 transition hover:border-teal-300 hover:bg-teal-50 dark:border-teal-800 dark:bg-slate-900 dark:text-teal-300 dark:hover:bg-teal-950/20">
-                        Change Major
+                        {t("Change Major")}
                       </button>
                     ) : null}
                   </div>
@@ -433,7 +435,7 @@ const StudentDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
               })()}
               {!majorState?.selected_major && majorState?.selected_track && (
                 <div className="relative z-10 mt-3 text-[11px] text-gray-500 dark:text-gray-400">
-                  Current Track: <span className="font-bold">{majorState.selected_track}</span>
+                  {t("Current Track")}: <span className="font-bold">{majorState.selected_track}</span>
                 </div>
               )}
             </div>
@@ -447,8 +449,8 @@ const StudentDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                     <span className="material-icons-round text-teal-600 text-lg">auto_graph</span>
                   </div>
                   <div>
-                    <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">Institutional Audit</h2>
-                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mt-0.5">Degree Completion Progress</p>
+                    <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">{t("Institutional Audit")}</h2>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mt-0.5">{t("Degree Completion Progress")}</p>
                   </div>
                 </div>
                 <div className="p-8 lg:p-9">
@@ -492,17 +494,17 @@ const StudentDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                                return `${pct}%`;
                              })()}
                            </span>
-                           <span className="text-[10px] uppercase font-bold text-gray-400 tracking-widest">Complete</span>
+                           <span className="text-[10px] uppercase font-bold text-gray-400 tracking-widest">{t("Complete")}</span>
                          </div>
                       </div>
                     </div>
                     <div className="space-y-6">
                       {(degreeAudit?.progress_bars
                         ? degreeAudit.progress_bars.map(pb => ({
-                            label: pb.label === 'Core' ? 'Core Requirements'
-                              : pb.label === 'Elective' ? 'Electives'
-                              : pb.label === 'Major' ? 'Major'
-                              : 'Overall',
+                            label: pb.label === 'Core' ? t('Core Requirements')
+                              : pb.label === 'Elective' ? t('Electives')
+                              : pb.label === 'Major' ? t('Major')
+                              : t('Overall'),
                             earned: pb.completed,
                             required: pb.total,
                             percent: pb.percentage,
@@ -510,19 +512,19 @@ const StudentDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                           }))
                         : [
                             {
-                              label: 'Core Requirements',
+                              label: t('Core Requirements'),
                               earned: degreeAudit?.core_credits.earned ?? 0,
                               required: degreeAudit?.core_credits.required ?? 0,
                               color: 'bg-primary',
                             },
                             {
-                              label: 'Major Electives',
+                              label: t('Major Electives'),
                               earned: degreeAudit?.elective_credits.earned ?? 0,
                               required: degreeAudit?.elective_credits.required ?? 0,
                               color: 'bg-primary',
                             },
                             {
-                              label: 'General Education',
+                              label: t('General Education'),
                               earned: degreeAudit?.major_specific.earned ?? 0,
                               required: degreeAudit?.major_specific.required ?? 0,
                               color: 'bg-green-500',
@@ -555,7 +557,7 @@ const StudentDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                         onClick={() => navigate("/student/degree-audit")}
                         className="w-full mt-2 py-2.5 text-xs font-bold text-primary border border-primary/20 hover:bg-primary/5 rounded-xl transition-colors uppercase tracking-wide"
                       >
-                        View Degree Audit
+                        {t("View Degree Audit")}
                       </button>
                     </div>
                   </div>
@@ -574,8 +576,8 @@ const StudentDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                       <span className="material-icons-round text-lg">history</span>
                     </div>
                     <div>
-                      <h3 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">Sync History</h3>
-                      <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mt-0.5">Recent Ledger Activity</p>
+                      <h3 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">{t("Sync History")}</h3>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mt-0.5">{t("Recent Ledger Activity")}</p>
                     </div>
                   </div>
                 </div>
@@ -583,7 +585,7 @@ const StudentDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                   {recent.map((act, i) => (
                     <div 
                       key={i} 
-                      onClick={() => navigate(act.title === "New Alert" ? "/student/announcements" : `/student/announcements#${act.id}`)} 
+                      onClick={() => navigate(act.title === t("New Alert") ? "/student/announcements" : `/student/announcements#${act.id}`)} 
                       className="p-4 md:p-5 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors flex gap-4 items-start cursor-pointer"
                     >
                       <div className={`${act.color} dark:bg-opacity-20 rounded-xl h-10 w-10 flex items-center justify-center shrink-0`}>
@@ -603,7 +605,7 @@ const StudentDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
           <footer className="mt-20 text-center space-y-4 pb-12">
             <div className="h-px w-20 bg-slate-100 dark:bg-slate-800 mx-auto" />
             <p className="text-[10px] font-black text-slate-300 dark:text-slate-700 uppercase tracking-[0.4em]">
-              Institutional Administrative Framework • 2024
+              {t("Institutional Administrative Framework • 2024")}
             </p>
           </footer>
         </main>
@@ -613,12 +615,3 @@ const StudentDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
 };
 
 export default StudentDashboard;
-
-
-
-
-
-
-
-
-
