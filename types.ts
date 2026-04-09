@@ -24,7 +24,7 @@ export interface User {
 
 export interface Course {
   id: string;
-  code: string;
+  code: string; semester?: string | number; year?: string | number;
   name: string;
   department: string;
   credits: number;
@@ -47,7 +47,7 @@ export interface StudentCourse {
   tag: string;
   credits: number;
   title: string;
-  code: string;
+  code: string; semester?: string | number; year?: string | number;
   instructor: string;
   location: string;
   is_retake?: boolean;
@@ -62,7 +62,7 @@ export interface CurrentCoursesResponse {
 }
 
 export interface CourseDetail {
-  code: string;
+  code: string; semester?: string | number; year?: string | number;
   title: string;
   instructor: string;
   credits: number;
@@ -81,7 +81,7 @@ export interface CourseDetail {
 }
 
 export interface AvailableCourse {
-  code: string;
+  code: string; semester?: string | number; year?: string | number;
   title: string;
   type: string;
   credits: number;
@@ -105,7 +105,7 @@ export interface EnrollmentAssistanceRequest {
 }
 
 export interface EnrollmentAssistanceCourse {
-  code: string;
+  code: string; semester?: string | number; year?: string | number;
   title: string;
   type: string;
   credits: number;
@@ -127,7 +127,7 @@ export interface EnrollmentAssistanceResponse {
 
 export interface DropRecommendationCourse {
   course_id?: string;
-  code: string;
+  code: string; semester?: string | number; year?: string | number;
   title: string;
   type: string;
   credits: number;

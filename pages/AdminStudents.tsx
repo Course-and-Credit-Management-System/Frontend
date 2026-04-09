@@ -5,6 +5,72 @@ import Header from '../components/Header';
 import { TableSkeletonRows } from '../components/Skeleton';
 import { User } from '../types';
 
+function CustomSelect({ 
+  value, 
+  onChange, 
+  options, 
+  placeholder,
+  className = ""
+}: { 
+  value: string, 
+  onChange: (val: string) => void, 
+  options: {value: string, label: string}[], 
+  placeholder?: string,
+  className?: string
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  const selectedTitle = options.find(o => o.value === value)?.label || placeholder || "Select...";
+
+  return (
+    <div className={`relative group ${className}`} ref={ref}>
+      <button 
+        type="button"
+        onClick={() => setOpen(!open)}
+        className="flex items-center justify-between gap-2 w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-3 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all focus:ring-2 focus:ring-teal-500/20 outline-none"
+      >
+        <span className="truncate">{selectedTitle}</span>
+        <span className="material-icons-outlined text-[14px] text-slate-400 group-hover:text-teal-500 transition-colors shrink-0">
+          {open ? 'expand_less' : 'expand_more'}
+        </span>
+      </button>
+      
+      {open && (
+        <div className="absolute top-full mt-1.5 left-0 min-w-full w-max max-h-64 overflow-y-auto rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xl z-50 py-1.5 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-300 dark:[&::-webkit-scrollbar-thumb]:bg-slate-700 [&::-webkit-scrollbar-thumb]:rounded-full">
+          {options.map((opt) => {
+            const isSelected = value === opt.value;
+            return (
+              <button
+                key={opt.value}
+                onClick={() => { onChange(opt.value); setOpen(false); }}
+                className={`w-full text-left px-4 py-2.5 text-xs font-bold transition-colors flex items-center justify-between gap-3 ${
+                  isSelected
+                    ? "bg-teal-50/80 dark:bg-teal-900/30 text-teal-700 dark:text-teal-400"
+                    : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+                }`}
+              >
+                <span className="truncate">{opt.label}</span>
+                {isSelected && <span className="material-icons-outlined text-[14px] shrink-0">check</span>}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
 interface StudentsProps {
   user: User;
   onLogout: () => void;
@@ -414,12 +480,12 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
 
               <div className="flex flex-wrap items-end gap-3">
                 {/* Year Filter */}
-                <div className="space-y-1.5">
+                <div className="space-y-1.5 w-full sm:w-32 z-50">
                   <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Year</label>
-                  <select 
-                    value={year}
-                    onChange={(e) => {
-                      const newYear = e.target.value ? Number(e.target.value) : '';
+                  <CustomSelect
+                    value={year?.toString() || ""}
+                    onChange={(newVal) => {
+                      const newYear = newVal ? Number(newVal) : '';
                       setYear(newYear);
                       setCurrentPage(1); // Reset pagination on filter change
                       // Reset major when year changes
@@ -435,91 +501,94 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
                         setMajor('');
                       }
                     }}
-                    className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-2.5 pl-3 pr-8 text-xs font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-teal-500/20 transition-all cursor-pointer"
-                  >
-                    <option value="">All Years</option>
-                    <option value="1">1st Year</option>
-                    <option value="2">2nd Year</option>
-                    <option value="3">3rd Year</option>
-                    <option value="4">4th Year</option>
-                    <option value="5">5th Year</option>
-                  </select>
+                    options={[
+                      { value: "", label: "All Years" },
+                      { value: "1", label: "1st Year" },
+                      { value: "2", label: "2nd Year" },
+                      { value: "3", label: "3rd Year" },
+                      { value: "4", label: "4th Year" },
+                      { value: "5", label: "5th Year" }
+                    ]}
+                    className="w-full"
+                  />
                 </div>
 
                 {/* Semester Filter */}
-                <div className="space-y-1.5">
+                <div className="space-y-1.5 w-full sm:w-24 z-40">
                   <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Sem</label>
-                  <select 
-                    value={semester}
-                    onChange={(e) => {
-                      setSemester(e.target.value ? Number(e.target.value) : '');
+                  <CustomSelect
+                    value={semester?.toString() || ""}
+                    onChange={(val) => {
+                      setSemester(val ? Number(val) : '');
                       setCurrentPage(1); // Reset pagination
                     }}
-                    className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-2.5 pl-3 pr-8 text-xs font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-teal-500/20 transition-all cursor-pointer"
-                  >
-                    <option value="">All</option>
-                    <option value="1">1st</option>
-                    <option value="2">2nd</option>
-                  </select>
+                    options={[
+                      { value: "", label: "All" },
+                      { value: "1", label: "1st" },
+                      { value: "2", label: "2nd" }
+                    ]}
+                    className="w-full"
+                  />
                 </div>
 
                 {/* Section Filter */}
                 {showSection && (
-                  <div className="space-y-1.5 animate-in fade-in slide-in-from-left-2">
+                  <div className="space-y-1.5 w-full sm:w-24 z-30 animate-in fade-in slide-in-from-left-2">
                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Section</label>
-                    <select 
+                    <CustomSelect
                       value={sectionFilter}
-                      onChange={(e) => {
-                        setSectionFilter(e.target.value);
+                      onChange={(val) => {
+                        setSectionFilter(val);
                         setCurrentPage(1); // Reset pagination
                       }}
-                      className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-2.5 pl-3 pr-8 text-xs font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-teal-500/20 transition-all cursor-pointer"
-                    >
-                      <option value="">All</option>
-                      <option value="A">A</option>
-                      <option value="B">B</option>
-                      <option value="C">C</option>
-                    </select>
+                      options={[
+                        { value: "", label: "All" },
+                        { value: "A", label: "A" },
+                        { value: "B", label: "B" },
+                        { value: "C", label: "C" }
+                      ]}
+                      className="w-full"
+                    />
                   </div>
                 )}
 
                 {/* Major Filter */}
                 {showMajorFilter && (
-                  <div className="space-y-1.5 animate-in fade-in slide-in-from-left-2">
+                  <div className="space-y-1.5 w-full sm:w-36 z-20 animate-in fade-in slide-in-from-left-2">
                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Major</label>
-                    <select 
+                    <CustomSelect
                       value={major}
-                      onChange={(e) => {
-                        setMajor(e.target.value);
+                      onChange={(val) => {
+                        setMajor(val);
                         setCurrentPage(1); // Reset pagination
                       }}
-                      className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-2.5 pl-3 pr-8 text-xs font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-teal-500/20 transition-all cursor-pointer"
-                    >
-                      <option value="">All Majors</option>
-                      {majorOptions.map((m) => (
-                        <option key={m.id} value={m}>{m}</option>
-                      ))}
-                    </select>
+                      options={[
+                        { value: "", label: "All Majors" },
+                        ...majorOptions.map((m: any) => ({ value: m.id, label: m.id ? `${m.id} — ${m.major_name}` : m.major_name }))
+                      ]}
+                      className="w-full"
+                    />
                   </div>
                 )}
 
                 {/* Status Filter */}
-                <div className="space-y-1.5">
+                <div className="space-y-1.5 w-full sm:w-36 z-10">
                   <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Status</label>
-                  <select 
+                  <CustomSelect
                     value={statusFilter}
-                    onChange={(e) => {
-                      setStatusFilter(e.target.value);
+                    onChange={(val) => {
+                      setStatusFilter(val);
                       setCurrentPage(1); // Reset pagination
                     }}
-                    className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-2.5 pl-3 pr-8 text-xs font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-teal-500/20 transition-all cursor-pointer"
-                  >
-                    <option value="">All Status</option>
-                    <option value="Active">Active</option>
-                    <option value="Probation">Probation</option>
-                    <option value="Suspended">Suspended</option>
-                    <option value="Graduated">Graduated</option>
-                  </select>
+                    options={[
+                      { value: "", label: "All Status" },
+                      { value: "Active", label: "Active" },
+                      { value: "Probation", label: "Probation" },
+                      { value: "Suspended", label: "Suspended" },
+                      { value: "Graduated", label: "Graduated" }
+                    ]}
+                    className="w-full"
+                  />
                 </div>
               </div>
             </div>
@@ -754,55 +823,53 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
 
               <div className="space-y-6">
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
+                  <div className="space-y-2 relative z-[100]">
                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Year</label>
-                    <select
-                      value={formData.year}
-                      onChange={(e) => setFormData(prev => ({ ...prev, year: Number(e.target.value) }))}
-                      className="w-full px-5 py-3.5 border border-slate-200 dark:border-slate-800 rounded-2xl focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500/50 outline-none transition-all dark:bg-slate-950 dark:text-white font-bold text-sm cursor-pointer"
-                    >
-                      {[1,2,3,4,5].map(y => <option key={y} value={y}>{y} Year</option>)}
-                    </select>
+                    <CustomSelect
+                      value={formData.year.toString()}
+                      onChange={(val) => setFormData(prev => ({ ...prev, year: Number(val) }))}
+                      options={[1,2,3,4,5].map(y => ({ value: y.toString(), label: `${y} Year` }))}
+                      className="w-full"
+                    />
                   </div>
-                  <div className="space-y-2">
+                  <div className="space-y-2 relative z-[100]">
                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Semester</label>
-                    <select
-                      value={formData.semester}
-                      onChange={(e) => setFormData(prev => ({ ...prev, semester: Number(e.target.value) }))}
-                      className="w-full px-5 py-3.5 border border-slate-200 dark:border-slate-800 rounded-2xl focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500/50 outline-none transition-all dark:bg-slate-950 dark:text-white font-bold text-sm cursor-pointer"
-                    >
-                      <option value={1}>1st Sem</option>
-                      <option value={2}>2nd Sem</option>
-                    </select>
+                    <CustomSelect
+                      value={formData.semester.toString()}
+                      onChange={(val) => setFormData(prev => ({ ...prev, semester: Number(val) }))}
+                      options={[
+                        { value: "1", label: "1st Sem" },
+                        { value: "2", label: "2nd Sem" }
+                      ]}
+                      className="w-full"
+                    />
                   </div>
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-2 relative z-[90]">
                   <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Academic Major</label>
-                  <select
+                  <CustomSelect
                     value={formData.major}
-                    onChange={(e) => setFormData(prev => ({ ...prev, major: e.target.value }))}
-                    className="w-full px-5 py-3.5 border border-slate-200 dark:border-slate-800 rounded-2xl focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500/50 outline-none transition-all dark:bg-slate-950 dark:text-white font-bold text-sm cursor-pointer"
-                  >
-                    {getMajorOptionsForForm(formData.major).map((m) => (
-                      <option key={m.id} value={m.id}>{m.id} — {m.major_name}</option>
-                    ))}
-                  </select>
+                    onChange={(val) => setFormData(prev => ({ ...prev, major: val }))}
+                    options={getMajorOptionsForForm(formData.major).map((m) => ({ value: m.id, label: `${m.id} — ${m.major_name}` }))}
+                    className="w-full"
+                  />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
+                  <div className="space-y-2 relative z-[80]">
                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Status</label>
-                    <select
+                    <CustomSelect
                       value={formData.status}
-                      onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value }))}
-                      className="w-full px-5 py-3.5 border border-slate-200 dark:border-slate-800 rounded-2xl focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500/50 outline-none transition-all dark:bg-slate-950 dark:text-white font-bold text-sm cursor-pointer"
-                    >
-                      <option value="Active">Active</option>
-                      <option value="Probation">Probation</option>
-                      <option value="Suspended">Suspended</option>
-                      <option value="Graduated">Graduated</option>
-                    </select>
+                      onChange={(val) => setFormData(prev => ({ ...prev, status: val }))}
+                      options={[
+                        { value: "Active", label: "Active" },
+                        { value: "Probation", label: "Probation" },
+                        { value: "Suspended", label: "Suspended" },
+                        { value: "Graduated", label: "Graduated" }
+                      ]}
+                      className="w-full"
+                    />
                   </div>
                   <div className="space-y-2">
                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Credits</label>
@@ -888,59 +955,56 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
 
               <div className="space-y-6">
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
+                  <div className="space-y-2 relative z-[100]">
                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Year</label>
-                    <select
-                      value={formData.year}
-                      onChange={(e) => setFormData(prev => ({ ...prev, year: Number(e.target.value) }))}
-                      className="w-full px-5 py-3.5 border border-slate-200 dark:border-slate-800 rounded-2xl focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500/50 outline-none transition-all dark:bg-slate-950 dark:text-white font-bold text-sm cursor-pointer"
-                    >
-                      {[1,2,3,4,5].map(y => <option key={y} value={y}>{y} Year</option>)}
-                    </select>
+                    <CustomSelect
+                      value={formData.year.toString()}
+                      onChange={(val) => setFormData(prev => ({ ...prev, year: Number(val) }))}
+                      options={[1,2,3,4,5].map(y => ({ value: y.toString(), label: `${y} Year` }))}
+                      className="w-full"
+                    />
                   </div>
-                  <div className="space-y-2">
+                  <div className="space-y-2 relative z-[100]">
                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Semester</label>
-                    <select
-                      value={formData.semester}
-                      onChange={(e) => setFormData(prev => ({ ...prev, semester: Number(e.target.value) }))}
-                      className="w-full px-5 py-3.5 border border-slate-200 dark:border-slate-800 rounded-2xl focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500/50 outline-none transition-all dark:bg-slate-950 dark:text-white font-bold text-sm cursor-pointer"
-                    >
-                      <option value={1}>1st Sem</option>
-                      <option value={2}>2nd Sem</option>
-                    </select>
+                    <CustomSelect
+                      value={formData.semester.toString()}
+                      onChange={(val) => setFormData(prev => ({ ...prev, semester: Number(val) }))}
+                      options={[
+                        { value: "1", label: "1st Sem" },
+                        { value: "2", label: "2nd Sem" }
+                      ]}
+                      className="w-full"
+                    />
                   </div>
                 </div>
 
                 {/* Current Major - Only show for 3rd year and above */}
                 {formData.year >= 3 && (
-                  <div className="space-y-2">
+                  <div className="space-y-2 relative z-[90]">
                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Current Major</label>
-                    <select
+                    <CustomSelect
                       value={formData.major}
-                      onChange={(e) => setFormData(prev => ({ ...prev, major: e.target.value }))}
-                      className="w-full px-5 py-3.5 border border-slate-200 dark:border-slate-800 rounded-2xl focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500/50 outline-none transition-all dark:bg-slate-950 dark:text-white font-bold text-sm cursor-pointer"
-                    >
-                      {getMajorOptionsForForm(formData.major).map((m) => (
-                        <option key={m.id} value={m.id}>{m.id} — {m.major_name}</option>
-                      ))}
-                    </select>
+                      onChange={(val) => setFormData(prev => ({ ...prev, major: val }))}
+                      options={getMajorOptionsForForm(formData.major).map((m) => ({ value: m.id, label: `${m.id} — ${m.major_name}` }))}
+                      className="w-full"
+                    />
                   </div>
                 )}
 
                 {/* Section - Show for all years */}
-                <div className="space-y-2">
+                <div className="space-y-2 relative z-[80]">
                   <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Section</label>
-                  <select
-                    key={`section-${formData.section}`} // Force re-render when section changes
-                    value={formData.section === "None" || formData.section === "N/A" || !formData.section ? "" : formData.section} // Handle None/N/A
-                    onChange={(e) => setFormData(prev => ({ ...prev, section: e.target.value }))}
-                    className="w-full px-5 py-3.5 border border-slate-200 dark:border-slate-800 rounded-2xl focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500/50 outline-none transition-all dark:bg-slate-950 dark:text-white font-bold text-sm cursor-pointer"
-                  >
-                    <option value="">No Section</option>
-                    <option value="A">Section A</option>
-                    <option value="B">Section B</option>
-                    <option value="C">Section C</option>
-                  </select>
+                  <CustomSelect
+                    value={formData.section === "None" || formData.section === "N/A" || !formData.section ? "" : formData.section}
+                    onChange={(val) => setFormData(prev => ({ ...prev, section: val }))}
+                    options={[
+                      { value: "", label: "No Section" },
+                      { value: "A", label: "Section A" },
+                      { value: "B", label: "Section B" },
+                      { value: "C", label: "Section C" }
+                    ]}
+                    className="w-full"
+                  />
                   {/* Debug display */}
                   <div className="text-xs text-slate-500 mt-1">
                     Debug: formData.section = "{formData.section}" | Type: {typeof formData.section}
@@ -948,18 +1012,19 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
+                  <div className="space-y-2 relative z-[70]">
                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Status</label>
-                    <select
+                    <CustomSelect
                       value={formData.status}
-                      onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value }))}
-                      className="w-full px-5 py-3.5 border border-slate-200 dark:border-slate-800 rounded-2xl focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500/50 outline-none transition-all dark:bg-slate-950 dark:text-white font-bold text-sm cursor-pointer"
-                    >
-                      <option value="Active">Active</option>
-                      <option value="Probation">Probation</option>
-                      <option value="Suspended">Suspended</option>
-                      <option value="Graduated">Graduated</option>
-                    </select>
+                      onChange={(val) => setFormData(prev => ({ ...prev, status: val }))}
+                      options={[
+                        { value: "Active", label: "Active" },
+                        { value: "Probation", label: "Probation" },
+                        { value: "Suspended", label: "Suspended" },
+                        { value: "Graduated", label: "Graduated" }
+                      ]}
+                      className="w-full"
+                    />
                   </div>
                   <div className="space-y-2">
                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Credits</label>

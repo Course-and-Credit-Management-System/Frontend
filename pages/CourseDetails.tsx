@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
 import CourseChatbot from '../components/CourseChatbot';
@@ -15,6 +15,8 @@ interface CourseDetailsProps {
 const CourseDetails: React.FC<CourseDetailsProps> = ({ user, onLogout }) => {
   const { courseId } = useParams<{ courseId: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
+  const passedSemester = location.state?.semester;
 
   const [course, setCourse] = useState<CourseDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -30,8 +32,7 @@ const CourseDetails: React.FC<CourseDetailsProps> = ({ user, onLogout }) => {
 
         if (!courseId) throw new Error('Missing course id');
 
-        const data: any = await api.studentCourseDetails(courseId);
-
+        const data: any = await api.studentCourseDetails(courseId);          console.log("COURSE DETAIL PAYLOAD:", data);
         //  schedule can be array OR string (supports legacy DB + current validator differences)
         const scheduleRaw = data?.schedule;
         const scheduleArr: string[] = Array.isArray(scheduleRaw)
@@ -45,8 +46,7 @@ const CourseDetails: React.FC<CourseDetailsProps> = ({ user, onLogout }) => {
           title: data?.title ?? '—',
           instructor: data?.instructor ?? '—',
 
-          credits: Number(data?.credits ?? 0) || 0,
-          schedule: scheduleArr,
+          credits: Number(data?.credits ?? 0) || 0,            semester: data?.semester || passedSemester,          schedule: scheduleArr,
           room: data?.room ?? '—',
           description: data?.description ?? 'No description available yet.',
           syllabus: Array.isArray(data?.syllabus) ? data.syllabus : [],
@@ -234,6 +234,18 @@ const CourseDetails: React.FC<CourseDetailsProps> = ({ user, onLogout }) => {
                       <p className="text-sm font-black text-slate-900 dark:text-white tracking-tight">{course.credits} Credits</p>
                     </div>
                   </div>
+
+                  {course.semester && (
+                    <div className="flex items-start gap-5 group">
+                      <div className="h-10 w-10 rounded-2xl bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-400 border border-slate-100 dark:border-slate-800 group-hover:text-teal-600 transition-colors shrink-0">
+                        <span className="material-icons-outlined text-lg">calendar_today</span>
+                      </div>
+                      <div>
+                        <p className="text-[9px] font-black text-slate-300 dark:text-slate-600 uppercase tracking-widest mb-1">Semester Cycle</p>
+                        <p className="text-sm font-black text-slate-900 dark:text-white tracking-tight">{course.semester}</p>
+                      </div>
+                    </div>
+                  )}
 
                   {course.department && (
                     <div className="flex items-start gap-5 group">

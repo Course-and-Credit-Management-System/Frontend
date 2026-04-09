@@ -34,6 +34,70 @@ const API_BASE = API_BASE_URL
   ? `${API_BASE_URL}/api/v1`
   : "/api/v1";
 
+function CustomSelect({ 
+  value, 
+  onChange, 
+  options, 
+  placeholder 
+}: { 
+  value: string, 
+  onChange: (val: string) => void, 
+  options: {value: string, label: string}[], 
+  placeholder?: string 
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  const selectedTitle = options.find(o => o.value === value)?.label || placeholder || "Select...";
+
+  return (
+    <div className="relative group" ref={ref}>
+      <button 
+        type="button"
+        onClick={() => setOpen(!open)}
+        className="flex items-center justify-between gap-2 min-w-[140px] rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all focus:ring-2 focus:ring-teal-500/20 outline-none"
+      >
+        <span className="truncate">{selectedTitle}</span>
+        <span className="material-icons-outlined text-[14px] text-slate-400 group-hover:text-teal-500 transition-colors shrink-0">
+          {open ? 'expand_less' : 'expand_more'}
+        </span>
+      </button>
+      
+      {open && (
+        <div className="absolute top-full mt-1.5 left-0 min-w-full w-max max-h-64 overflow-y-auto rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xl z-50 py-1.5 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-300 dark:[&::-webkit-scrollbar-thumb]:bg-slate-700 [&::-webkit-scrollbar-thumb]:rounded-full">
+          {options.map((opt) => {
+            const isSelected = value === opt.value;
+            return (
+              <button
+                key={opt.value}
+                onClick={() => { onChange(opt.value); setOpen(false); }}
+                className={`w-full text-left px-4 py-2.5 text-xs font-bold transition-colors flex items-center justify-between gap-3 ${
+                  isSelected
+                    ? "bg-teal-50/80 dark:bg-teal-900/30 text-teal-700 dark:text-teal-400"
+                    : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+                }`}
+              >
+                <span className="truncate">{opt.label}</span>
+                {isSelected && <span className="material-icons-outlined text-[14px] shrink-0">check</span>}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
 const AdminGrading: React.FC<GradingProps> = ({ user, onLogout }) => {
   const [year, setYear] = useState<number | ''>('');
   const [semester, setSemester] = useState<number | ''>('');
@@ -357,10 +421,9 @@ const AdminGrading: React.FC<GradingProps> = ({ user, onLogout }) => {
               {/* Year Selection */}
               <div className="space-y-2.5">
                 <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] ml-1">Academic Year</label>
-                <select
-                  value={year}
-                  onChange={(e) => {
-                    const val = e.target.value;
+                <CustomSelect
+                  value={year.toString()}
+                  onChange={(val) => {
                     const newYear = val === '' ? '' : Number(val);
                     setYear(newYear);
                     if (newYear === '') {
@@ -375,41 +438,41 @@ const AdminGrading: React.FC<GradingProps> = ({ user, onLogout }) => {
                       setMajor('SE');
                     }
                   }}
-                  className="rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950 py-3 pl-4 pr-10 text-xs font-black text-slate-700 dark:text-white outline-none focus:ring-4 focus:ring-teal-500/10 transition-all cursor-pointer shadow-sm appearance-none min-w-[140px]"
-                >
-                  <option value="">All Tiers</option>
-                  {[1,2,3,4,5].map(y => <option key={y} value={y}>{y} Year</option>)}
-                </select>
+                  options={[
+                    { value: "", label: "All Tiers" },
+                    ...[1,2,3,4,5].map(y => ({ value: y.toString(), label: `${y} Year` }))
+                  ]}
+                />
               </div>
 
               {/* Semester Selection */}
               <div className="space-y-2.5">
                 <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] ml-1">Period</label>
-                <select
-                  value={semester}
-                  onChange={(e) => setSemester(e.target.value === '' ? '' : Number(e.target.value))}
-                  className="rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950 py-3 pl-4 pr-10 text-xs font-black text-slate-700 dark:text-white outline-none focus:ring-4 focus:ring-teal-500/10 transition-all cursor-pointer shadow-sm appearance-none min-w-[120px]"
-                >
-                  <option value="">Full Cycle</option>
-                  <option value={1}>1st Sem</option>
-                  <option value={2}>2nd Sem</option>
-                </select>
+                <CustomSelect
+                  value={semester.toString()}
+                  onChange={(val) => setSemester(val === '' ? '' : Number(val))}
+                  options={[
+                    { value: "", label: "Full Cycle" },
+                    { value: "1", label: "1st Sem" },
+                    { value: "2", label: "2nd Sem" }
+                  ]}
+                />
               </div>
 
               {/* Section Selection */}
               {showSection && (
                 <div className="space-y-2.5 animate-in fade-in slide-in-from-left-4">
                   <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] ml-1">Cohort</label>
-                  <select
+                  <CustomSelect
                     value={section}
-                    onChange={(e) => setSection(e.target.value)}
-                    className="rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950 py-3 pl-4 pr-10 text-xs font-black text-slate-700 dark:text-white outline-none focus:ring-4 focus:ring-teal-500/10 transition-all cursor-pointer shadow-sm appearance-none min-w-[120px]"
-                  >
-                    <option value="">All Sec</option>
-                    <option value="A">Sec A</option>
-                    <option value="B">Sec B</option>
-                    <option value="C">Sec C</option>
-                  </select>
+                    onChange={setSection}
+                    options={[
+                      { value: "", label: "All Sec" },
+                      { value: "A", label: "Sec A" },
+                      { value: "B", label: "Sec B" },
+                      { value: "C", label: "Sec C" }
+                    ]}
+                  />
                 </div>
               )}
 
@@ -417,16 +480,14 @@ const AdminGrading: React.FC<GradingProps> = ({ user, onLogout }) => {
               {showMajor && (
                 <div className="space-y-2.5 animate-in fade-in slide-in-from-left-4">
                   <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] ml-1">Specialization</label>
-                  <select
+                  <CustomSelect
                     value={major}
-                    onChange={(e) => setMajor(e.target.value)}
-                    className="rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950 py-3 pl-4 pr-10 text-xs font-black text-slate-700 dark:text-white outline-none focus:ring-4 focus:ring-teal-500/10 transition-all cursor-pointer shadow-sm appearance-none min-w-[160px]"
-                  >
-                    <option value="">All Majors</option>
-                    {majorOptions.map((m) => (
-                      <option key={m} value={m}>{m}</option>
-                    ))}
-                  </select>
+                    onChange={setMajor}
+                    options={[
+                      { value: "", label: "All Majors" },
+                      ...majorOptions.map((m) => ({ value: m, label: m }))
+                    ]}
+                  />
                 </div>
               )}
 
@@ -517,6 +578,7 @@ const AdminGrading: React.FC<GradingProps> = ({ user, onLogout }) => {
                     <th className="px-10 py-5">System UID</th>
                     <th className="px-10 py-5 w-80">Institutional Identity</th>
                     <th className="px-10 py-5">Catalog Course</th>
+                    <th className="px-10 py-5 text-center">Semester</th>
                     <th className="px-10 py-5 text-center w-48">Scaled Evaluation</th>
                     <th className="px-10 py-5 text-center w-32">Grade</th>
                     <th className="px-10 py-5 text-center w-40">Integrity</th>
@@ -526,10 +588,10 @@ const AdminGrading: React.FC<GradingProps> = ({ user, onLogout }) => {
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
                   {loading ? (
-                    <TableSkeletonRows rows={10} cols={8} />
+                    <TableSkeletonRows rows={10} cols={9} />
                   ) : results.length === 0 ? (
                     <tr>
-                      <td colSpan={8} className="px-10 py-32 text-center text-slate-300 font-black uppercase tracking-[0.4em] italic">Zero Records Discovered</td>
+                      <td colSpan={9} className="px-10 py-32 text-center text-slate-300 font-black uppercase tracking-[0.4em] italic">Zero Records Discovered</td>
                     </tr>
                   ) : (
                     results.map((r, i) => (
@@ -545,6 +607,11 @@ const AdminGrading: React.FC<GradingProps> = ({ user, onLogout }) => {
                         </td>
                         <td className="px-10 py-6">
                           <span className="px-3 py-1 rounded-xl bg-slate-50 dark:bg-slate-950 text-[10px] font-black text-slate-500 dark:text-slate-400 border border-slate-100 dark:border-slate-800 uppercase tracking-[0.2em]">{r.course_code}</span>
+                        </td>
+                        <td className="px-10 py-6 text-center">
+                          <span className="px-3 py-1 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 text-[10px] font-black text-indigo-500 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-800/50 uppercase tracking-[0.2em]">
+                            {r.year} Yr / {r.semester} Sem
+                          </span>
                         </td>
                         <td className="px-10 py-6">
                           <div className="flex justify-center group/input">
