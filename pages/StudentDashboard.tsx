@@ -24,7 +24,7 @@ const StudentDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     progress_bars?: Array<{ label: string; percentage: number; completed: number; total: number }>;
   };
   const [degreeAudit, setDegreeAudit] = useState<DegreeAuditResponse | null>(null);
-  const [recent, setRecent] = useState<Array<{ title: string; sub?: string; when: Date; icon: string; color: string }>>([]);
+  const [recent, setRecent] = useState<Array<{ id?: string, title: string; sub?: string; when: Date; icon: string; color: string }>>([]);
   const [maxCredits, setMaxCredits] = useState<number | null>(null);
   const auditCardRef = useRef<HTMLDivElement | null>(null);
   const [auditCardHeight, setAuditCardHeight] = useState<number | null>(null);
@@ -40,6 +40,7 @@ const StudentDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
       .then((anns) => {
         try {
           const annItems = (anns || []).slice(0, 10).map((a: any) => ({
+            id: a._id || a.id || "",
             title: a.title || "Announcement",
             sub: (a.content || "").slice(0, 80),
             when: new Date(a.date_posted || a.created_at || Date.now()),
@@ -47,6 +48,7 @@ const StudentDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
             color: "bg-teal-100 text-teal-600",
           }));
           const alertItems = (Array.isArray(alerts) ? alerts : []).slice(0, 10).map((al: any) => ({
+            id: al._id || al.id || "",
             title: "New Alert",
             sub: al.message || "",
             when: new Date(al.created_at || Date.now()),
@@ -249,7 +251,7 @@ const StudentDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
               <div className="flex justify-between items-start mb-5 relative z-10">
                 <div>
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Academic Index</p>
-                  <h3 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">{gpa !== null ? gpa.toFixed(2) : "—"} <span className="ml-1 text-lg font-bold text-slate-300 dark:text-slate-600">/ 4.0</span></h3>
+                  <h3 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">{gpa !== null ? gpa.toFixed(2) : "ï¿½"} <span className="ml-1 text-lg font-bold text-slate-300 dark:text-slate-600">/ 4.0</span></h3>
                 </div>
                 <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-2xl text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-800/50">
                   <span className="material-icons-round text-2xl">analytics</span>
@@ -579,7 +581,11 @@ const StudentDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                 </div>
                 <div className="divide-y divide-gray-100 dark:divide-gray-800 overflow-y-auto flex-1 min-h-0">
                   {recent.map((act, i) => (
-                    <div key={i} className="p-4 md:p-5 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors flex gap-4 items-start">
+                    <div 
+                      key={i} 
+                      onClick={() => navigate(act.title === "New Alert" ? "/student/announcements" : `/student/announcements#${act.id}`)} 
+                      className="p-4 md:p-5 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors flex gap-4 items-start cursor-pointer"
+                    >
                       <div className={`${act.color} dark:bg-opacity-20 rounded-xl h-10 w-10 flex items-center justify-center shrink-0`}>
                         <span className="material-icons-round text-xl">{act.icon}</span>
                       </div>

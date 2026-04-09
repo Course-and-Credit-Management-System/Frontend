@@ -181,7 +181,7 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
   useEffect(() => {
     const timer = setTimeout(() => {
       fetchStudents();
-    }, searchQuery ? 500 : 0);
+    }, 400); // Wait 400ms after last typing before fetching
     return () => clearTimeout(timer);
   }, [searchQuery, year, semester, sectionFilter, major, statusFilter, currentPage]);
 
@@ -404,7 +404,10 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
                     placeholder="Search name, ID or email..." 
                     type="text"
                     value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onChange={(e) => {
+                      setSearchQuery(e.target.value);
+                      setCurrentPage(1); // Reset pagination on search
+                    }}
                   />
                 </div>
               </div>
@@ -418,6 +421,7 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
                     onChange={(e) => {
                       const newYear = e.target.value ? Number(e.target.value) : '';
                       setYear(newYear);
+                      setCurrentPage(1); // Reset pagination on filter change
                       // Reset major when year changes
                       if (typeof newYear === 'number') {
                         if (newYear <= 2) {
@@ -447,7 +451,10 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
                   <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Sem</label>
                   <select 
                     value={semester}
-                    onChange={(e) => setSemester(e.target.value ? Number(e.target.value) : '')}
+                    onChange={(e) => {
+                      setSemester(e.target.value ? Number(e.target.value) : '');
+                      setCurrentPage(1); // Reset pagination
+                    }}
                     className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-2.5 pl-3 pr-8 text-xs font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-teal-500/20 transition-all cursor-pointer"
                   >
                     <option value="">All</option>
@@ -462,7 +469,10 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Section</label>
                     <select 
                       value={sectionFilter}
-                      onChange={(e) => setSectionFilter(e.target.value)}
+                      onChange={(e) => {
+                        setSectionFilter(e.target.value);
+                        setCurrentPage(1); // Reset pagination
+                      }}
                       className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-2.5 pl-3 pr-8 text-xs font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-teal-500/20 transition-all cursor-pointer"
                     >
                       <option value="">All</option>
@@ -479,7 +489,10 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Major</label>
                     <select 
                       value={major}
-                      onChange={(e) => setMajor(e.target.value)}
+                      onChange={(e) => {
+                        setMajor(e.target.value);
+                        setCurrentPage(1); // Reset pagination
+                      }}
                       className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-2.5 pl-3 pr-8 text-xs font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-teal-500/20 transition-all cursor-pointer"
                     >
                       <option value="">All Majors</option>
@@ -495,7 +508,10 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
                   <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Status</label>
                   <select 
                     value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value)}
+                    onChange={(e) => {
+                      setStatusFilter(e.target.value);
+                      setCurrentPage(1); // Reset pagination
+                    }}
                     className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-2.5 pl-3 pr-8 text-xs font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-teal-500/20 transition-all cursor-pointer"
                   >
                     <option value="">All Status</option>
