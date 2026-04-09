@@ -37,12 +37,81 @@ function formatLocalDateTime(value?: string) {
   return new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(ms));
 }
 
+function CustomSelect({ 
+  value, 
+  onChange, 
+  options, 
+  placeholder,
+  className = ""
+}: { 
+  value: string, 
+  onChange: (val: string) => void, 
+  options: {value: string, label: string}[], 
+  placeholder?: string,
+  className?: string
+}) {
+  const [open, setOpen] = React.useState(false);
+  const ref = React.useRef<HTMLDivElement>(null);
+  
+  React.useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  const selectedTitle = options.find(o => o.value === value)?.label || placeholder || "Select...";
+
+  return (
+    <div className={`relative group ${className}`} ref={ref}>
+      <button 
+        type="button"
+        onClick={() => setOpen(!open)}
+        className="flex items-center justify-between gap-2 w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-3 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all focus:ring-2 focus:ring-teal-500/20 outline-none"
+      >
+        <span className="truncate">{selectedTitle}</span>
+        <span className="material-icons-outlined text-[14px] text-slate-400 group-hover:text-teal-500 transition-colors shrink-0">
+          {open ? 'expand_less' : 'expand_more'}
+        </span>
+      </button>
+      
+      {open && (
+        <div className="absolute top-full mt-1.5 left-0 min-w-full w-max max-h-64 overflow-y-auto rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xl z-50 py-1.5 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-300 dark:[&::-webkit-scrollbar-thumb]:bg-slate-700 [&::-webkit-scrollbar-thumb]:rounded-full">
+          {options.map((opt) => {
+            const isSelected = value === opt.value;
+            return (
+              <button
+                key={opt.value}
+                onClick={() => { onChange(opt.value); setOpen(false); }}
+                className={`w-full text-left px-4 py-2.5 text-xs font-bold transition-colors flex items-center justify-between gap-3 ${
+                  isSelected
+                    ? "bg-teal-50/80 dark:bg-teal-900/30 text-teal-700 dark:text-teal-400"
+                    : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+                }`}
+              >
+                <span className="truncate">{opt.label}</span>
+                {isSelected && <span className="material-icons-outlined text-[14px] shrink-0">check</span>}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
 const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
   type CourseFilterKey = 'enrollable' | 'track:cs' | 'track:ct' | 'major';
 
   const navigate = useNavigate();
   const [credits, setCredits] = useState<string>("0");
   const [searchQuery, setSearchQuery] = useState("");
+  const [filterYear, setFilterYear] = useState<string>("");
+  const [filterSemester, setFilterSemester] = useState<string>("");
+  const [filterType, setFilterType] = useState<string>("");
   const [activeFilters, setActiveFilters] = useState<Set<CourseFilterKey>>(new Set());
   const [showValidation, setShowValidation] = useState(false);
   const [isFinalized, setIsFinalized] = useState(false);
@@ -162,11 +231,16 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, effectiveSort]);
+  }, [searchQuery, effectiveSort, filterYear, filterSemester, filterType]);
 
   const filteredCourses = courses.filter(c => {
     const enrollmentClosedForEnrollableSort = effectiveSort.includes('enrollable') && enrollmentSetting && !enrollmentSetting.is_active;
     if (enrollmentClosedForEnrollableSort) return false;
+
+    const semStr = String(c.semester || "");
+    if (filterYear && !semStr.includes(filterYear)) return false;
+    if (filterSemester && !semStr.includes(filterSemester)) return false;
+    if (filterType && !semStr.includes(filterType)) return false;
 
     const q = searchTextQuery;
     if (!q) return true;
@@ -480,7 +554,7 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
 
   const applyAiSuggestion = (course: EnrollmentAssistanceCourse) => {
     const mappedCourse: AvailableCourse = {
-      code: course.code,
+      code: course.code, semester: course.semester, year: course.year,
       title: course.title,
       type: course.type,
       credits: course.credits,
@@ -554,37 +628,75 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
               {settingError && <p className="mt-6 text-xs font-bold text-rose-500 italic">Sync Error: {settingError}</p>}
             </div>
 
-            <div className="bg-white dark:bg-slate-900/95 p-8 rounded-[32px] border border-slate-100 dark:border-slate-700 shadow-sm mb-12 flex flex-col md:flex-row gap-8 items-center justify-between transition-all hover:shadow-md dark:shadow-[0_14px_36px_rgba(2,6,23,0.45)]">
-              <div className="relative flex-1 w-full group">
-                <span className="material-icons-outlined absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-teal-500 transition-colors text-xl">search</span>
-                <input 
-                    type="text"
-                    placeholder="Filter institutional courses..."
-                    value={searchQuery}
-                    onChange={e => setSearchQuery(e.target.value)}
-                    className="w-full pl-14 pr-6 py-4 text-base font-bold rounded-2xl border border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-950/75 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all dark:text-white placeholder:text-slate-300 dark:placeholder:text-slate-500"
-                />
+<div className="flex flex-col gap-4 mb-12">
+              <div className="bg-white dark:bg-slate-900/95 p-8 rounded-[32px] border border-slate-100 dark:border-slate-700 shadow-sm flex flex-col md:flex-row gap-8 items-center justify-between transition-all hover:shadow-md dark:shadow-[0_14px_36px_rgba(2,6,23,0.45)]">
+                <div className="relative flex-1 w-full group">
+                  <span className="material-icons-outlined absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-teal-500 transition-colors text-xl">search</span>
+                  <input 
+                      type="text"
+                      placeholder="Filter institutional courses..."
+                      value={searchQuery}
+                      onChange={e => setSearchQuery(e.target.value)}
+                      className="w-full pl-14 pr-6 py-4 text-base font-bold rounded-2xl border border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-950/75 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all dark:text-white placeholder:text-slate-300 dark:placeholder:text-slate-500"
+                  />
+                </div>
+                <div className="flex flex-wrap items-center gap-3">
+                  <span className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] mr-2">Sort Protocol:</span>
+                  {[
+                    { id: 'track:cs', label: 'CS' },
+                    { id: 'track:ct', label: 'CT' },
+                    { id: 'major', label: 'MAJOR' },
+                    { id: 'enrollable', label: 'AVAILABLE' }
+                  ].map(f => (
+                    <button 
+                      key={f.id}
+                      onClick={() => toggleFilter(f.id as CourseFilterKey)}
+                      className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all active:scale-95 ${
+                        activeFilters.has(f.id as CourseFilterKey) || (f.id === 'enrollable' && isEnrollableFilterActive)
+                          ? "bg-slate-900 text-white border-slate-900 dark:bg-teal-600 dark:border-teal-600 shadow-lg" 
+                          : "bg-transparent text-slate-400 dark:text-slate-500 border-slate-100 dark:border-slate-800 hover:border-teal-500/30"
+                      }`}
+                    >
+                      {f.label}
+                    </button>
+                  ))}
+                </div>
               </div>
-              <div className="flex flex-wrap items-center gap-3">
-                <span className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] mr-2">Sort Protocol:</span>
-                {[
-                  { id: 'track:cs', label: 'CS' },
-                  { id: 'track:ct', label: 'CT' },
-                  { id: 'major', label: 'MAJOR' },
-                  { id: 'enrollable', label: 'AVAILABLE' }
-                ].map(f => (
-                  <button 
-                    key={f.id}
-                    onClick={() => toggleFilter(f.id as CourseFilterKey)}
-                    className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all active:scale-95 ${
-                      activeFilters.has(f.id as CourseFilterKey) || (f.id === 'enrollable' && isEnrollableFilterActive)
-                        ? "bg-slate-900 text-white border-slate-900 dark:bg-teal-600 dark:border-teal-600 shadow-lg" 
-                        : "bg-transparent text-slate-400 dark:text-slate-500 border-slate-100 dark:border-slate-800 hover:border-teal-500/30"
-                    }`}
-                  >
-                    {f.label}
-                  </button>
-                ))}
+
+              <div className="flex flex-col md:flex-row gap-4 z-[40] w-full mb-8">
+                  <CustomSelect
+                    value={filterYear}
+                    onChange={setFilterYear}
+                    options={[
+                      { value: "", label: "All Years" },
+                      { value: "1st Year", label: "1st Year" },
+                      { value: "2nd Year", label: "2nd Year" },
+                      { value: "3rd Year", label: "3rd Year" },
+                      { value: "4th Year", label: "4th Year" },
+                      { value: "5th Year", label: "5th Year" }
+                    ]}
+                    className="flex-1 min-w-[200px] z-[42]"
+                  />
+                  <CustomSelect
+                    value={filterSemester}
+                    onChange={setFilterSemester}
+                    options={[
+                      { value: "", label: "All Semesters" },
+                      { value: "First Sem", label: "1st Sem" },
+                      { value: "Second Sem", label: "2nd Sem" }
+                    ]}
+                    className="flex-1 min-w-[200px] z-[41]"
+                  />
+                  <CustomSelect
+                    value={filterType}
+                    onChange={setFilterType}
+                    options={[
+                      { value: "", label: "All Types" },
+                      { value: "Old", label: "Old" },
+                      { value: "New", label: "New" }
+                    ]}
+                    className="flex-1 min-w-[200px] z-[40]"
+                  />
               </div>
             </div>
 
@@ -665,7 +777,7 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
                         <div className="flex justify-between gap-4 mb-6">
                           <div className="min-w-0">
                             <h4 className="font-black text-slate-900 dark:text-white tracking-tight truncate">{course.title}</h4>
-                            <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-1">{course.code} • {course.credits} CU • {course.type}</p>
+                            <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-1">{course.code} • {course.semester ? `${course.semester} \u2022 ` : ""}{course.credits} CU • {course.type}</p>
                           </div>
                           <span className={`h-fit text-[8px] px-3 py-1 rounded-full font-black uppercase tracking-widest border ${isLocked ? 'bg-rose-50 text-rose-600 border-rose-100' : 'bg-teal-50 text-teal-600 border-teal-100'}`}>
                             {isLocked ? 'Inaccessible' : 'Neural Match'}
@@ -769,7 +881,7 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
                            <h4 className={`text-xl font-black truncate tracking-tight ${course.status === 'selected' ? 'text-teal-600' : 'text-slate-900 dark:text-white group-hover:text-teal-600 transition-colors'}`}>{course.title}</h4>
                            <span className="bg-slate-50 dark:bg-slate-800 text-[8px] px-2 py-0.5 rounded-md font-black uppercase tracking-widest text-slate-400 border border-slate-100 dark:border-slate-700 shrink-0">{course.type}</span>
                         </div>
-                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em]">{course.code} • {course.credits} CU</p>
+                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em]">{course.code} • {course.semester ? `${course.semester} \u2022 ` : ""}{course.credits} CU</p>
                      </div>
                    </div>
                    
@@ -941,7 +1053,7 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
                                       <span className="text-[7px] px-2 py-0.5 rounded-md bg-teal-500 text-white font-black uppercase tracking-widest shadow-sm shadow-teal-500/20">GUIDANCE Match</span>
                                     )}
                                   </div>
-                                  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{course.code} • {course.credits} CU</p>
+                                  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{course.code} • {course.semester ? `${course.semester} \u2022 ` : ""}{course.credits} CU</p>
                                   {reason && <p className="text-[9px] font-bold text-teal-600 dark:text-teal-400 uppercase tracking-tighter mt-2 border-t border-slate-50 dark:border-slate-800 pt-2">{reason}</p>}
                                 </div>
                               </div>
