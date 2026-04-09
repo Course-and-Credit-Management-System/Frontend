@@ -86,6 +86,8 @@ const AdminEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
   const [advanceLoading, setAdvanceLoading] = useState<SemesterKey | null>(null);
   const [advanceDetail, setAdvanceDetail] = useState<string | null>(null);
   const [advanceState, setAdvanceState] = useState<'success' | 'error' | 'info'>('info');
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10;
   const [semesterFilter, setSemesterFilter] = useState<string>('all');
   const [academicYearFilter, setAcademicYearFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -153,6 +155,7 @@ const AdminEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
       direction = 'desc';
     }
     setSortConfig({ key, direction });
+    setCurrentPage(1);
   };
 
   const semesterOptions = React.useMemo(() => {
@@ -215,6 +218,13 @@ const AdminEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
       return 0;
     });
   }, [filteredRequests, sortConfig]);
+
+  const paginatedRequests = React.useMemo(() => {
+    const startIndex = (currentPage - 1) * pageSize;
+    return sortedRequests.slice(startIndex, startIndex + pageSize);
+  }, [sortedRequests, currentPage, pageSize]);
+
+  const totalPages = Math.ceil(sortedRequests.length / pageSize);
 
   const openRejectModal = (id: string) => {
     setSelectedRequestId(id);
@@ -348,7 +358,10 @@ const AdminEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
                 <div className="flex items-center gap-3">
                   <CustomSelect
                     value={semesterFilter}
-                    onChange={setSemesterFilter}
+                    onChange={(val) => {
+                      setSemesterFilter(val);
+                      setCurrentPage(1);
+                    }}
                     options={[
                       { value: "all", label: "All Semesters" },
                       ...semesterOptions.map(s => ({ value: s, label: s }))
@@ -357,7 +370,10 @@ const AdminEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
 
                   <CustomSelect
                     value={statusFilter}
-                    onChange={setStatusFilter}
+                    onChange={(val) => {
+                      setStatusFilter(val);
+                      setCurrentPage(1);
+                    }}
                     options={[
                       { value: "all", label: "All Status" },
                       { value: "Pending", label: "Pending" },
@@ -367,7 +383,10 @@ const AdminEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
 
                   <CustomSelect
                     value={academicYearFilter}
-                    onChange={setAcademicYearFilter}
+                    onChange={(val) => {
+                      setAcademicYearFilter(val);
+                      setCurrentPage(1);
+                    }}
                     options={[
                       { value: "all", label: "All Academic Years" },
                       ...academicYearOptions.map(y => ({ value: y, label: y }))
@@ -405,13 +424,13 @@ const AdminEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
                     {loading ? (
-                      <TableSkeletonRows rows={6} cols={6} />
+                      <TableSkeletonRows rows={10} cols={6} />
                     ) : error ? (
                       <tr><td colSpan={6} className="px-8 py-12 text-center text-rose-500 font-bold">{error}</td></tr>
-                    ) : sortedRequests.length === 0 ? (
+                    ) : paginatedRequests.length === 0 ? (
                       <tr><td colSpan={6} className="px-8 py-12 text-center text-slate-400 italic">No pending requests found.</td></tr>
                     ) : (
-                      sortedRequests.map((req, i) => (
+                      paginatedRequests.map((req, i) => (
                       <tr key={i} className="group hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors">
                          <td className="px-8 py-5">
                           <button
@@ -473,6 +492,30 @@ const AdminEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
                   </tbody>
                 </table>
               </div>
+              
+              {!loading && !error && totalPages > 1 && (
+                <div className="flex items-center justify-between border-t border-slate-100 dark:border-slate-800 px-8 py-4">
+                  <span className="text-sm text-slate-500 dark:text-slate-400">
+                    Showing <span className="font-bold text-slate-900 dark:text-white">{(currentPage - 1) * pageSize + 1}</span> to <span className="font-bold text-slate-900 dark:text-white">{Math.min(currentPage * pageSize, sortedRequests.length)}</span> of <span className="font-bold text-slate-900 dark:text-white">{sortedRequests.length}</span> entries
+                  </span>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                      disabled={currentPage === 1}
+                      className="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-800 text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-50 transition-all"
+                    >
+                      Previous
+                    </button>
+                    <button
+                      onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                      disabled={currentPage === totalPages}
+                      className="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-800 text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-50 transition-all"
+                    >
+                      Next
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="rounded-3xl bg-slate-50/50 dark:bg-slate-900/30 p-8 border border-slate-200/60 dark:border-slate-800/60 shadow-sm">
