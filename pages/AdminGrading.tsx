@@ -63,11 +63,11 @@ const AdminGrading: React.FC<GradingProps> = ({ user, onLogout }) => {
   const showMajor = yearNum === 0 || (yearNum >= 3 && yearNum <= 5);
   const majorOptions = yearNum === 3 ? ['CS', 'CT'] : ['SE', 'KE', 'HPC', 'CSec', 'CN', 'BIS', 'ES'];
 
-  // Fetch exam results when filters change (with debounce for courseCode)
+  // Fetch exam results when filters change (with debounce)
   useEffect(() => {
     const timer = setTimeout(() => {
       fetchResults();
-    }, courseCode ? 500 : 0); // Debounce only for courseCode typing
+    }, 400); // Wait 400ms after last typing before fetching
 
     return () => clearTimeout(timer);
   }, [year, semester, section, major, courseCode]);

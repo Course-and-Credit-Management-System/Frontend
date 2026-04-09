@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { useLocation } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
 import { DetailedCardGridSkeleton } from "../components/Skeleton";
@@ -20,6 +21,8 @@ type Announcement = {
 const TYPES: string[] = ["All", "General", "Urgent", "Event", "Academic"];
 
 const StudentAnnouncements: React.FC<{ user: User; onLogout: () => void }> = ({ user, onLogout }) => {
+  const location = useLocation();
+
   const [items, setItems] = useState<Announcement[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -46,6 +49,21 @@ const StudentAnnouncements: React.FC<{ user: User; onLogout: () => void }> = ({ 
     };
     load();
   }, []);
+
+  useEffect(() => {
+    if (!loading && items.length > 0 && location.hash) {
+      const targetId = location.hash.replace("#", "");
+      const element = document.getElementById(targetId);
+      if (element) {
+        setTimeout(() => {
+          element.scrollIntoView({ behavior: "smooth", block: "center" });
+          // Temporarily highlight the announcement
+          element.classList.add("ring-8", "ring-teal-500/20");
+          setTimeout(() => element.classList.remove("ring-8", "ring-teal-500/20"), 2000);
+        }, 100);
+      }
+    }
+  }, [loading, items, location.hash]);
 
   const filtered = useMemo(() => {
     let list = [...items];
@@ -135,7 +153,7 @@ const StudentAnnouncements: React.FC<{ user: User; onLogout: () => void }> = ({ 
                 </div>
               ) : (
                 filtered.map((a) => (
-                  <div key={a._id} className="group bg-white dark:bg-slate-900 rounded-[40px] border border-slate-100 dark:border-slate-800 shadow-sm p-10 lg:p-12 transition-all hover:shadow-2xl hover:-translate-y-1 relative overflow-hidden flex flex-col">
+                  <div key={a._id} id={a._id} className="group bg-white dark:bg-slate-900 rounded-[40px] border border-slate-100 dark:border-slate-800 shadow-sm p-10 lg:p-12 transition-all hover:shadow-2xl hover:-translate-y-1 relative overflow-hidden flex flex-col">
                     <div className="absolute top-0 right-0 h-32 w-32 bg-teal-500/[0.01] rounded-bl-full pointer-events-none" />
                     
                     <div className="flex flex-col md:flex-row items-start justify-between gap-6 mb-8">

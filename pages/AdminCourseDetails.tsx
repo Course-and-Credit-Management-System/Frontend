@@ -376,7 +376,7 @@ const AdminCourseDetails: React.FC<Props> = ({ user, onLogout }) => {
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background-light dark:bg-background-dark font-poppins">
+    <div className="flex h-screen overflow-hidden bg-white dark:bg-slate-950 font-poppins">
       <Sidebar user={user} onLogout={onLogout} />
 
       <div className="flex flex-1 flex-col overflow-hidden">
@@ -386,14 +386,14 @@ const AdminCourseDetails: React.FC<Props> = ({ user, onLogout }) => {
         {toast && (
           <div className="fixed top-5 right-5 z-[60]">
             <div
-              className={`rounded-xl px-4 py-3 shadow-lg border text-sm ${
+              className={`rounded-2xl px-6 py-4 shadow-xl border text-sm font-bold ${
                 toast.type === "success"
-                  ? "bg-emerald-50 border-emerald-200 text-emerald-800 dark:bg-emerald-900/20 dark:border-emerald-900/40 dark:text-emerald-200"
-                  : "bg-red-50 border-red-200 text-red-800 dark:bg-red-900/20 dark:border-red-900/40 dark:text-red-200"
+                  ? "bg-teal-50 border-teal-200 text-teal-800 dark:bg-teal-900/20 dark:border-teal-900/40 dark:text-teal-200"
+                  : "bg-rose-50 border-rose-200 text-rose-800 dark:bg-rose-900/20 dark:border-rose-900/40 dark:text-rose-200"
               }`}
             >
-              <div className="flex items-center gap-2">
-                <span className="material-icons-outlined text-base">
+              <div className="flex items-center gap-3">
+                <span className="material-icons-outlined text-lg">
                   {toast.type === "success" ? "check_circle" : "error"}
                 </span>
                 <span>{toast.msg}</span>
@@ -402,52 +402,57 @@ const AdminCourseDetails: React.FC<Props> = ({ user, onLogout }) => {
           </div>
         )}
 
-        <main className="flex-1 overflow-y-auto p-6 lg:p-8">
+        <main className="flex-1 overflow-y-auto p-6 lg:p-10">
           {/* Top actions */}
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-10">
             <button
               onClick={() => navigate(-1)}
-              className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-primary transition-colors"
+              className="inline-flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-teal-600 transition-colors bg-slate-50 dark:bg-slate-900/50 px-5 py-3 rounded-2xl border border-slate-200 dark:border-slate-800"
             >
-              <span className="material-icons-outlined text-sm">arrow_back</span>
+              <span className="material-icons-outlined text-base">arrow_back</span>
               Back to Courses
             </button>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <button
                 onClick={openAddModal}
-                className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary-hover transition-colors shadow-sm"
+                className="inline-flex items-center gap-2 rounded-2xl bg-teal-600 px-6 py-3.5 text-sm font-bold text-white hover:bg-teal-700 transition-all shadow-lg active:scale-[0.98]"
               >
-                <span className="material-icons-outlined text-base">add</span>
-                Add Syllabus Item
+                <span className="material-icons-outlined text-lg">add</span>
+                Add Syllabus Module
               </button>
             </div>
           </div>
 
           {/* Unsaved changes bar */}
           {hasUnsavedChanges && (
-            <div className="sticky top-0 z-40 mb-6">
-              <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 shadow-sm dark:border-amber-900/40 dark:bg-amber-900/20">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="flex items-center gap-2 text-amber-900 dark:text-amber-200">
-                    <span className="material-icons-outlined text-base">info</span>
-                    <span className="text-sm font-semibold">You have unsaved syllabus changes</span>
+            <div className="sticky top-0 z-40 mb-8 animate-in fade-in slide-in-from-top-4 duration-300">
+              <div className="rounded-[24px] border border-amber-200 dark:border-amber-900/40 bg-amber-50 dark:bg-amber-900/10 px-6 py-4 shadow-sm">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex items-center gap-3 text-amber-800 dark:text-amber-200">
+                    <div className="h-10 w-10 bg-amber-100 dark:bg-amber-900/30 rounded-xl flex items-center justify-center">
+                      <span className="material-icons-outlined text-xl">warning_amber</span>
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-extrabold tracking-tight">Unsaved Sequencing Changes</h4>
+                      <p className="text-[10px] font-bold uppercase tracking-widest opacity-80 mt-0.5">Commit timeline layout adjustments to curriculum database</p>
+                    </div>
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-3">
                     <button
                       onClick={discardChanges}
                       disabled={saving}
-                      className="rounded-lg border border-amber-300 bg-white px-3 py-2 text-sm font-medium text-amber-900 hover:bg-amber-100 disabled:opacity-60 dark:bg-transparent dark:border-amber-900/40 dark:text-amber-200 dark:hover:bg-amber-900/20"
+                      className="rounded-xl border border-amber-200 dark:border-amber-800 bg-white dark:bg-amber-950/20 px-6 py-3 text-xs font-bold uppercase tracking-widest text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/40 transition-all"
                     >
-                      Discard
+                      Discard Draft
                     </button>
                     <button
                       onClick={saveChanges}
                       disabled={saving}
-                      className="rounded-lg bg-amber-600 px-3 py-2 text-sm font-semibold text-white hover:bg-amber-700 disabled:opacity-60"
+                      className="rounded-xl bg-amber-600 px-8 py-3 text-xs font-bold uppercase tracking-widest text-white hover:bg-amber-700 transition-all shadow-md active:scale-95 disabled:opacity-50"
                     >
-                      {saving ? "Saving..." : "Save changes"}
+                      {saving ? "Persisting..." : "Commit Update"}
                     </button>
                   </div>
                 </div>
@@ -456,7 +461,8 @@ const AdminCourseDetails: React.FC<Props> = ({ user, onLogout }) => {
           )}
 
           {error && (
-            <div className="mb-6 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900/40 dark:bg-red-900/20 dark:text-red-200">
+            <div className="mb-8 rounded-2xl border border-rose-200 bg-rose-50 p-6 text-sm font-bold text-rose-700 dark:border-rose-900/40 dark:bg-rose-900/20 dark:text-rose-200 flex items-center gap-3">
+              <span className="material-icons-outlined">error_outline</span>
               {error}
             </div>
           )}
@@ -465,68 +471,68 @@ const AdminCourseDetails: React.FC<Props> = ({ user, onLogout }) => {
             {/* LEFT */}
             <div className="lg:col-span-2 space-y-8">
               {/* Hero */}
-              <div className="bg-surface-light dark:bg-surface-dark rounded-xl p-8 border border-gray-200 dark:border-gray-700 shadow-sm relative overflow-hidden">
-                <div className="absolute top-0 right-0 p-8 opacity-5">
-                  <span className="material-icons-outlined text-9xl">menu_book</span>
+              <div className="bg-white dark:bg-slate-900 rounded-[32px] p-8 lg:p-12 border border-slate-100 dark:border-slate-800 shadow-sm relative overflow-hidden group">
+                <div className="absolute top-0 right-0 p-12 opacity-5 scale-150 transform group-hover:scale-110 transition-transform duration-1000 -translate-y-12 translate-x-12">
+                  <span className="material-icons-outlined text-9xl">library_books</span>
                 </div>
 
                 <div className="relative z-10">
-                  <div className="flex flex-wrap items-center gap-2 mb-2">
-                    <span className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide">
-                      {course.type || "Course"}
+                  <div className="flex flex-wrap items-center gap-3 mb-6">
+                    <span className="bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-400 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] border border-teal-100 dark:border-teal-800/50 shadow-sm">
+                      {course.type || "Course Target"}
                     </span>
-                    <span className="text-gray-500 dark:text-gray-400 font-mono text-sm">
+                    <span className="bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] border border-slate-200 dark:border-slate-700 shadow-sm font-mono">
                       {course.course_code}
                     </span>
                     {course.department && (
-                      <span className="text-xs text-gray-500 dark:text-gray-400">
-                        • {course.department}
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-2">
+                        {course.department}
                       </span>
                     )}
                   </div>
 
-                  <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-3">
-                    {course.title || "—"}
+                  <h1 className="text-4xl lg:text-5xl font-black text-slate-900 dark:text-white mb-6 tracking-tight leading-tight">
+                    {course.title || "Untitled Sequence"}
                   </h1>
 
-                  <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
+                  <p className="text-slate-600 dark:text-slate-400 leading-relaxed font-medium">
                     {course.description?.trim()
                       ? course.description
-                      : "No description available yet."}
+                      : "Overview analysis documentation pending instantiation."}
                   </p>
                 </div>
               </div>
 
               {/* Weekly Syllabus */}
-              <div className="bg-surface-light dark:bg-surface-dark rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
-                <div className="border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div className="bg-white dark:bg-slate-900 rounded-[32px] border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden">
+                <div className="border-b border-slate-100 dark:border-slate-800 px-8 py-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-slate-50/50 dark:bg-slate-950/50">
                   <div>
-                    <h3 className="font-bold text-lg text-gray-800 dark:text-white">
-                      Weekly Syllabus
+                    <h3 className="font-extrabold text-2xl text-slate-900 dark:text-white tracking-tight">
+                      Curriculum Timeline
                     </h3>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                      Add topics by week. Use reorder buttons to adjust pacing.
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">
+                      Drag or reorder nodes to adjust instructional pacing
                     </p>
                   </div>
 
-                  <div className="flex items-center gap-2">
-                    <div className="relative w-full sm:w-64">
-                      <span className="absolute inset-y-0 left-0 flex items-center pl-3">
-                        <span className="material-icons-outlined text-gray-400 text-base">
+                  <div className="flex items-center gap-3">
+                    <div className="relative w-full sm:w-64 group">
+                      <span className="absolute inset-y-0 left-0 flex items-center pl-4">
+                        <span className="material-icons-outlined text-slate-400 group-focus-within:text-teal-500 transition-colors">
                           search
                         </span>
                       </span>
                       <input
                         value={syllabusSearch}
                         onChange={(e) => setSyllabusSearch(e.target.value)}
-                        placeholder="Search week/topic..."
-                        className="w-full rounded-lg border border-gray-200 bg-white py-2 pl-10 pr-3 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-gray-700 dark:bg-slate-800 dark:text-gray-200"
+                        placeholder="Search interval or node..."
+                        className="w-full rounded-2xl border border-slate-200 bg-white py-3 pl-12 pr-4 text-sm font-bold focus:border-teal-500/50 focus:outline-none focus:ring-4 focus:ring-teal-500/10 dark:border-slate-800 dark:bg-slate-950 dark:text-white transition-all shadow-sm placeholder:text-slate-300"
                       />
                     </div>
 
                     <button
                       onClick={openAddModal}
-                      className="hidden sm:inline-flex items-center gap-2 rounded-lg bg-primary px-3 py-2 text-sm font-semibold text-white hover:bg-primary-hover"
+                      className="hidden sm:inline-flex items-center gap-2 rounded-2xl bg-slate-900 dark:bg-slate-800 px-5 py-3 text-xs font-bold uppercase tracking-widest text-white hover:bg-slate-800 dark:hover:bg-slate-700 transition-all shadow-sm active:scale-95"
                     >
                       <span className="material-icons-outlined text-base">add</span>
                       Add
@@ -534,89 +540,83 @@ const AdminCourseDetails: React.FC<Props> = ({ user, onLogout }) => {
                   </div>
                 </div>
 
-                <div className="divide-y divide-gray-100 dark:divide-gray-800">
+                <div className="divide-y divide-slate-100 dark:divide-slate-800">
                   {filteredSyllabus.length ? (
                     filteredSyllabus.map((item) => (
                       <div
                         key={item.week}
-                        className="px-6 py-4 flex flex-col sm:flex-row sm:items-center gap-3 hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors"
+                        className="px-8 py-5 flex flex-col sm:flex-row sm:items-center gap-4 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-all group"
                       >
-                        <div className="flex items-center gap-3 flex-1 min-w-0">
-                          <div className="h-10 w-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-sm shrink-0">
+                        <div className="flex items-center gap-4 flex-1 min-w-0">
+                          <div className="h-10 w-12 rounded-xl bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-400 flex items-center justify-center font-black text-sm shrink-0 border border-teal-100 dark:border-teal-800/50">
                             W{item.week}
                           </div>
 
                           <div className="min-w-0">
-                            <div className="text-sm text-gray-800 dark:text-gray-100 font-semibold truncate">
+                            <div className="text-sm font-bold text-slate-900 dark:text-white truncate">
                               {item.topic}
                             </div>
-                            <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                            <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mt-1">
                               Week {item.week}
                             </div>
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-2 justify-end">
+                        <div className="flex items-center gap-2 justify-end opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                           <button
                             onClick={() => moveItem(item.week, "up")}
-                            className="p-2 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 dark:border-gray-700 dark:bg-slate-800 dark:hover:bg-slate-700"
-                            title="Move up"
+                            className="h-9 w-9 rounded-xl border border-slate-200 bg-white hover:border-teal-500/50 hover:text-teal-600 focus:ring-4 focus:ring-teal-500/10 dark:border-slate-800 dark:bg-slate-950 flex items-center justify-center text-slate-400 transition-all active:scale-95 shadow-sm"
+                            title="Shift Node Up"
                           >
-                            <span className="material-icons-outlined text-base text-gray-500">
-                              arrow_upward
-                            </span>
+                            <span className="material-icons-outlined text-base">arrow_upward</span>
                           </button>
 
                           <button
                             onClick={() => moveItem(item.week, "down")}
-                            className="p-2 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 dark:border-gray-700 dark:bg-slate-800 dark:hover:bg-slate-700"
-                            title="Move down"
+                            className="h-9 w-9 rounded-xl border border-slate-200 bg-white hover:border-teal-500/50 hover:text-teal-600 focus:ring-4 focus:ring-teal-500/10 dark:border-slate-800 dark:bg-slate-950 flex items-center justify-center text-slate-400 transition-all active:scale-95 shadow-sm"
+                            title="Shift Node Down"
                           >
-                            <span className="material-icons-outlined text-base text-gray-500">
-                              arrow_downward
-                            </span>
+                            <span className="material-icons-outlined text-base">arrow_downward</span>
                           </button>
+
+                          <div className="w-px h-6 bg-slate-200 dark:bg-slate-800 mx-1"></div>
 
                           <button
                             onClick={() => openEditModal(item)}
-                            className="p-2 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 dark:border-gray-700 dark:bg-slate-800 dark:hover:bg-slate-700"
-                            title="Edit"
+                            className="h-9 w-9 rounded-xl border border-slate-200 bg-white hover:border-indigo-500/50 hover:text-indigo-600 focus:ring-4 focus:ring-indigo-500/10 dark:border-slate-800 dark:bg-slate-950 flex items-center justify-center text-slate-400 transition-all active:scale-95 shadow-sm"
+                            title="Edit Node"
                           >
-                            <span className="material-icons-outlined text-base text-gray-500">
-                              edit
-                            </span>
+                            <span className="material-icons-outlined text-base">edit</span>
                           </button>
 
                           <button
                             onClick={() => removeItem(item.week)}
-                            className="p-2 rounded-lg border border-red-200 bg-red-50 hover:bg-red-100 dark:border-red-900/30 dark:bg-red-900/20 dark:hover:bg-red-900/30"
-                            title="Delete"
+                            className="h-9 w-9 rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 hover:text-rose-700 dark:border-rose-900/40 dark:bg-rose-900/20 dark:hover:bg-rose-900/40 text-rose-500 flex items-center justify-center transition-all active:scale-95 shadow-sm"
+                            title="Purge Node"
                           >
-                            <span className="material-icons-outlined text-base text-red-600 dark:text-red-300">
-                              delete
-                            </span>
+                            <span className="material-icons-outlined text-base">delete_outline</span>
                           </button>
                         </div>
                       </div>
                     ))
                   ) : (
-                    <div className="px-6 py-10">
-                      <div className="rounded-xl border border-dashed border-gray-300 dark:border-gray-700 bg-white dark:bg-slate-800 p-8 text-center">
-                        <div className="mx-auto h-12 w-12 rounded-full bg-primary/10 text-primary flex items-center justify-center">
-                          <span className="material-icons-outlined">playlist_add</span>
+                    <div className="px-8 py-12">
+                      <div className="rounded-[32px] border border-dashed border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-12 text-center animate-in fade-in zoom-in-95">
+                        <div className="mx-auto h-20 w-20 rounded-[20px] bg-slate-50 dark:bg-slate-950 text-slate-300 dark:text-slate-700 flex items-center justify-center border border-slate-100 dark:border-slate-800 shadow-sm">
+                          <span className="material-icons-outlined text-4xl">playlist_add</span>
                         </div>
-                        <h4 className="mt-3 text-sm font-bold text-gray-800 dark:text-white">
-                          No syllabus available yet
+                        <h4 className="mt-6 text-xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+                          Curriculum Uninitialized
                         </h4>
-                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                          Add weekly topics so students know what’s coming.
+                        <p className="mt-2 text-[11px] font-bold uppercase tracking-widest text-slate-400">
+                          Add weekly topics so students know what's coming
                         </p>
                         <button
                           onClick={openAddModal}
-                          className="mt-4 inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary-hover"
+                          className="mt-8 inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-6 py-3.5 text-xs font-bold uppercase tracking-widest text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all shadow-sm active:scale-95"
                         >
-                          <span className="material-icons-outlined text-base">add</span>
-                          Add first syllabus item
+                          <span className="material-icons-outlined text-lg">add</span>
+                          Add frist syllabbus item
                         </button>
                       </div>
                     </div>
@@ -626,128 +626,115 @@ const AdminCourseDetails: React.FC<Props> = ({ user, onLogout }) => {
             </div>
 
             {/* RIGHT */}
-            <div className="space-y-6">
-              <div className="bg-surface-light dark:bg-surface-dark rounded-xl border border-gray-200 dark:border-gray-700 p-6 shadow-sm">
-                <h3 className="font-bold text-gray-800 dark:text-white mb-4">
+            <div className="space-y-8">
+              <div className="bg-white dark:bg-slate-900 rounded-[32px] border border-slate-100 dark:border-slate-800 p-8 shadow-sm relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-8 opacity-5 scale-150 translate-x-8 -translate-y-8">
+                  <span className="material-icons-outlined text-8xl">data_object</span>
+                </div>
+                <h3 className="font-extrabold text-xl text-slate-900 dark:text-white mb-6 tracking-tight relative z-10">
                   Course Information
                 </h3>
 
-                <div className="space-y-4">
-                  <div className="flex items-start gap-3">
-                    <span className="material-icons-outlined text-gray-400 mt-0.5">
-                      person
-                    </span>
+                <div className="space-y-6 relative z-10">
+                  <div className="flex items-start gap-4 p-4 rounded-2xl bg-slate-50/50 dark:bg-slate-950/50 border border-slate-100 dark:border-slate-800">
+                    <span className="material-icons-outlined text-slate-400 mt-0.5">person</span>
                     <div className="min-w-0">
-                      <p className="text-sm font-bold text-gray-800 dark:text-white truncate">
-                        {course.instructor || "—"}
+                      <p className="text-sm font-bold text-slate-900 dark:text-white truncate">
+                        {course.instructor || "Undefined"}
                       </p>
                       {course.instructor_email ? (
                         <a
                           href={`mailto:${course.instructor_email}`}
-                          className="text-xs text-gray-500 hover:text-primary break-all"
+                          className="text-[10px] font-bold uppercase tracking-widest text-teal-600 dark:text-teal-400 hover:underline break-all"
                         >
                           {course.instructor_email}
                         </a>
                       ) : (
-                        <p className="text-xs text-gray-500">—</p>
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mt-1">Pending allocation</p>
                       )}
                     </div>
                   </div>
 
-                  <div className="flex items-start gap-3">
-                    <span className="material-icons-outlined text-gray-400 mt-0.5">
-                      schedule
-                    </span>
+                  <div className="flex items-start gap-4 p-4 rounded-2xl bg-slate-50/50 dark:bg-slate-950/50 border border-slate-100 dark:border-slate-800">
+                    <span className="material-icons-outlined text-slate-400 mt-0.5">schedule</span>
                     <div>
-                      <p className="text-sm font-bold text-gray-800 dark:text-white">
-                        Schedule
-                      </p>
+                      <p className="text-sm font-bold text-slate-900 dark:text-white">Execution Schedule</p>
                       {schedule.length ? (
-                        <ul className="mt-1 space-y-1">
+                        <div className="mt-2 flex flex-wrap gap-2">
                           {schedule.map((s, i) => (
-                            <li key={i} className="text-xs text-gray-500">
-                              {s}
-                            </li>
+                            <span key={i} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-[10px] font-black tracking-widest uppercase text-slate-600 dark:text-slate-300 shadow-sm">
+                              <span className="opacity-50">•</span> {s}
+                            </span>
                           ))}
-                        </ul>
+                        </div>
                       ) : (
-                        <p className="text-xs text-gray-500">—</p>
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mt-1">TBD</p>
                       )}
                     </div>
                   </div>
 
-                  <div className="flex items-start gap-3">
-                    <span className="material-icons-outlined text-gray-400 mt-0.5">
-                      location_on
-                    </span>
-                    <div>
-                      <p className="text-sm font-bold text-gray-800 dark:text-white">
-                        Location
-                      </p>
-                      <p className="text-xs text-gray-500">{course.room || "—"}</p>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="flex items-start gap-3 p-4 rounded-2xl bg-slate-50/50 dark:bg-slate-950/50 border border-slate-100 dark:border-slate-800">
+                      <span className="material-icons-outlined text-slate-400 mt-0.5">location_on</span>
+                      <div>
+                        <p className="text-xs font-bold text-slate-900 dark:text-white">Vector Room</p>
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mt-1">{course.room || "TBD"}</p>
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="flex items-start gap-3">
-                    <span className="material-icons-outlined text-gray-400 mt-0.5">
-                      stars
-                    </span>
-                    <div>
-                      <p className="text-sm font-bold text-gray-800 dark:text-white">
-                        Credits
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        {Number(course.credits ?? 0)} Credit Hours
-                      </p>
+                    <div className="flex items-start gap-3 p-4 rounded-2xl bg-slate-50/50 dark:bg-slate-950/50 border border-slate-100 dark:border-slate-800">
+                      <span className="material-icons-outlined text-slate-400 mt-0.5">stars</span>
+                      <div>
+                        <p className="text-xs font-bold text-slate-900 dark:text-white">Credits</p>
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mt-1">
+                          {Number(course.credits ?? 0)}Credit Hours
+                        </p>
+                      </div>
                     </div>
                   </div>
 
                   {course.department && (
-                    <div className="flex items-start gap-3">
-                      <span className="material-icons-outlined text-gray-400 mt-0.5">
-                        apartment
-                      </span>
+                    <div className="flex items-start gap-4 p-4 rounded-2xl bg-slate-50/50 dark:bg-slate-950/50 border border-slate-100 dark:border-slate-800">
+                      <span className="material-icons-outlined text-slate-400 mt-0.5">apartment</span>
                       <div>
-                        <p className="text-sm font-bold text-gray-800 dark:text-white">
-                          Department
-                        </p>
-                        <p className="text-xs text-gray-500">{course.department}</p>
+                        <p className="text-sm font-bold text-slate-900 dark:text-white">Department</p>
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mt-1">{course.department}</p>
                       </div>
                     </div>
                   )}
 
                   {course.major && (
-                    <div className="flex items-start gap-3">
-                      <span className="material-icons-outlined text-gray-400 mt-0.5">badge</span>
+                    <div className="flex items-start gap-4 p-4 rounded-2xl bg-slate-50/50 dark:bg-slate-950/50 border border-slate-100 dark:border-slate-800">
+                      <span className="material-icons-outlined text-slate-400 mt-0.5">badge</span>
                       <div>
-                        <p className="text-sm font-bold text-gray-800 dark:text-white">Major</p>
-                        <p className="text-xs text-gray-500">{course.major}</p>
+                        <p className="text-sm font-bold text-slate-900 dark:text-white">Major</p>
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mt-1">{course.major}</p>
                       </div>
                     </div>
                   )}
 
                   {course.track && (
-                    <div className="flex items-start gap-3">
-                      <span className="material-icons-outlined text-gray-400 mt-0.5">timeline</span>
+                    <div className="flex items-start gap-4 p-4 rounded-2xl bg-slate-50/50 dark:bg-slate-950/50 border border-slate-100 dark:border-slate-800">
+                      <span className="material-icons-outlined text-slate-400 mt-0.5">timeline</span>
                       <div>
-                        <p className="text-sm font-bold text-gray-800 dark:text-white">Track</p>
-                        <p className="text-xs text-gray-500">{course.track}</p>
+                        <p className="text-sm font-bold text-slate-900 dark:text-white">Track</p>
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mt-1">{course.track}</p>
                       </div>
                     </div>
                   )}
 
                 </div>
 
-                <div className="mt-6 pt-6 border-t border-gray-100 dark:border-gray-800">
-                  <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">
-                    Prerequisites
+                <div className="mt-8 pt-8 border-t border-slate-100 dark:border-slate-800 relative z-10">
+                  <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">
+                    System Prerequisites
                   </h4>
                   <div className="flex flex-wrap gap-2">
                     {Array.isArray(course.prerequisites) && course.prerequisites.length ? (
                       course.prerequisites.map((req, i) => (
                         <span
                           key={i}
-                          className="px-2 py-1 bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-gray-300 rounded text-xs font-medium"
+                          className="px-3 py-1.5 bg-indigo-50 text-indigo-700 dark:bg-indigo-900/20 dark:text-indigo-400 rounded-lg text-[10px] font-black uppercase tracking-widest border border-indigo-100 dark:border-indigo-800/50 shadow-sm"
                         >
                           {req}
                         </span>
@@ -828,38 +815,38 @@ const AdminCourseDetails: React.FC<Props> = ({ user, onLogout }) => {
 
         {/* Modal */}
         {modalOpen && (
-          <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/40 p-4">
-            <div className="w-full max-w-lg rounded-2xl bg-white dark:bg-surface-dark border border-gray-200 dark:border-gray-700 shadow-xl overflow-hidden">
-              <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-700">
+          <div className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/40 backdrop-blur-md p-4 animate-in fade-in duration-300">
+            <div className="w-full max-w-lg rounded-[32px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+              <div className="flex items-center justify-between px-8 py-6 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50">
                 <div>
-                  <h3 className="font-bold text-gray-800 dark:text-white">
+                  <h3 className="font-extrabold text-2xl text-slate-900 dark:text-white tracking-tight">
                     {modalMode === "add" ? "Add Syllabus Item" : "Edit Syllabus Item"}
                   </h3>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mt-1">
                     Week is selected from a list (no free typing).
                   </p>
                 </div>
 
                 <button
                   onClick={closeModal}
-                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                  className="h-10 w-10 rounded-full flex items-center justify-center text-slate-400 hover:bg-white dark:hover:bg-slate-800 transition-all active:scale-95 shadow-sm"
                 >
                   <span className="material-icons-outlined">close</span>
                 </button>
               </div>
 
-              <div className="p-6 space-y-4">
+              <div className="p-8 space-y-6">
                 {/* Week dropdown */}
-                <div>
-                  <label className="text-xs font-bold text-gray-500 dark:text-gray-400">
-                    Week
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 ml-1">
+                    Week Interval
                   </label>
 
-                  <div className="mt-1 flex items-center gap-2">
+                  <div className="flex items-center gap-3">
                     <select
                       value={weekSelect}
                       onChange={(e) => setWeekSelect(Number(e.target.value))}
-                      className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 px-3 py-2 text-sm text-gray-800 dark:text-gray-200 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                      className="flex-1 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-4 py-3.5 text-sm font-bold text-slate-700 dark:text-white focus:border-teal-500/50 focus:outline-none focus:ring-4 focus:ring-teal-500/10 cursor-pointer shadow-sm transition-all"
                     >
                       {weekOptions.map((w) => {
                         const disabled =
@@ -867,7 +854,7 @@ const AdminCourseDetails: React.FC<Props> = ({ user, onLogout }) => {
 
                         return (
                           <option key={w} value={w} disabled={disabled}>
-                            Week {w} {disabled ? "• already used" : ""}
+                            Week {w} {disabled ? "• Allocated" : ""}
                           </option>
                         );
                       })}
@@ -875,28 +862,28 @@ const AdminCourseDetails: React.FC<Props> = ({ user, onLogout }) => {
 
                     <button
                       onClick={() => setWeekSelect(nextAvailableWeek)}
-                      className="shrink-0 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-semibold text-gray-800 hover:bg-gray-50 dark:border-gray-700 dark:bg-slate-800 dark:text-gray-200 dark:hover:bg-slate-700"
-                      title="Jump to next available week"
+                      className="shrink-0 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 px-6 py-3.5 text-xs font-bold uppercase tracking-widest text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all shadow-sm active:scale-95"
+                      title="Jump to next available interval"
                     >
                       Next
                     </button>
                   </div>
 
-                  <p className="mt-1 text-[11px] text-gray-400">
-                    Tip: Use “Next” to jump to the first unused week.
+                  <p className="text-[10px] font-bold text-slate-400 mt-1 ml-1">
+                    Tip: Use "Next" to jump to the first unused week.
                   </p>
                 </div>
 
                 {/* Topic */}
-                <div>
-                  <label className="text-xs font-bold text-gray-500 dark:text-gray-400">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 ml-1">
                     Topic
                   </label>
                   <input
                     value={topicInput}
                     onChange={(e) => setTopicInput(e.target.value)}
-                    placeholder="e.g. Intro to Flutter Widgets"
-                    className="mt-1 w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 px-3 py-2 text-sm text-gray-800 dark:text-gray-200 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                    placeholder="Define the primary instructional objective..."
+                    className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-5 py-4 text-sm font-medium text-slate-900 dark:text-white focus:border-teal-500/50 focus:outline-none focus:ring-4 focus:ring-teal-500/10 shadow-sm transition-all placeholder:text-slate-300"
                   />
                   <p className="mt-1 text-[11px] text-gray-400">
                     Keep it clear and student-friendly.
@@ -904,19 +891,19 @@ const AdminCourseDetails: React.FC<Props> = ({ user, onLogout }) => {
                 </div>
               </div>
 
-              <div className="flex items-center justify-end gap-2 px-6 py-4 border-t border-gray-100 dark:border-gray-700">
+              <div className="flex items-center justify-end gap-3 px-8 py-6 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 rounded-b-[32px]">
                 <button
                   onClick={closeModal}
-                  className="rounded-lg border border-gray-200 dark:border-gray-700 px-4 py-2 text-sm font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-800"
+                  className="rounded-xl border border-slate-200 dark:border-slate-800 px-6 py-3 text-xs font-bold uppercase tracking-widest text-slate-500 hover:bg-white dark:hover:bg-slate-900 transition-all shadow-sm active:scale-95"
                 >
                   Cancel
                 </button>
 
                 <button
                   onClick={commitModal}
-                  className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary-hover"
+                  className="rounded-xl bg-teal-600 px-8 py-3 text-xs font-bold uppercase tracking-widest text-white hover:bg-teal-700 transition-all shadow-md active:scale-95"
                 >
-                  {modalMode === "add" ? "Add item" : "Save changes"}
+                  {modalMode === "add" ? "Add Syllabus Item" : "Save Alterations"}
                 </button>
               </div>
             </div>
