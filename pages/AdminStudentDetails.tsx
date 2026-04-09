@@ -607,7 +607,7 @@ const AdminStudentDetails: React.FC<StudentDetailsProps> = ({ user, onLogout }) 
                     </p>
                   </div>
 
-	                  <div className="pt-6 lg:pt-0 lg:pl-8 border-t lg:border-t-0 lg:border-l border-slate-50 dark:border-slate-800 space-y-6 lg:col-span-2">
+                          <div className="pt-6 lg:pt-0 lg:pl-8 border-t lg:border-t-0 lg:border-l border-slate-50 dark:border-slate-800 gap-6 grid grid-cols-1 md:grid-cols-2 lg:col-span-2">
 	                    <div className="flex items-start gap-4">
 	                      <span className="material-icons-outlined text-slate-200 text-lg">school</span>
 	                      <div>

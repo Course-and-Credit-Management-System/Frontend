@@ -351,7 +351,7 @@ const AdminDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
       {
         label: "Total Students",
         value: stats ? formatCompact(stats.totalStudents) : "—",
-        sub: "Active student accounts",
+        sub: "Total active student accounts",
         icon: <IconBadge icon="groups" tone="primary" />,
         rightHint: stats ? `${formatNumber(stats.totalStudents)} records` : "—",
       },
@@ -365,14 +365,14 @@ const AdminDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
       {
         label: "Retake Required",
         value: stats ? formatCompact(stats.retakeRequirement) : "—",
-        sub: "Pending retake requirement",
+        sub: "Needs retake intervention",
         icon: <IconBadge icon="history_edu" tone="amber" />,
         rightHint: "Needs attention",
       },
       {
         label: "Average GPA",
         value: stats ? (stats.averageGPA || 0).toFixed(2) : "—",
-        sub: "Across students with GPA",
+        sub: "Average GPA of active students",
         icon: <IconBadge icon="leaderboard" tone={gpaTone as any} />,
         rightHint: avgGpa ? (avgGpa >= 3.0 ? "Healthy" : "Watch") : "—",
       },
@@ -593,15 +593,14 @@ const AdminDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
 
           {/* KPI row */}
           <div className="px-10 pt-10 animate-in fade-in duration-1000 slide-in-from-bottom-8">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {kpis.map((kpi, idx) => (
                 <div key={idx} className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-[32px] p-8 transition-all hover:-translate-y-2 hover:shadow-2xl group cursor-default">
-                  <div className="flex items-start justify-between gap-4 mb-10">
+                  <div className="flex items-start justify-between gap-4 mb-4">
                     <div className="flex items-center gap-5">
                       <div className="shrink-0 transform group-hover:scale-110 transition-transform duration-500 bg-slate-50 dark:bg-slate-950 p-3 rounded-2xl border border-slate-100 dark:border-slate-800">{kpi.icon}</div>
                       <div>
-                        <div className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-1">{kpi.label}</div>
-                        <div className="text-xs font-bold text-slate-400 dark:text-slate-500 group-hover:text-teal-600 transition-colors">{kpi.sub}</div>
+                        <div className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">{kpi.label}</div>
                       </div>
                     </div>
                   </div>
@@ -710,7 +709,7 @@ const AdminDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                 </div>
 
                 {/* Major chart */}
-                <div className="mt-8 rounded-3xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/30 p-8">
+                <div className="mt-8 rounded-3xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/30 p-10">
                   <div className="flex items-start justify-between gap-4 mb-8">
                     <div>
                       <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">
@@ -724,8 +723,8 @@ const AdminDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 gap-12 lg:grid-cols-2 items-center">
-                    <div className="flex items-center justify-center">
+                    <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 items-center">
+                    <div className="flex items-center justify-center -mr-16">
                       {loading ? (
                         <div className="grid place-items-center relative">
                           <Skeleton className="h-48 w-48 rounded-full" />
@@ -743,7 +742,7 @@ const AdminDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                       )}
                     </div>
 
-                    <div className="space-y-4">
+                    <div className="space-y-6 pr-8 py-2">
                       {loading ? (
                         Array(4).fill(0).map((_, i) => <Skeleton key={i} className="h-14 w-full rounded-2xl" />)
                       ) : (
@@ -752,20 +751,20 @@ const AdminDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                           const color = majorWidget.segments[idx]?.color || "#94a3b8";
                           return (
                             <div key={`${r.label}-${idx}`} className="group p-1 transition-all">
-                              <div className="flex items-center justify-between gap-3 mb-2 px-1">
+                              <div className="flex items-center justify-between gap-3 mb-3 px-1">
                                 <div className="min-w-0">
-                                  <div className="flex items-center gap-2">
+                                  <div className="flex items-center gap-3">
                                     <span className="h-2 w-2 rounded-full" style={{ backgroundColor: color }} />
-                                    <div className="truncate text-sm font-bold text-slate-900 dark:text-white">{r.label || "—"}</div>
+                                    <div className="truncate text-sm font-extrabold text-slate-900 dark:text-white">{r.label || "—"}</div>
                                   </div>
-                                  <div className="mt-0.5 text-[10px] font-bold text-slate-400 uppercase tracking-tight">
-                                    {pct.toFixed(1)}% of total
+                                  <div className="mt-1 text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-5">
+                                    {pct.toFixed(1)}% OF TOTAL
                                   </div>
                                 </div>
-                                <div className="text-sm font-extrabold text-slate-900 dark:text-white">{formatNumber(r.value)}</div>
+                                <div className="text-xl font-black text-slate-900 dark:text-white">{formatNumber(r.value)}</div>
                               </div>
 
-                              <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800/50">
+                              <div className="h-2 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800/50">
                                 <div className="h-full rounded-full transition-all duration-1000 ease-out" style={{ width: `${clamp(pct, 0, 100)}%`, backgroundColor: color }} />
                               </div>
                             </div>
@@ -843,18 +842,6 @@ const AdminDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                         </div>
                       );
                     })}
-                  </div>
-
-                  <div className="mt-10 p-6 rounded-[24px] bg-slate-50/50 dark:bg-slate-950/50 border border-slate-100 dark:border-slate-800">
-                    <div className="flex gap-4">
-                      <span className="text-xl opacity-50">Tip:</span>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-bold">
-                        Global sync pulse: Every navigation cycle or manual refresh updates system state.
-                        <span className="block mt-3 text-[10px] font-black uppercase tracking-widest text-slate-300 dark:text-slate-600 italic">
-                          {lastUpdated ? `Verified ${timeAgo(lastUpdated)}` : "Pending Protocol"}
-                        </span>
-                      </p>
-                    </div>
                   </div>
                 </div>
 

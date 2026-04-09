@@ -253,7 +253,7 @@ function Toast({
             className="text-xs font-bold opacity-70 hover:opacity-100"
             aria-label="Close toast"
           >
-            •
+            ï¿½
           </button>
         </div>
       </div>
@@ -283,6 +283,13 @@ const AdminAnnouncements: React.FC<Props> = ({ user, onLogout }) => {
   const [pinnedFilter, setPinnedFilter] = useState<"All" | "Pinned" | "Unpinned">("All");
   const [expiryFilter, setExpiryFilter] = useState<"All" | "Active" | "Expired">("All");
   const [sortMode, setSortMode] = useState<SortMode>("Pinned+Newest");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  // reset page on filter change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [query, typeFilter, statusFilter, pinnedFilter, expiryFilter, sortMode]);
 
   // edit modal state
   const [editing, setEditing] = useState<Announcement | null>(null);
@@ -656,42 +663,42 @@ const AdminAnnouncements: React.FC<Props> = ({ user, onLogout }) => {
           )}
 
           {/* Create */}
-          <div className="bg-slate-50/30 dark:bg-slate-900/20 rounded-[40px] border border-slate-100 dark:border-slate-800/50 p-12 mb-12 transition-all hover:bg-white dark:hover:bg-slate-900 hover:shadow-md group">
-            <div className="flex items-center gap-6 mb-10">
-              <div className="h-14 w-14 rounded-3xl bg-teal-50 dark:bg-teal-900/20 flex items-center justify-center text-teal-600 dark:text-teal-400 border border-teal-100/50 dark:border-teal-800/50 group-hover:scale-110 transition-transform duration-500">
-                <span className="material-icons-outlined text-3xl">campaign</span>
+          <div className="bg-slate-50/30 dark:bg-slate-900/20 rounded-3xl border border-slate-100 dark:border-slate-800/50 p-6 lg:p-8 mb-8 transition-all hover:bg-white dark:hover:bg-slate-900 hover:shadow-md group">
+            <div className="flex items-center gap-4 mb-6">
+              <div className="h-10 w-10 rounded-2xl bg-teal-50 dark:bg-teal-900/20 flex items-center justify-center text-teal-600 dark:text-teal-400 border border-teal-100/50 dark:border-teal-800/50 group-hover:scale-110 transition-transform duration-500">
+                <span className="material-icons-outlined text-2xl">campaign</span>
               </div>
               <div>
-                <h3 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">Dispatch Broadcast</h3>
-                <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.3em] mt-1">Institutional Communication Protocol</p>
+                <h3 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">Dispatch Broadcast</h3>
+                <p className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-0.5">Institutional Communication Protocol</p>
               </div>
             </div>
 
-            <form onSubmit={onCreate} className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-              <div className="lg:col-span-12 space-y-3">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Subject Title *</label>
+            <form onSubmit={onCreate} className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+              <div className="lg:col-span-12 space-y-2">
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Subject Title *</label>
                 <input
-                  className="w-full rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950 px-8 py-4 text-base font-bold text-slate-900 dark:text-white outline-none focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500/50 transition-all shadow-sm placeholder:text-slate-300"
+                  className="w-full rounded-xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950 px-4 py-3 text-sm font-bold text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500/50 transition-all shadow-sm placeholder:text-slate-300"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="e.g., Campus Network Maintenance Schedule"
                 />
               </div>
 
-              <div className="lg:col-span-12 space-y-3">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Announcement Body *</label>
+              <div className="lg:col-span-12 space-y-2">
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Announcement Body *</label>
                 <textarea
-                  className="w-full min-h-[180px] rounded-[32px] border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950 px-8 py-6 text-base font-medium text-slate-900 dark:text-white outline-none focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500/50 transition-all shadow-sm leading-relaxed placeholder:text-slate-300 scrollbar-hide"
+                  className="w-full min-h-[120px] rounded-xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950 px-4 py-3 text-sm font-medium text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500/50 transition-all shadow-sm leading-relaxed placeholder:text-slate-300 scrollbar-hide"
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
                   placeholder="Draft your message content here..."
                 />
               </div>
 
-              <div className="lg:col-span-3 space-y-3">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Type Vector</label>
+              <div className="lg:col-span-3 space-y-2">
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Type Vector</label>
                 <select
-                  className="w-full rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950 px-6 py-4 text-sm font-black text-slate-700 dark:text-white outline-none focus:ring-4 focus:ring-teal-500/10 transition-all cursor-pointer shadow-sm appearance-none"
+                  className="w-full rounded-xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950 px-4 py-3 text-sm font-bold text-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-teal-500/20 transition-all cursor-pointer shadow-sm appearance-none"
                   value={type}
                   onChange={(e) => setType(e.target.value as AnnouncementType)}
                 >
@@ -701,10 +708,10 @@ const AdminAnnouncements: React.FC<Props> = ({ user, onLogout }) => {
                 </select>
               </div>
 
-              <div className="lg:col-span-3 space-y-3">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Initial State</label>
+              <div className="lg:col-span-3 space-y-2">
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Initial State</label>
                 <select
-                  className="w-full rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950 px-6 py-4 text-sm font-black text-slate-700 dark:text-white outline-none focus:ring-4 focus:ring-teal-500/10 transition-all cursor-pointer shadow-sm appearance-none"
+                  className="w-full rounded-xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950 px-4 py-3 text-sm font-bold text-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-teal-500/20 transition-all cursor-pointer shadow-sm appearance-none"
                   value={statusVal}
                   onChange={(e) => setStatusVal(e.target.value as AnnouncementStatus)}
                 >
@@ -714,27 +721,27 @@ const AdminAnnouncements: React.FC<Props> = ({ user, onLogout }) => {
                 </select>
               </div>
 
-              <div className="lg:col-span-3 space-y-3">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Target Audience</label>
+              <div className="lg:col-span-3 space-y-2">
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Target Audience</label>
                 <input
-                  className="w-full rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950 px-6 py-4 text-sm font-bold text-slate-900 dark:text-white outline-none focus:ring-4 focus:ring-teal-500/10 transition-all shadow-sm"
+                  className="w-full rounded-xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950 px-4 py-3 text-sm font-bold text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-teal-500/20 transition-all shadow-sm"
                   value={targetAudience}
                   onChange={(e) => setTargetAudience(e.target.value)}
                   placeholder='e.g., Global Students'
                 />
               </div>
 
-              <div className="lg:col-span-3 space-y-3">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Termination Date</label>
+              <div className="lg:col-span-3 space-y-2">
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Termination Date</label>
                 <input
                   type="datetime-local"
-                  className="w-full rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950 px-6 py-4 text-sm font-bold text-slate-700 dark:text-white outline-none focus:ring-4 focus:ring-teal-500/10 transition-all shadow-sm"
+                  className="w-full rounded-xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950 px-4 py-3 text-sm font-bold text-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-teal-500/20 transition-all shadow-sm"
                   value={expiry}
                   onChange={(e) => setExpiry(e.target.value)}
                 />
               </div>
 
-              <div className="lg:col-span-12 flex flex-col sm:flex-row sm:items-center justify-between gap-10 pt-6">
+              <div className="lg:col-span-12 flex flex-col sm:flex-row sm:items-center justify-between gap-6 pt-4">
                 <label className="flex items-center gap-4 cursor-pointer group/toggle">
                   <div className="relative">
                     <input
@@ -756,7 +763,7 @@ const AdminAnnouncements: React.FC<Props> = ({ user, onLogout }) => {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-16 py-5 rounded-[24px] bg-slate-900 dark:bg-teal-600 text-xs font-black uppercase tracking-[0.2em] text-white hover:bg-slate-800 dark:hover:bg-teal-700 transition-all shadow-2xl active:scale-[0.98] disabled:opacity-40"
+                  className="px-10 py-3 rounded-xl bg-slate-900 dark:bg-teal-600 text-xs font-bold uppercase tracking-widest text-white hover:bg-slate-800 dark:hover:bg-teal-700 transition-all shadow-md active:scale-[0.98] disabled:opacity-40"
                 >
                   {submitting ? "Processing..." : "Commit Broadcast"}
                 </button>
@@ -765,18 +772,18 @@ const AdminAnnouncements: React.FC<Props> = ({ user, onLogout }) => {
           </div>
 
           {/* Controls */}
-          <div className="bg-white dark:bg-slate-900 rounded-[40px] border border-slate-100 dark:border-slate-800 shadow-sm p-10 space-y-10 mb-10">
-            <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-10">
-              <div className="flex flex-wrap gap-3 p-2 bg-slate-50 dark:bg-slate-950 rounded-[24px] border border-slate-100 dark:border-slate-800 shadow-inner">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm p-6 lg:p-8 space-y-6 mb-8">
+            <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
+              <div className="flex flex-wrap gap-1.5 p-1 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-100 dark:border-slate-800 shadow-inner">
                 {STATUSES.map((t) => (
                   <button
                     key={t.key}
                     type="button"
                     onClick={() => setStatusFilter(t.key)}
                     className={clsx(
-                      "rounded-2xl px-8 py-3 text-[11px] font-black uppercase tracking-widest transition-all",
+                      "rounded-lg px-4 py-2 text-[10px] font-bold uppercase tracking-widest transition-all",
                       statusFilter === t.key
-                        ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-xl ring-1 ring-slate-100 dark:ring-slate-700"
+                        ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm ring-1 ring-slate-100 dark:ring-slate-700"
                         : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
                     )}
                   >
@@ -785,16 +792,16 @@ const AdminAnnouncements: React.FC<Props> = ({ user, onLogout }) => {
                 ))}
               </div>
 
-              <div className="flex flex-wrap items-center gap-6">
-                <div className="text-[11px] font-black text-slate-300 dark:text-slate-600 uppercase tracking-[0.2em] mr-2">
-                  Active Selection: <span className="text-slate-900 dark:text-white ml-2">{selectedIds.length} items</span>
+              <div className="flex flex-wrap items-center gap-4">
+                <div className="text-[10px] font-bold text-slate-300 dark:text-slate-600 uppercase tracking-widest mr-2">
+                  Active Selection: <span className="text-slate-900 dark:text-white ml-1">{selectedIds.length} items</span>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
                   <button
                     type="button"
                     onClick={bulkPublish}
                     disabled={selectedIds.length === 0}
-                    className="h-12 px-6 rounded-2xl bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400 text-[10px] font-black uppercase tracking-[0.2em] border border-emerald-100 dark:border-emerald-800/50 transition-all disabled:opacity-30 active:scale-95 shadow-sm"
+                    className="h-9 px-4 rounded-xl bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400 text-[10px] font-bold uppercase tracking-widest border border-emerald-100 dark:border-emerald-800/50 transition-all disabled:opacity-30 active:scale-95 shadow-sm"
                   >
                     Publish
                   </button>
@@ -802,7 +809,7 @@ const AdminAnnouncements: React.FC<Props> = ({ user, onLogout }) => {
                     type="button"
                     onClick={bulkArchive}
                     disabled={selectedIds.length === 0}
-                    className="h-12 px-6 rounded-2xl bg-slate-50 text-slate-700 dark:bg-slate-800 dark:text-slate-300 text-[10px] font-black uppercase tracking-[0.2em] border border-slate-200 dark:border-slate-700 transition-all disabled:opacity-30 active:scale-95 shadow-sm"
+                    className="h-9 px-4 rounded-xl bg-slate-50 text-slate-700 dark:bg-slate-800 dark:text-slate-300 text-[10px] font-bold uppercase tracking-widest border border-slate-200 dark:border-slate-700 transition-all disabled:opacity-30 active:scale-95 shadow-sm"
                   >
                     Archive
                   </button>
@@ -810,7 +817,7 @@ const AdminAnnouncements: React.FC<Props> = ({ user, onLogout }) => {
                     type="button"
                     onClick={bulkDelete}
                     disabled={selectedIds.length === 0}
-                    className="h-12 px-6 rounded-2xl bg-rose-50 text-rose-700 dark:bg-rose-900/20 dark:text-rose-400 text-[10px] font-black uppercase tracking-[0.2em] border border-rose-100 dark:border-rose-800/50 transition-all disabled:opacity-30 active:scale-95 shadow-sm"
+                    className="h-9 px-4 rounded-xl bg-rose-50 text-rose-700 dark:bg-rose-900/20 dark:text-rose-400 text-[10px] font-bold uppercase tracking-widest border border-rose-100 dark:border-rose-800/50 transition-all disabled:opacity-30 active:scale-95 shadow-sm"
                   >
                     Purge
                   </button>
@@ -818,11 +825,11 @@ const AdminAnnouncements: React.FC<Props> = ({ user, onLogout }) => {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
               <div className="lg:col-span-2 relative group">
-                <span className="material-icons-outlined absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-teal-500 transition-colors text-xl">search</span>
+                <span className="material-icons-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-teal-500 transition-colors text-lg">search</span>
                 <input
-                  className="w-full rounded-[24px] border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 pl-14 pr-6 py-4 text-sm font-bold text-slate-900 dark:text-white outline-none focus:ring-4 focus:ring-teal-500/10 transition-all shadow-sm"
+                  className="w-full rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 pl-10 pr-4 py-2.5 text-sm font-bold text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-teal-500/20 transition-all shadow-sm"
                   placeholder="Filter broadcast logs..."
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
@@ -830,7 +837,7 @@ const AdminAnnouncements: React.FC<Props> = ({ user, onLogout }) => {
               </div>
 
               <select
-                className="rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950 px-6 py-4 text-xs font-black uppercase tracking-widest text-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-teal-500/20 transition-all cursor-pointer shadow-sm appearance-none"
+                className="rounded-xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950 px-4 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-teal-500/20 transition-all cursor-pointer shadow-sm appearance-none"
                 value={typeFilter}
                 onChange={(e) => setTypeFilter(e.target.value as any)}
               >
@@ -841,7 +848,7 @@ const AdminAnnouncements: React.FC<Props> = ({ user, onLogout }) => {
               </select>
 
               <select
-                className="rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950 px-6 py-4 text-xs font-black uppercase tracking-widest text-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-teal-500/20 transition-all cursor-pointer shadow-sm appearance-none"
+                className="rounded-xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950 px-4 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-teal-500/20 transition-all cursor-pointer shadow-sm appearance-none"
                 value={pinnedFilter}
                 onChange={(e) => setPinnedFilter(e.target.value as any)}
               >
@@ -851,7 +858,7 @@ const AdminAnnouncements: React.FC<Props> = ({ user, onLogout }) => {
               </select>
 
               <select
-                className="rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950 px-6 py-4 text-xs font-black uppercase tracking-widest text-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-teal-500/20 transition-all cursor-pointer shadow-sm appearance-none"
+                className="rounded-xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950 px-4 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-teal-500/20 transition-all cursor-pointer shadow-sm appearance-none"
                 value={sortMode}
                 onChange={(e) => setSortMode(e.target.value as any)}
               >
@@ -864,17 +871,17 @@ const AdminAnnouncements: React.FC<Props> = ({ user, onLogout }) => {
           </div>
 
           {/* List */}
-          <div className="bg-white dark:bg-slate-900 rounded-[32px] border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden transition-all hover:shadow-md">
-            <div className="border-b border-slate-100 dark:border-slate-800 px-8 py-6 flex items-center justify-between bg-slate-50/30 dark:bg-slate-950/30">
-              <div className="space-y-1">
-                <h3 className="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">Broadcast Repository</h3>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden transition-all hover:shadow-md">
+            <div className="border-b border-slate-100 dark:border-slate-800 px-6 py-4 flex items-center justify-between bg-slate-50/30 dark:bg-slate-950/30">
+              <div className="space-y-0.5">
+                <h3 className="text-lg font-extrabold text-slate-900 dark:text-white tracking-tight">Broadcast Repository</h3>
+                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
                   Showing {filtered.length} matching communications
                 </p>
               </div>
               <button 
                 onClick={load} 
-                className="h-10 px-5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-xs font-bold text-slate-600 dark:text-white hover:bg-slate-50 dark:hover:bg-slate-800 transition-all flex items-center gap-2" 
+                className="h-8 px-4 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-[10px] font-bold uppercase tracking-widest text-slate-600 dark:text-white hover:bg-slate-50 dark:hover:bg-slate-800 transition-all flex items-center gap-2" 
                 disabled={loading}
               >
                 <span className={clsx("material-icons-outlined text-sm", loading && "animate-spin")}>sync</span>
@@ -897,39 +904,40 @@ const AdminAnnouncements: React.FC<Props> = ({ user, onLogout }) => {
             ) : (
               <div className="divide-y divide-slate-100 dark:divide-slate-800/50">
                 {/* Desktop Header */}
-                <div className="hidden lg:flex px-8 py-4 text-[10px] font-extrabold uppercase tracking-widest text-slate-400 dark:text-slate-500 items-center gap-6 bg-slate-50/50 dark:bg-slate-950/50 border-b border-slate-100 dark:border-slate-800">
-                  <div className="w-6 flex justify-center">
+                <div className="hidden lg:flex px-6 py-3 text-[9px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 items-center gap-4 bg-slate-50/50 dark:bg-slate-950/50 border-b border-slate-100 dark:border-slate-800">
+                  <div className="w-5 flex justify-center">
                     <input
                       type="checkbox"
                       checked={filtered.length > 0 && selectedIds.length === filtered.length}
                       onChange={(e) => setAllSelected(filtered.map((x) => x._id), e.target.checked)}
-                      className="h-4 w-4 rounded border-slate-300 dark:border-slate-700 accent-teal-600"
+                      className="h-3.5 w-3.5 rounded border-slate-300 dark:border-slate-700 accent-teal-600"
                     />
                   </div>
-                  <span className="w-24">Category</span>
-                  <span className="w-28">Status</span>
+                  <span className="w-20">Category</span>
+                  <span className="w-24">Status</span>
                   <span className="flex-1">Announcement Details</span>
-                  <span className="w-[320px] text-right">Administrative Actions</span>
+                  <span className="w-[280px] text-right">Administrative Actions</span>
                 </div>
 
-                {filtered.map((a) => {
-                  const expired = isExpired(a);
-                  const status = (a.status ?? "draft") as AnnouncementStatus;
-                  const createdIso = a.updated_at ?? a.published_at ?? a.date_posted ?? null;
-                  const expIso = a.expiry_date ?? null;
+                <div className="divide-y divide-slate-300 dark:divide-slate-700">
+                  {filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((a) => {
+                    const expired = isExpired(a);
+                    const status = (a.status ?? "draft") as AnnouncementStatus;
+                    const createdIso = a.updated_at ?? a.published_at ?? a.date_posted ?? null;
+                    const expIso = a.expiry_date ?? null;
 
-                  return (
-                    <div key={a._id} className="group px-8 py-8 hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-all relative">
-                      {a.pinned && (
-                        <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-yellow-500" title="Pinned Announcement" />
+                    return (
+                      <div key={a._id} className="group px-6 py-5 hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-all relative">
+                        {a.pinned && (
+                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-yellow-500" title="Pinned Announcement" />
                       )}
-                      <div className="flex flex-col lg:flex-row lg:items-start gap-8">
-                        <div className="flex items-center gap-6 shrink-0">
+                      <div className="flex flex-col lg:flex-row lg:items-start gap-6">
+                        <div className="flex items-center gap-4 shrink-0">
                           <input
                             type="checkbox"
                             checked={!!selected[a._id]}
                             onChange={() => toggleSelected(a._id)}
-                            className="h-5 w-5 rounded-lg border-slate-300 dark:border-slate-700 accent-teal-600 transition-all transform group-hover:scale-110"
+                            className="h-4 w-4 rounded-md border-slate-300 dark:border-slate-700 accent-teal-600 transition-all transform group-hover:scale-110"
                           />
                           <div className="lg:hidden flex flex-wrap items-center gap-2">
                              <span className={clsx("text-[9px] font-extrabold uppercase tracking-widest px-2 py-1 rounded-md border", typeBadge(a.type))}>
@@ -942,14 +950,14 @@ const AdminAnnouncements: React.FC<Props> = ({ user, onLogout }) => {
                         </div>
 
                         {/* Category */}
-                        <div className="hidden lg:block w-24 shrink-0">
+                        <div className="hidden lg:block w-20 shrink-0">
                           <span className={clsx("text-[9px] font-extrabold uppercase tracking-widest px-2 py-1 rounded-md border", typeBadge(a.type))}>
                             {a.type ?? "General"}
                           </span>
                         </div>
 
                         {/* Status */}
-                        <div className="hidden lg:block w-28 shrink-0">
+                        <div className="hidden lg:block w-24 shrink-0">
                           <span className={clsx("text-[9px] font-extrabold uppercase tracking-widest px-2 py-1 rounded-md border", statusBadge(status))}>
                             {status}
                           </span>
@@ -957,7 +965,7 @@ const AdminAnnouncements: React.FC<Props> = ({ user, onLogout }) => {
 
                         {/* Details Area */}
                         <div className="min-w-0 flex-1">
-                          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 mb-4">
+                          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mb-2">
                             <div className="flex items-center gap-2">
                               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Audience:</span>
                               <span className="text-[10px] font-extrabold text-slate-900 dark:text-white uppercase tracking-widest">{a.target_audience ?? "Global"}</span>
@@ -1000,11 +1008,11 @@ const AdminAnnouncements: React.FC<Props> = ({ user, onLogout }) => {
                         </div>
 
                         {/* Actions Area */}
-                        <div className="mt-6 lg:mt-0 flex flex-wrap lg:flex-nowrap items-center gap-3 shrink-0 lg:w-[320px] lg:justify-end opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="mt-4 lg:mt-0 flex flex-wrap lg:flex-nowrap items-center gap-2 shrink-0 lg:w-[280px] lg:justify-end opacity-0 group-hover:opacity-100 transition-opacity">
                             {status === "draft" && (
                               <button
                                 onClick={() => onPublish(a)}
-                                className="h-10 px-5 rounded-2xl bg-teal-600 text-[10px] font-extrabold uppercase tracking-widest text-white hover:bg-teal-700 transition-all shadow-md active:scale-95"
+                                className="h-8 px-4 rounded-xl bg-teal-600 text-[9px] font-bold uppercase tracking-widest text-white hover:bg-teal-700 transition-all shadow-sm active:scale-95"
                               >
                                 Publish
                               </button>
@@ -1012,7 +1020,7 @@ const AdminAnnouncements: React.FC<Props> = ({ user, onLogout }) => {
                             {status === "published" && (
                               <button
                                 onClick={() => onArchive(a)}
-                                className="h-10 px-5 rounded-2xl bg-slate-900 dark:bg-slate-800 text-[10px] font-extrabold uppercase tracking-widest text-white hover:bg-slate-800 transition-all shadow-md active:scale-95"
+                                className="h-8 px-4 rounded-xl bg-slate-900 dark:bg-slate-800 text-[9px] font-bold uppercase tracking-widest text-white hover:bg-slate-800 transition-all shadow-sm active:scale-95"
                               >
                                 Archive
                               </button>
@@ -1021,36 +1029,62 @@ const AdminAnnouncements: React.FC<Props> = ({ user, onLogout }) => {
                             <button
                               onClick={() => onPinToggle(a)}
                               className={clsx(
-                                "h-10 px-4 rounded-2xl border transition-all flex items-center justify-center gap-2 shadow-sm active:scale-95",
+                                "h-8 px-3 rounded-lg border transition-all flex items-center justify-center gap-1.5 shadow-sm active:scale-95",
                                 a.pinned
                                   ? "bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-400"
                                   : "bg-white text-slate-400 border-slate-200 dark:bg-slate-900 dark:border-slate-700 hover:text-slate-600"
                               )}
                               title={a.pinned ? "Unpin" : "Pin to top"}
                             >
-                              <span className="material-icons-outlined text-lg">push_pin</span>
+                              <span className="material-icons-outlined text-base">push_pin</span>
                             </button>
 
                             <button
                               onClick={() => openEdit(a)}
-                              className="h-10 w-10 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 flex items-center justify-center text-slate-400 hover:text-teal-600 hover:border-teal-500/50 transition-all shadow-sm active:scale-95"
+                              className="h-8 w-8 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 flex items-center justify-center text-slate-400 hover:text-teal-600 hover:border-teal-500/50 transition-all shadow-sm active:scale-95"
                               title="Edit Record"
                             >
-                              <span className="material-icons-outlined text-lg">edit</span>
+                              <span className="material-icons-outlined text-base">edit</span>
                             </button>
 
                             <button
                               onClick={() => onDelete(a._id)}
-                              className="h-10 w-10 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 flex items-center justify-center text-slate-400 hover:text-rose-600 hover:border-rose-500/50 transition-all shadow-sm active:scale-95"
+                              className="h-8 w-8 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 flex items-center justify-center text-slate-400 hover:text-rose-600 hover:border-rose-500/50 transition-all shadow-sm active:scale-95"
                               title="Purge Record"
                             >
-                              <span className="material-icons-outlined text-lg">delete_outline</span>
+                              <span className="material-icons-outlined text-base">delete_outline</span>
                             </button>
                         </div>
                       </div>
                     </div>
                   );
                 })}
+               </div>
+
+               {/* Pagination Controls */}
+               {filtered.length > itemsPerPage && (
+                 <div className="border-t border-slate-100 dark:border-slate-800 px-6 py-4 flex items-center justify-between bg-slate-50/50 dark:bg-slate-950/50">
+                   <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                     Showing {Math.min(filtered.length, (currentPage - 1) * itemsPerPage + 1)} - {Math.min(filtered.length, currentPage * itemsPerPage)} of {filtered.length}
+                   </p>
+                   <div className="flex items-center gap-2">
+                     <button
+                       onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                       disabled={currentPage === 1}
+                       className="h-8 px-4 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-[10px] font-bold uppercase tracking-widest text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm"
+                     >
+                       Previous
+                     </button>
+                     <button
+                       onClick={() => setCurrentPage(p => Math.min(Math.ceil(filtered.length / itemsPerPage), p + 1))}
+                       disabled={currentPage >= Math.ceil(filtered.length / itemsPerPage)}
+                       className="h-8 px-4 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-[10px] font-bold uppercase tracking-widest text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm"
+                     >
+                       Next
+                     </button>
+                   </div>
+                 </div>
+               )}
               </div>
             )}
           </div>
@@ -1069,11 +1103,11 @@ const AdminAnnouncements: React.FC<Props> = ({ user, onLogout }) => {
                   </button>
                 </div>
 
-                <form onSubmit={saveEdit} className="p-10 space-y-8">
+                <form onSubmit={saveEdit} className="p-6 lg:p-8 space-y-4">
                   <div className="space-y-2">
                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Announcement Title</label>
                     <input
-                      className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-6 py-3.5 text-sm font-bold text-slate-900 dark:text-white outline-none focus:ring-4 focus:ring-teal-500/10 transition-all"
+                      className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-4 py-2.5 text-sm font-bold text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-teal-500/20 transition-all"
                       value={editTitle}
                       onChange={(e) => setEditTitle(e.target.value)}
                     />
@@ -1082,17 +1116,17 @@ const AdminAnnouncements: React.FC<Props> = ({ user, onLogout }) => {
                   <div className="space-y-2">
                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Content Body</label>
                     <textarea
-                      className="w-full min-h-[140px] rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-6 py-4 text-sm font-medium text-slate-900 dark:text-white outline-none focus:ring-4 focus:ring-teal-500/10 transition-all leading-relaxed"
+                      className="w-full min-h-[120px] rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-4 py-3 text-sm font-medium text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-teal-500/20 transition-all leading-relaxed"
                       value={editContent}
                       onChange={(e) => setEditContent(e.target.value)}
                     />
                   </div>
 
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Type</label>
                       <select
-                        className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-5 py-3 text-sm font-bold text-slate-700 dark:text-white cursor-pointer outline-none focus:ring-2 focus:ring-teal-500/20"
+                        className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-4 py-2.5 text-sm font-bold text-slate-700 dark:text-white cursor-pointer outline-none focus:ring-2 focus:ring-teal-500/20"
                         value={editType}
                         onChange={(e) => setEditType(e.target.value as AnnouncementType)}
                       >
@@ -1103,7 +1137,7 @@ const AdminAnnouncements: React.FC<Props> = ({ user, onLogout }) => {
                     <div className="space-y-2">
                       <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Status</label>
                       <select
-                        className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-5 py-3 text-sm font-bold text-slate-700 dark:text-white cursor-pointer outline-none focus:ring-2 focus:ring-teal-500/20"
+                        className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-4 py-2.5 text-sm font-bold text-slate-700 dark:text-white cursor-pointer outline-none focus:ring-2 focus:ring-teal-500/20"
                         value={editStatus}
                         onChange={(e) => setEditStatus(e.target.value as AnnouncementStatus)}
                       >
@@ -1114,7 +1148,7 @@ const AdminAnnouncements: React.FC<Props> = ({ user, onLogout }) => {
                     </div>
 
                     <div className="lg:col-span-2">
-                      <label className="flex items-center gap-3 cursor-pointer group">
+                      <label className="flex items-center gap-2.5 cursor-pointer group">
                         <div className="relative">
                           <input
                             type="checkbox"
@@ -1122,18 +1156,18 @@ const AdminAnnouncements: React.FC<Props> = ({ user, onLogout }) => {
                             onChange={(e) => setEditPinned(e.target.checked)}
                             className="sr-only"
                           />
-                          <div className={`w-12 h-6 rounded-full transition-colors duration-300 flex items-center px-1 ${editPinned ? 'bg-teal-600' : 'bg-slate-200 dark:bg-slate-800'}`}>
-                            <div className={`bg-white w-4 h-4 rounded-full shadow-sm transform transition-transform duration-300 ${editPinned ? 'translate-x-6' : 'translate-x-0'}`} />
+                          <div className={`w-10 h-5 rounded-full transition-colors duration-300 flex items-center px-1 ${editPinned ? 'bg-teal-600' : 'bg-slate-200 dark:bg-slate-800'}`}>
+                            <div className={`bg-white w-3.5 h-3.5 rounded-full shadow-sm transform transition-transform duration-300 ${editPinned ? 'translate-x-5' : 'translate-x-0'}`} />
                           </div>
                         </div>
-                        <span className="text-sm font-bold text-slate-600 dark:text-slate-300">Pinned announcement (appears first)</span>
+                        <span className="text-xs font-bold text-slate-600 dark:text-slate-300">Pinned announcement (appears first)</span>
                       </label>
                     </div>
 
                     <div className="space-y-2">
                       <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Target Audience</label>
                       <input
-                        className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-5 py-3 text-sm font-bold text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-teal-500/20"
+                        className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-4 py-2.5 text-sm font-bold text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-teal-500/20"
                         value={editTargetAudience}
                         onChange={(e) => setEditTargetAudience(e.target.value)}
                       />
@@ -1150,18 +1184,18 @@ const AdminAnnouncements: React.FC<Props> = ({ user, onLogout }) => {
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-end gap-4 pt-8 border-t border-slate-100 dark:border-slate-800">
+                  <div className="flex items-center justify-end gap-3 pt-6 border-t border-slate-100 dark:border-slate-800">
                     <button
                       type="button"
                       onClick={() => setEditing(null)}
-                      className="px-8 py-3 text-sm font-bold text-slate-500 hover:text-slate-900 dark:hover:text-white transition-all"
+                      className="px-5 py-2.5 rounded-lg text-xs font-bold uppercase tracking-widest text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all active:scale-95"
                     >
                       Discard Changes
                     </button>
                     <button
                       type="submit"
                       disabled={savingEdit}
-                      className="px-12 py-3 bg-teal-600 text-sm font-extrabold text-white rounded-2xl hover:bg-teal-700 transition-all shadow-lg active:scale-[0.98] disabled:opacity-40"
+                      className="px-6 py-2.5 rounded-lg bg-teal-600 text-xs font-bold uppercase tracking-widest text-white hover:bg-teal-700 shadow-sm transition-all active:scale-95 disabled:opacity-50"
                     >
                       {savingEdit ? "Updating..." : "Commit Updates"}
                     </button>

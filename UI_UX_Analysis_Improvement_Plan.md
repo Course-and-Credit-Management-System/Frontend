@@ -46,13 +46,33 @@ The current UI is functional, responsive, and has a consistent theme (Teal-based
 1. Use of Tailwind via CDN and manual `dark:` class toggling.
 2. Inconsistent Icon Libraries: The `Login.tsx` page uses `material-symbols-outlined`, while the Dashboards use `material-icons-outlined`.
 3. The `Login.tsx` page has a much higher degree of "polish" (gradients, subtle shadows, better spacing) compared to some internal administrative tables.
+4. Some dashboard cards can accumulate excessive white space when simple metric cards are visually forced to match the height of denser action cards.
 **Fix:**
 - Move Tailwind to a PostCSS build step (already partially started in `package.json` but `index.html` still uses CDN).
 - Standardize on ONE icon library (preferably `material-symbols` as it is more modern).
 - Use the `Login.tsx` styling as the "Baseline of Quality" for internal pages to ensure a premium feel throughout the app.
 - Define a `tailwind.config.ts` that strictly follows the design system's color palette (Primary: `#077d8a`).
 - Standardize typography scale (e.g., using Tailwind's `text-sm`, `text-base`, `text-lg` consistently for specific roles like body, headers, and captions).
+- Prefer compact horizontal compositions for simple summary cards (`metric + support info`) instead of tall vertical stacks.
+- Avoid forcing equal-height rows when neighboring cards have very different information density.
+- When one complex card must stay taller, consider stacking simpler cards in a companion column so the total column height aligns without leaving dead zones.
 - **Benefit:** Better performance, strict adherence to brand guidelines, and a cohesive user experience from login to logout.
+
+### F. Dashboard Density & White Space Control
+**Need:**
+1. White space inside cards can read as broken layout rather than intentional breathing room.
+2. `mt-auto`, `justify-between`, `flex-1`, and stretched grid rows can silently create oversized empty zones.
+3. Trial-and-error fixes can regress quickly without shared rules.
+**Fix:**
+- Add a "white space detector" review step for dashboard work:
+  - inspect empty interior areas visually
+  - identify whether spacing comes from content needs or layout utilities
+  - prefer horizontal grouping before increasing height
+- Treat simple cards and dense cards differently:
+  - simple cards should size to content or use compact horizontal internals
+  - dense cards can own more height when they contain guidance, summaries, or actions
+- Document dashboard layout decisions in the responsive playbook after major trial-and-error iterations.
+- **Benefit:** Higher information density, less visual dead space, and a more intentional dashboard rhythm.
 
 ---
 
@@ -65,6 +85,7 @@ The current UI is functional, responsive, and has a consistent theme (Teal-based
 | **Phase 3** | Setup React Query for consistent loading/error states | Medium |
 | **Phase 4** | Global Notification system (Toasts) | Medium |
 | **Phase 5** | Clean up hardcoded data and improve accessibility (Aria-labels) | Low |
+| **Phase 6** | Audit dashboard card density and remove dead-space patterns | Medium |
 
 ---
 

@@ -59,6 +59,9 @@ interface ResultsProps {
   onLogout: () => void;
 }
 
+const buildSemesterPanelId = (semester: Semester, index: number) =>
+  `${semester.academic_year}-${semester.semester}-${index}`;
+
 const StudentResults: React.FC<ResultsProps> = ({ user, onLogout }) => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -83,11 +86,12 @@ const StudentResults: React.FC<ResultsProps> = ({ user, onLogout }) => {
     if (semesterParam) {
       setHighlightedSemester(semesterParam);
       // Auto-expand highlighted semester
-      const semesterKey = academicData?.academic_summary?.semesters?.find(
+      const semesterEntry = academicData?.academic_summary?.semesters?.find(
         sem => sem.academic_year === semesterParam || sem.semester === semesterParam
       );
-      if (semesterKey) {
-        setExpandedSemester(`${semesterKey.academic_year}-${semesterKey.semester}`);
+      if (semesterEntry && academicData?.academic_summary?.semesters) {
+        const semesterIndex = academicData.academic_summary.semesters.indexOf(semesterEntry);
+        setExpandedSemester(buildSemesterPanelId(semesterEntry, semesterIndex));
       }
     }
     
@@ -493,14 +497,15 @@ const StudentResults: React.FC<ResultsProps> = ({ user, onLogout }) => {
 
           {/* Semester Accordion */}
           <div className="space-y-10">
-            {academicData?.academic_summary?.semesters?.map((semesterData) => {
+            {academicData?.academic_summary?.semesters?.map((semesterData, index) => {
               const courses = semesterData.results;
               const filteredCourses = filterCourses(courses);
-              const isExpanded = expandedSemester === `${semesterData.academic_year}-${semesterData.semester}`;
+              const semesterPanelId = buildSemesterPanelId(semesterData, index);
+              const isExpanded = expandedSemester === semesterPanelId;
               
               return (
                 <div 
-                  key={`${semesterData.academic_year}-${semesterData.semester}`} 
+                  key={semesterPanelId}
                   className={`bg-white dark:bg-slate-900 rounded-[40px] border transition-all duration-500 overflow-hidden ${
                     isExpanded ? 'shadow-2xl shadow-slate-200 dark:shadow-black border-slate-100 dark:border-slate-800' : 'border-slate-50 dark:border-slate-800/50'
                   } ${
@@ -510,11 +515,13 @@ const StudentResults: React.FC<ResultsProps> = ({ user, onLogout }) => {
                   }`}
                 >
                   {/* Semester Header - Clickable */}
-                  <div 
-                    onClick={() => toggleSemester(`${semesterData.academic_year}-${semesterData.semester}`)}
+                  <button
+                    type="button"
+                    aria-expanded={isExpanded}
+                    onClick={() => toggleSemester(semesterPanelId)}
                     className={`p-10 cursor-pointer transition-all ${
                       isExpanded ? 'bg-slate-50/30 dark:bg-slate-950/20' : 'hover:bg-slate-50 dark:hover:bg-slate-800/40'
-                    }`}
+                    } w-full text-left`}
                   >
                     <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-10">
                       <div className="flex items-center gap-8 w-full xl:w-auto">
@@ -562,7 +569,7 @@ const StudentResults: React.FC<ResultsProps> = ({ user, onLogout }) => {
                         </div>
                       </div>
                     </div>
-                  </div>
+                  </button>
 
                   {/* Course Table - Collapsible */}
                   {isExpanded && (
@@ -593,7 +600,10 @@ const StudentResults: React.FC<ResultsProps> = ({ user, onLogout }) => {
                                   <td className="px-10 py-6">
                                     <button 
                                       className="font-mono text-xs font-black text-slate-400 group-hover:text-teal-600 transition-colors tracking-tighter" 
-                                      onClick={() => handleCourseClick(course.course_code)}
+                                      onClick={(event) => {
+                                        event.stopPropagation();
+                                        handleCourseClick(course.course_code);
+                                      }}
                                     >
                                       {course.course_code}
                                     </button>

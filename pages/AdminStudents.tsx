@@ -158,7 +158,7 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
       params.append('skip', ((currentPage - 1) * pageSize).toString());
       params.append('limit', pageSize.toString());
 
-      const res = await fetch(`${API_BASE}/admin/students?${params}`, { credentials: 'include' });
+      const res = await fetch(`${API_BASE}/admin/students/?${params}`, { credentials: 'include' });
       const data = await res.json().catch(() => null);
       if (res.ok && Array.isArray(data)) {
         setStudents(data);
