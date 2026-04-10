@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
 import {
@@ -50,6 +51,7 @@ function CustomSelect({
   placeholder?: string,
   className?: string
 }) {
+  const { t } = useTranslation();
   const [open, setOpen] = React.useState(false);
   const ref = React.useRef<HTMLDivElement>(null);
   
@@ -63,7 +65,7 @@ function CustomSelect({
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
-  const selectedTitle = options.find(o => o.value === value)?.label || placeholder || "Select...";
+  const selectedTitle = options.find(o => o.value === value)?.label || placeholder || t('select_dot');
 
   return (
     <div className={`relative group ${className}`} ref={ref}>
@@ -104,6 +106,7 @@ function CustomSelect({
 }
 
 const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
+  const { t } = useTranslation();
   type CourseFilterKey = 'enrollable' | 'track:cs' | 'track:ct' | 'major';
 
   const navigate = useNavigate();
@@ -190,14 +193,14 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
         localStorage.setItem("max_credits", String(res.max_credits));
         localStorage.setItem("student_enrollment_setting_current", JSON.stringify(res));
       } catch (error) {
-        setSettingError(error instanceof Error ? error.message : "Failed to load enrollment setting.");
+        setSettingError(error instanceof Error ? error.message : t('failed_to_load_enrollment_setting'));
       } finally {
         setSettingLoading(false);
       }
     };
 
     fetchEnrollmentSetting();
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     const timer = setInterval(() => setTimeTick(Date.now()), 1000);
@@ -211,7 +214,6 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
   }, []);
 
   const toggleCourse = (course: AvailableCourse) => {
-    // Prevent toggling if locked or enrolled (assuming enrolled shouldn't be toggled here usually, but adherence to status 'locked' is key)
     if (course.status === 'locked' || !isEnrollmentActive) return;
 
     setSelectedRegistry(prev => {
@@ -442,7 +444,7 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
     } catch (error) {
       setDropRecommendation(null);
       setDropSelectedCodes(new Set());
-      setDropError(error instanceof Error ? error.message : "Failed to get drop recommendation.");
+      setDropError(error instanceof Error ? error.message : t('failed_to_get_drop_recommendation'));
     } finally {
       setDropLoading(false);
     }
@@ -493,7 +495,6 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
         try {
           await api.specialMajorSelectTrack({ track: selectedTrackFromCourses });
         } catch {
-          // Keep going and let special-major page retry with fallback payload shapes.
         }
       }
       navigate("/student/special-major/access", {
@@ -508,10 +509,7 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
     }
     setErrorMessage(null);
     try {
-      // 1. Prepare Payload
       const selectedCodes = Array.from(selectedRegistry.keys()).join(',');
-      
-      // 2. Call API
       const res = await api.enrollStudent({ selected_code: selectedCodes });
       
       if (res.success) {
@@ -520,15 +518,14 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
       }
     } catch (error: any) {
       console.error("Enrollment failed", error);
-      // Check for 403 error or access denied
       if (error?.response?.status === 403 || error?.response?.status === 403) {
-        setErrorMessage("You can't enroll now");
+        setErrorMessage(t('cant_enroll_now'));
       } else if (error?.response?.data?.message) {
         setErrorMessage(error.response.data.message);
       } else if (error instanceof Error) {
         setErrorMessage(error.message);
       } else {
-        setErrorMessage("Enrollment failed. Please try again.");
+        setErrorMessage(t('enrollment_failed_retry'));
       }
     }
   };
@@ -545,7 +542,7 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
       const response = await api.studentEnrollmentAssistance({ message });
       setAiResults(response.data || []);
     } catch (error) {
-      setAiError(error instanceof Error ? error.message : "Failed to get enrollment assistance.");
+      setAiError(error instanceof Error ? error.message : t('failed_to_get_enrollment_assistance'));
       setAiResults([]);
     } finally {
       setAiLoading(false);
@@ -575,25 +572,25 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
     <div className="flex h-screen overflow-hidden bg-white dark:bg-slate-950 font-poppins relative">
       <Sidebar user={user} onLogout={onLogout} />
       <div className="flex flex-1 flex-col overflow-hidden relative">
-        <Header title="Institutional Enrollment" user={user} />
+        <Header title={t('institutional_enrollment')} user={user} />
         <main className="flex-1 flex overflow-hidden animate-in fade-in duration-700 slide-in-from-bottom-4 scrollbar-hide">
           <div className="flex-1 overflow-y-auto p-10 lg:p-16 scrollbar-hide">
              <div className="flex flex-col xl:flex-row xl:items-end justify-between mb-12 gap-8">
               <div className="space-y-2">
-                <h2 className="text-4xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">Course Selection</h2>
-                <p className="text-lg font-medium text-slate-400 dark:text-slate-500">Academic Period: {user.student_profile?.year ? `Year ${user.student_profile.year}` : 'Upcoming Cycle'}</p>
+                <h2 className="text-4xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">{t('course_selection')}</h2>
+                <p className="text-lg font-medium text-slate-400 dark:text-slate-500">{t('academic_period')}: {user.student_profile?.year ? t('year_n', { n: user.student_profile.year }) : t('upcoming_cycle')}</p>
               </div>
               <div className="flex items-center gap-8 bg-slate-50/50 dark:bg-slate-900/85 px-8 py-5 rounded-[32px] border border-slate-100 dark:border-slate-700 shadow-sm transition-all hover:shadow-md dark:shadow-[0_14px_38px_rgba(2,6,23,0.45)]">
                 <div className="space-y-1">
-                  <span className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Credit Utilization</span>
+                  <span className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">{t('credit_utilization')}</span>
                   <div className="flex items-baseline gap-2">
                     <span className="text-3xl font-black text-teal-600 tabular-nums">{credits}</span>
-                    <span className="text-[10px] font-black text-slate-300 dark:text-slate-600 uppercase">Limit: {maxCreditsLimit}</span>
+                    <span className="text-[10px] font-black text-slate-300 dark:text-slate-600 uppercase">{t('limit_n', { n: maxCreditsLimit })}</span>
                   </div>
                 </div>
                 <div className="h-10 w-px bg-slate-200 dark:bg-slate-800"></div>
                 <div className="space-y-1 text-right">
-                  <span className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Academic Index</span>
+                  <span className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">{t('academic_index')}</span>
                   <span className="text-3xl font-black text-slate-900 dark:text-white tabular-nums tracking-tighter">3.40</span>
                 </div>
               </div>
@@ -602,30 +599,30 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
             <div className="bg-slate-50/30 dark:bg-slate-900/85 p-10 rounded-[40px] border border-slate-100 dark:border-slate-700 shadow-sm mb-12 transition-all hover:bg-white dark:hover:bg-slate-900 hover:shadow-md dark:shadow-[0_18px_44px_rgba(2,6,23,0.45)]">
               <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
                 <div className="space-y-3">
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Enrollment State</p>
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">{t('enrollment_state')}</p>
                   <div className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border ${
                     isEnrollmentActive
                       ? "bg-emerald-50 text-emerald-700 border-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400"
                       : "bg-rose-50 text-rose-700 border-rose-100 dark:bg-rose-900/20 dark:text-rose-400"
                   }`}>
                     <span className={`w-1.5 h-1.5 rounded-full ${isEnrollmentActive ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`} />
-                    {isEnrollmentActive ? "Operational" : "Locked"}
+                    {isEnrollmentActive ? t('operational') : t('locked')}
                   </div>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">System Launch</p>
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">{t('system_launch')}</p>
                   <p className="text-sm font-bold text-slate-900 dark:text-white">{formatLocalDateTime(enrollmentSetting?.enrollment_open_at)}</p>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">System Termination</p>
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">{t('system_termination')}</p>
                   <p className="text-sm font-bold text-slate-900 dark:text-white">{formatLocalDateTime(enrollmentSetting?.enrollment_close_at)}</p>
                 </div>
                 <div className="space-y-1 text-right">
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Time Buffer</p>
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">{t('time_buffer')}</p>
                   <p className="text-sm font-black text-teal-600 tabular-nums">{formatRemainingTime(enrollmentSetting?.enrollment_close_at)}</p>
                 </div>
               </div>
-              {settingError && <p className="mt-6 text-xs font-bold text-rose-500 italic">Sync Error: {settingError}</p>}
+              {settingError && <p className="mt-6 text-xs font-bold text-rose-500 italic">{t('sync_error_n', { error: settingError })}</p>}
             </div>
 
 <div className="flex flex-col gap-4 mb-12">
@@ -634,19 +631,19 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
                   <span className="material-icons-outlined absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-teal-500 transition-colors text-xl">search</span>
                   <input 
                       type="text"
-                      placeholder="Filter institutional courses..."
+                      placeholder={t('filter_institutional_courses')}
                       value={searchQuery}
                       onChange={e => setSearchQuery(e.target.value)}
                       className="w-full pl-14 pr-6 py-4 text-base font-bold rounded-2xl border border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-950/75 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all dark:text-white placeholder:text-slate-300 dark:placeholder:text-slate-500"
                   />
                 </div>
                 <div className="flex flex-wrap items-center gap-3">
-                  <span className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] mr-2">Sort Protocol:</span>
+                  <span className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] mr-2">{t('sort_protocol')}:</span>
                   {[
-                    { id: 'track:cs', label: 'CS' },
-                    { id: 'track:ct', label: 'CT' },
-                    { id: 'major', label: 'MAJOR' },
-                    { id: 'enrollable', label: 'AVAILABLE' }
+                    { id: 'track:cs', label: t('cs') },
+                    { id: 'track:ct', label: t('ct') },
+                    { id: 'major', label: t('major') },
+                    { id: 'enrollable', label: t('available') }
                   ].map(f => (
                     <button 
                       key={f.id}
@@ -668,12 +665,12 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
                     value={filterYear}
                     onChange={setFilterYear}
                     options={[
-                      { value: "", label: "All Years" },
-                      { value: "1st Year", label: "1st Year" },
-                      { value: "2nd Year", label: "2nd Year" },
-                      { value: "3rd Year", label: "3rd Year" },
-                      { value: "4th Year", label: "4th Year" },
-                      { value: "5th Year", label: "5th Year" }
+                      { value: "", label: t('all_years') },
+                      { value: "1st Year", label: t('1st_year') },
+                      { value: "2nd Year", label: t('2nd_year') },
+                      { value: "3rd Year", label: t('3rd_year') },
+                      { value: "4th Year", label: t('4th_year') },
+                      { value: "5th Year", label: t('5th_year') }
                     ]}
                     className="flex-1 min-w-[200px] z-[42]"
                   />
@@ -681,9 +678,9 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
                     value={filterSemester}
                     onChange={setFilterSemester}
                     options={[
-                      { value: "", label: "All Semesters" },
-                      { value: "First Sem", label: "1st Sem" },
-                      { value: "Second Sem", label: "2nd Sem" }
+                      { value: "", label: t('all_semesters') },
+                      { value: "First Sem", label: t('1st_sem') },
+                      { value: "Second Sem", label: t('2nd_sem') }
                     ]}
                     className="flex-1 min-w-[200px] z-[41]"
                   />
@@ -691,9 +688,9 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
                     value={filterType}
                     onChange={setFilterType}
                     options={[
-                      { value: "", label: "All Types" },
-                      { value: "Old", label: "Old" },
-                      { value: "New", label: "New" }
+                      { value: "", label: t('all_types') },
+                      { value: "Old", label: t('old') },
+                      { value: "New", label: t('new') }
                     ]}
                     className="flex-1 min-w-[200px] z-[40]"
                   />
@@ -706,8 +703,8 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
                   <span className="material-icons-outlined text-3xl">smart_toy</span>
                 </div>
                 <div>
-                  <h3 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Neural Enrollment Assistant</h3>
-                  <p className="text-sm font-medium text-slate-400 dark:text-slate-500">Optimize your academic matrix via descriptive intelligence dispatches.</p>
+                  <h3 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">{t('neural_enrollment_assistant')}</h3>
+                  <p className="text-sm font-medium text-slate-400 dark:text-slate-500">{t('neural_assistant_desc')}</p>
                 </div>
               </div>
 
@@ -724,7 +721,7 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
                     type="text"
                     value={aiMessage}
                     onChange={(e) => setAiMessage(e.target.value)}
-                    placeholder={`Try: Optimize for 2 electives while maintaining sub-${maxCreditsLimit} volume...`}
+                    placeholder={t('neural_assistant_placeholder', { limit: maxCreditsLimit })}
                     className="w-full pl-14 pr-6 py-4 text-base font-medium rounded-2xl border border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-950/85 focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500/50 outline-none transition-all dark:text-white shadow-sm"
                   />
                 </div>
@@ -737,13 +734,13 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
                       : 'bg-slate-900 dark:bg-teal-600 hover:bg-slate-800 dark:hover:bg-teal-700 shadow-slate-500/20'
                   }`}
                 >
-                  {aiLoading ? 'SYNTHESIZING...' : 'EXECUTE'}
+                  {aiLoading ? t('synthesizing_dot') : t('execute')}
                 </button>
               </form>
 
               {aiError && (
                 <div className="mt-6 bg-rose-50 text-rose-700 p-4 rounded-2xl text-xs font-bold border border-rose-100 animate-in fade-in slide-in-from-top-2">
-                  Neural Error: {aiError}
+                  {t('neural_error_n', { error: aiError })}
                 </div>
               )}
 
@@ -763,7 +760,7 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
 
               {!aiLoading && hasAskedAi && !aiError && aiResults.length === 0 && (
                 <div className="mt-10 bg-amber-50 text-amber-700 p-6 rounded-[24px] border border-amber-100 text-sm font-medium italic text-center">
-                  Negative response from intelligence matrix. Rephrase your inquiry with specific credit or type constraints.
+                  {t('negative_ai_response')}
                 </div>
               )}
 
@@ -780,11 +777,11 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
                             <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-1">{course.code} • {course.semester ? `${course.semester} \u2022 ` : ""}{course.credits} CU • {course.type}</p>
                           </div>
                           <span className={`h-fit text-[8px] px-3 py-1 rounded-full font-black uppercase tracking-widest border ${isLocked ? 'bg-rose-50 text-rose-600 border-rose-100' : 'bg-teal-50 text-teal-600 border-teal-100'}`}>
-                            {isLocked ? 'Inaccessible' : 'Neural Match'}
+                            {isLocked ? t('inaccessible') : t('neural_match')}
                           </span>
                         </div>
                         <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-6 line-clamp-2 leading-relaxed italic">"{course.desc}"</p>
-                        {course.reason && <p className="text-[10px] font-black text-teal-600 dark:text-teal-400 uppercase tracking-tighter mb-6">Guidance: {course.reason}</p>}
+                        {course.reason && <p className="text-[10px] font-black text-teal-600 dark:text-teal-400 uppercase tracking-tighter mb-6">{t('guidance')}: {course.reason}</p>}
                         
                         <button
                           type="button"
@@ -798,7 +795,7 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
                                 : 'bg-slate-900 dark:bg-teal-600 text-white hover:bg-slate-800 dark:hover:bg-teal-700 shadow-lg shadow-teal-500/10'
                           }`}
                         >
-                          {selected ? 'REMOVE FROM SELECTION' : 'ADD TO SELECTION'}
+                          {selected ? t('remove_from_selection') : t('add_to_selection')}
                         </button>
                       </div>
                     );
@@ -811,7 +808,7 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
               {enrollmentClosedForEnrollableSort && (
                 <div className="md:col-span-2 rounded-[32px] border border-rose-100 bg-rose-50/50 p-8 text-sm font-bold text-rose-700 text-center animate-in fade-in duration-500">
                   <span className="material-icons-outlined text-2xl mb-2 block text-rose-500">lock_clock</span>
-                  Access window terminated. Synchronization with enrollment nexus is currently offline.
+                  {t('access_window_terminated')}
                 </div>
               )}
                {loading ? (
@@ -844,7 +841,7 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
                     course.status === 'locked' ? 'border-slate-50 opacity-40 grayscale' : 'border-slate-100 dark:border-slate-700 hover:border-teal-500/30'
                  }`}>
                    {course.status === 'selected' && (showValidation || isFinalized) && (
-                     <div className="absolute top-4 right-4 bg-teal-600 text-white text-[8px] font-black uppercase tracking-widest px-3 py-1 rounded-lg shadow-lg z-10 animate-in zoom-in-95">Selected</div>
+                     <div className="absolute top-4 right-4 bg-teal-600 text-white text-[8px] font-black uppercase tracking-widest px-3 py-1 rounded-lg shadow-lg z-10 animate-in zoom-in-95">{t('selected')}</div>
                    )}
                    
                    {course.status === 'locked' && (course.message || course.error) && (
@@ -872,7 +869,7 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
                           course.status === 'selected' ? 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 shadow-sm' :
                           course.status === 'locked' ? 'border-slate-100 text-slate-300 cursor-not-allowed bg-slate-50/50' : 'bg-slate-900 dark:bg-teal-600 text-white border-transparent hover:bg-slate-800 dark:hover:bg-teal-700 shadow-lg'
                         }`}>
-                           {course.status === 'selected' ? 'CANCEL' : course.status === 'locked' ? 'RESTRICTED' : 'ENROLL'}
+                           {course.status === 'selected' ? t('cancel') : course.status === 'locked' ? t('restricted') : t('enroll')}
                         </button>
                      </div>
                      
@@ -895,11 +892,11 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
                      <div className="flex flex-wrap items-center gap-y-3 gap-x-6 text-[9px] font-black text-slate-400 dark:text-slate-500 border-t border-slate-50 dark:border-slate-800/50 pt-6 uppercase tracking-widest">
                         <div className="flex items-center gap-2 group/meta hover:text-slate-600 transition-colors">
                           <span className="material-icons-outlined text-base opacity-40 group-hover/meta:text-teal-500">schedule</span> 
-                          {course.schedule || 'SYNCHRONIZING'}
+                          {course.schedule || t('synchronizing')}
                         </div>
                         <div className="flex items-center gap-2 text-emerald-600/80">
                           <span className="material-icons-outlined text-base">verified</span> 
-                          Nominal Requirements
+                          {t('nominal_requirements')}
                         </div>
                      </div>
                    )}
@@ -915,11 +912,11 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
                   className="flex items-center gap-3 px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-teal-600 hover:bg-teal-50 transition-all disabled:opacity-20 disabled:hover:bg-transparent"
                 >
                   <span className="material-icons-outlined text-base">west</span>
-                  Previous
+                  {t('previous')}
                 </button>
                 
                 <div className="px-6 py-2 rounded-full bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 text-[10px] font-black text-slate-400 uppercase tracking-widest shadow-inner">
-                  Context <span className="text-slate-900 dark:text-white mx-2">{currentPage} / {totalPages}</span> Matrix
+                  {t('context')} <span className="text-slate-900 dark:text-white mx-2">{currentPage} / {totalPages}</span> {t('matrix')}
                 </div>
 
                 <button
@@ -927,14 +924,13 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
                   disabled={currentPage === totalPages}
                   className="flex items-center gap-3 px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-teal-600 hover:bg-teal-50 transition-all disabled:opacity-20 disabled:hover:bg-transparent"
                 >
-                  Next
+                  {t('next')}
                   <span className="material-icons-outlined text-base">east</span>
                 </button>
               </div>
             )}
           </div>
 
-          {/* Validation Sidebar Overlay */}
           {showValidation && (
             <div 
               className="fixed inset-0 bg-slate-950/40 backdrop-blur-md z-40 transition-opacity duration-500 animate-in fade-in"
@@ -945,8 +941,8 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
           <aside className={`fixed inset-y-0 right-0 w-[420px] bg-white dark:bg-slate-900 border-l border-slate-100 dark:border-slate-800 flex flex-col shadow-[0_0_80px_rgba(0,0,0,0.1)] z-50 transition-all duration-700 ease-[cubic-bezier(0.2,0.8,0.2,1)] ${showValidation ? 'translate-x-0' : 'translate-x-full'}`}>
             <div className="p-8 border-b border-slate-50 dark:border-slate-800 flex justify-between items-center bg-slate-50/30 dark:bg-slate-950/20">
               <div className="space-y-1">
-                <h3 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">Validation Logic</h3>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Real-time constraint analysis</p>
+                <h3 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">{t('validation_logic')}</h3>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('realtime_constraint_analysis')}</p>
               </div>
               <button onClick={() => setShowValidation(false)} className="h-10 w-10 rounded-full flex items-center justify-center text-slate-400 hover:bg-white dark:hover:bg-slate-800 hover:text-rose-500 transition-all shadow-sm">
                 <span className="material-icons-outlined">close</span>
@@ -956,7 +952,7 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
             <div className="flex-1 overflow-y-auto p-8 space-y-10 scrollbar-hide">
               <div className="space-y-4">
                 <div className="flex justify-between items-end mb-2">
-                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Projected Credit Mass</span>
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">{t('projected_credit_mass')}</span>
                   <span className={`text-sm font-black tabular-nums ${isOverLimit ? 'text-rose-500' : 'text-teal-600'}`}>{totalCredits} / {maxCreditsLimit}</span>
                 </div>
                 <div className="h-1.5 w-full bg-slate-50 dark:bg-slate-800 rounded-full overflow-hidden shadow-inner border border-slate-100 dark:border-slate-800">
@@ -969,7 +965,7 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
                     <div className="flex items-start gap-3 p-4 rounded-2xl bg-rose-50 dark:bg-rose-900/20 border border-rose-100 dark:border-rose-900/40 animate-in slide-in-from-top-2">
                       <span className="material-icons-outlined text-rose-500 text-base mt-0.5">error_outline</span>
                       <p className="text-[11px] text-rose-700 dark:text-rose-300 font-bold leading-relaxed uppercase tracking-tighter">
-                        Policy violation: Credit ceiling exceeded by {totalCredits - maxCreditsLimit} units.
+                        {t('policy_violation_credits', { exceeded: totalCredits - maxCreditsLimit })}
                       </p>
                     </div>
                 )}
@@ -981,8 +977,8 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
                       <span className="material-icons-outlined text-base">verified</span>
                     </div>
                     <div className="space-y-1">
-                      <p className="text-xs font-black text-emerald-900 dark:text-emerald-200 uppercase tracking-widest">Protocol Nominal</p>
-                      <p className="text-[11px] text-emerald-700/70 dark:text-emerald-400/70 font-medium leading-relaxed">All selected course nodes satisfy institutional prerequisites.</p>
+                      <p className="text-xs font-black text-emerald-900 dark:text-emerald-200 uppercase tracking-widest">{t('protocol_nominal')}</p>
+                      <p className="text-[11px] text-emerald-700/70 dark:text-emerald-400/70 font-medium leading-relaxed">{t('prereq_satisfied')}</p>
                     </div>
                 </div>
               ) : (
@@ -991,8 +987,8 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
                       <span className="material-icons-outlined text-base">report_problem</span>
                     </div>
                     <div className="space-y-1">
-                      <p className="text-xs font-black text-rose-900 dark:text-rose-200 uppercase tracking-widest">Dependency Error</p>
-                      <p className="text-[11px] text-rose-700/70 dark:text-rose-400/70 font-medium leading-relaxed">Critical requirement missing for one or more selection nodes.</p>
+                      <p className="text-xs font-black text-rose-900 dark:text-rose-200 uppercase tracking-widest">{t('dependency_error')}</p>
+                      <p className="text-[11px] text-rose-700/70 dark:text-rose-400/70 font-medium leading-relaxed">{t('critical_requirement_missing')}</p>
                     </div>
                 </div>
               )}
@@ -1004,7 +1000,7 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
                       <div className="h-8 w-8 rounded-xl bg-teal-500 flex items-center justify-center text-white shadow-lg shadow-teal-500/20">
                         <span className="material-icons-outlined text-sm">auto_awesome</span>
                       </div>
-                      <h4 className="text-[10px] font-black text-slate-900 dark:text-white uppercase tracking-[0.2em]">Neural Drop Optimization</h4>
+                      <h4 className="text-[10px] font-black text-slate-900 dark:text-white uppercase tracking-[0.2em]">{t('neural_drop_optimization')}</h4>
                     </div>
                     <button
                       onClick={fetchDropRecommendation}
@@ -1021,7 +1017,7 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
                       <div className="h-2 bg-slate-100 dark:bg-slate-800 rounded-full w-2/3 animate-pulse"></div>
                     </div>
                   ) : dropError ? (
-                    <p className="text-[10px] font-bold text-rose-500 italic px-2">Neural Link Interrupted: {dropError}</p>
+                    <p className="text-[10px] font-bold text-rose-500 italic px-2">{t('neural_link_interrupted_n', { error: dropError })}</p>
                   ) : dropRecommendation && (
                     <div className="space-y-6">
                       <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400 leading-relaxed italic px-2">"{dropRecommendation.message}"</p>
@@ -1050,7 +1046,7 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
                                   <div className="flex items-center justify-between gap-3 mb-1">
                                     <p className="text-xs font-black text-slate-900 dark:text-white tracking-tight truncate">{course.title}</p>
                                     {isRecommended && (
-                                      <span className="text-[7px] px-2 py-0.5 rounded-md bg-teal-500 text-white font-black uppercase tracking-widest shadow-sm shadow-teal-500/20">GUIDANCE Match</span>
+                                      <span className="text-[7px] px-2 py-0.5 rounded-md bg-teal-500 text-white font-black uppercase tracking-widest shadow-sm shadow-teal-500/20">{t('guidance_match')}</span>
                                     )}
                                   </div>
                                   <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{course.code} • {course.semester ? `${course.semester} \u2022 ` : ""}{course.credits} CU</p>
@@ -1071,7 +1067,7 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
                             : 'bg-rose-600 text-white hover:bg-rose-700 shadow-rose-500/20'
                         }`}
                       >
-                        Execute Batch Deletion ({dropSelectedCodes.size})
+                        {t('execute_batch_deletion_n', { n: dropSelectedCodes.size })}
                       </button>
                     </div>
                   )}
@@ -1085,7 +1081,7 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
                   <div className="h-10 w-10 rounded-xl bg-white dark:bg-slate-950 flex items-center justify-center text-[#e74c3c] mx-auto mb-3 shadow-sm">
                     <span className="material-icons-outlined text-xl">error_outline</span>
                   </div>
-                  <h4 className="text-base font-black text-[#e74c3c] tracking-tight mb-1">Access Denied</h4>
+                  <h4 className="text-base font-black text-[#e74c3c] tracking-tight mb-1">{t('access_denied')}</h4>
                   <p className="text-xs font-medium text-red-700/70 dark:text-red-400/70">{errorMessage}</p>
                 </div>
               )}
@@ -1094,7 +1090,7 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
                   <div className="h-12 w-12 rounded-2xl bg-white dark:bg-slate-950 flex items-center justify-center text-emerald-600 mx-auto mb-4 shadow-sm">
                     <span className="material-icons-outlined text-2xl">verified</span>
                   </div>
-                  <h4 className="text-xl font-black text-emerald-900 dark:text-emerald-200 tracking-tight mb-1">Protocol Success</h4>
+                  <h4 className="text-xl font-black text-emerald-900 dark:text-emerald-200 tracking-tight mb-1">{t('protocol_success')}</h4>
                   <p className="text-xs font-medium text-emerald-700/70 dark:text-emerald-400/70 uppercase tracking-tighter">{successMessage}</p>
                 </div>
               ) : (
@@ -1108,13 +1104,13 @@ const StudentEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
                         : 'bg-slate-900 dark:bg-teal-600 text-white hover:bg-slate-800 dark:hover:bg-teal-700 shadow-slate-500/20'
                     }`}
                   >
-                   <span>{shouldRouteToSpecialMajorFlow ? 'SELECT TRACK/MAJOR' : (isFinalized ? 'TRANSACTION SECURED' : 'COMMIT ENROLLMENT')}</span>
+                   <span>{shouldRouteToSpecialMajorFlow ? t('select_track_major_btn') : (isFinalized ? t('transaction_secured') : t('commit_enrollment'))}</span>
                    <span className="material-icons-outlined text-lg">{shouldRouteToSpecialMajorFlow ? 'school' : (isFinalized ? 'verified_user' : 'lock_open')}</span>
                   </button>
-                  {!isEnrollmentActive && <p className="text-center text-[9px] font-black text-rose-500 uppercase tracking-widest animate-pulse">Enrollment window inactive</p>}
-                  {shouldForceMajorSelection && <p className="text-center text-[9px] font-black text-amber-500 uppercase tracking-widest animate-pulse">Major selection required before enrollment commit</p>}
-                  {shouldForceOldStudentSpecialSelection && <p className="text-center text-[9px] font-black text-amber-500 uppercase tracking-widest animate-pulse">Track/major sync required for old student flow</p>}
-                  {isOverLimit && <p className="text-center text-[9px] font-black text-rose-500 uppercase tracking-widest animate-pulse">Constraint Violation: Credit Ceiling</p>}
+                  {!isEnrollmentActive && <p className="text-center text-[9px] font-black text-rose-500 uppercase tracking-widest animate-pulse">{t('enrollment_window_inactive')}</p>}
+                  {shouldForceMajorSelection && <p className="text-center text-[9px] font-black text-amber-500 uppercase tracking-widest animate-pulse">{t('major_selection_required')}</p>}
+                  {shouldForceOldStudentSpecialSelection && <p className="text-center text-[9px] font-black text-amber-500 uppercase tracking-widest animate-pulse">{t('track_major_sync_required')}</p>}
+                  {isOverLimit && <p className="text-center text-[9px] font-black text-rose-500 uppercase tracking-widest animate-pulse">{t('constraint_violation_credits')}</p>}
                 </div>
               )}
             </div>

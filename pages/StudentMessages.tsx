@@ -4,6 +4,7 @@ import Sidebar from "../components/Sidebar";
 import { api } from "../lib/api";
 import { User } from "../types";
 import Header from "../components/Header";
+import { useTranslation } from 'react-i18next';
 
 type Props = {
   user: User;
@@ -29,6 +30,7 @@ const fmt = (iso?: string) => {
 };
 
 export default function StudentMessages({ user, onLogout }: Props) {
+  const { t } = useTranslation();
   const [messages, setMessages] = useState<StudentMessage[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -70,7 +72,7 @@ export default function StudentMessages({ user, onLogout }: Props) {
         setSelectedId(null);
       }
     } catch (e: any) {
-      setError(e?.message || "Failed to load messages");
+      setError(e?.message || t("Failed to load messages"));
     } finally {
       setLoading(false);
     }
@@ -93,7 +95,7 @@ export default function StudentMessages({ user, onLogout }: Props) {
     } catch (e: any) {
       // rollback
       setMessages((prev) => prev.map((m) => (m._id === id ? { ...m, is_read: !is_read } : m)));
-      setError(e?.message || "Failed to update read status");
+      setError(e?.message || t("Failed to update read status"));
     } finally {
       setBusyId(null);
     }
@@ -109,9 +111,9 @@ export default function StudentMessages({ user, onLogout }: Props) {
           {/* Header */}
           <div className="flex flex-col gap-6 lg:gap-8 xl:flex-row xl:items-end xl:justify-between mb-8 lg:mb-10">
             <div className="space-y-3">
-              <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-slate-900 dark:text-white leading-tight">Messages</h1>
+              <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-slate-900 dark:text-white leading-tight">{t("Messages")}</h1>
               <p className="text-sm sm:text-base lg:text-lg font-medium text-slate-400 dark:text-slate-500">
-                {unreadCount > 0 ? `${unreadCount} unread items` : "All caught up"} • Critical communications from administration
+                {unreadCount > 0 ? t("{{count}} unread items", { count: unreadCount }) : t("All caught up")} • {t("Critical communications from administration")}
               </p>
             </div>
 
@@ -121,7 +123,7 @@ export default function StudentMessages({ user, onLogout }: Props) {
                 <input
                   value={q}
                   onChange={(e) => setQ(e.target.value)}
-                  placeholder="Filter dispatches..."
+                  placeholder={t("Filter dispatches...")}
                   className="w-full outline-none bg-transparent text-sm sm:text-base font-medium text-slate-900 dark:text-white placeholder:text-slate-300"
                 />
               </div>
@@ -138,7 +140,7 @@ export default function StudentMessages({ user, onLogout }: Props) {
                 ) : (
                   <span className="material-icons-outlined text-lg">sync</span>
                 )}
-                <span>{loading ? "Syncing..." : "Sync Inbox"}</span>
+                <span>{loading ? t("Syncing...") : t("Sync Inbox")}</span>
               </button>
             </div>
           </div>
@@ -157,9 +159,9 @@ export default function StudentMessages({ user, onLogout }: Props) {
                   <span className="material-icons-outlined text-[22px]">forum</span>
                 </div>
                 <div className="min-w-0">
-                  <div className="truncate text-base sm:text-lg font-black tracking-tight text-slate-900 dark:text-white">Dispatch Feed</div>
+                  <div className="truncate text-base sm:text-lg font-black tracking-tight text-slate-900 dark:text-white">{t("Dispatch Feed")}</div>
                   <div className="text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400 dark:text-slate-500">
-                    {filtered.length} threads • {unreadCount} unread
+                    {t("{{count}} threads", { count: filtered.length })} • {t("{{count}} unread", { count: unreadCount })}
                   </div>
                 </div>
               </div>
@@ -167,7 +169,7 @@ export default function StudentMessages({ user, onLogout }: Props) {
               <div className="hidden sm:flex items-center gap-2 rounded-full bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 px-3 py-2 shadow-sm">
                 <span className="material-icons-outlined text-sm text-teal-500">lock_clock</span>
                 <span className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
-                  Live Inbox
+                  {t("Live Inbox")}
                 </span>
               </div>
             </div>
@@ -180,14 +182,14 @@ export default function StudentMessages({ user, onLogout }: Props) {
                     <input
                       value={q}
                       onChange={(e) => setQ(e.target.value)}
-                      placeholder="Search messages"
+                      placeholder={t("Search messages")}
                       className="w-full bg-transparent text-sm font-semibold text-slate-900 dark:text-white outline-none placeholder:text-slate-300 dark:placeholder:text-slate-600"
                     />
                     <button
                       onClick={load}
                       disabled={loading}
                       className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-500 transition hover:bg-slate-200 disabled:opacity-40 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
-                      aria-label="Refresh messages"
+                      aria-label={t("Refresh messages")}
                     >
                       <span className={`material-icons-outlined text-[18px] ${loading ? "animate-spin" : ""}`}>sync</span>
                     </button>
@@ -200,8 +202,8 @@ export default function StudentMessages({ user, onLogout }: Props) {
                       <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-[28px] bg-white text-slate-300 shadow-inner dark:bg-slate-900 dark:text-slate-700">
                         <span className="material-icons-outlined text-3xl">inbox</span>
                       </div>
-                      <p className="text-sm font-black uppercase tracking-[0.3em] text-slate-300 dark:text-slate-600">No Messages</p>
-                      <p className="mt-2 text-sm font-medium text-slate-400 dark:text-slate-500">Nothing matches your current search.</p>
+                      <p className="text-sm font-black uppercase tracking-[0.3em] text-slate-300 dark:text-slate-600">{t("No Messages")}</p>
+                      <p className="mt-2 text-sm font-medium text-slate-400 dark:text-slate-500">{t("Nothing matches your current search.")}</p>
                     </div>
                   ) : (
                     filtered.map((m) => {
@@ -228,10 +230,10 @@ export default function StudentMessages({ user, onLogout }: Props) {
                             <div className="mb-1 flex items-start justify-between gap-3">
                               <div className="min-w-0">
                                 <p className={`truncate text-sm font-black tracking-tight ${active ? "text-slate-900 dark:text-white" : "text-slate-800 dark:text-slate-100"}`}>
-                                  {m.subject || "Untitled Protocol"}
+                                  {m.subject || t("Untitled Protocol")}
                                 </p>
                                 <p className="truncate text-xs font-semibold text-slate-400 dark:text-slate-500">
-                                  {m.sender_id || "System Administrator"}
+                                  {m.sender_id || t("System Administrator")}
                                 </p>
                               </div>
                               <div className="shrink-0 text-[10px] font-black uppercase tracking-widest text-slate-300 dark:text-slate-600">
@@ -240,13 +242,13 @@ export default function StudentMessages({ user, onLogout }: Props) {
                             </div>
 
                             <p className="line-clamp-2 text-sm leading-relaxed text-slate-500 dark:text-slate-400">
-                              {m.body || "No content available."}
+                              {m.body || t("No content available.")}
                             </p>
 
                             <div className="mt-3 flex items-center justify-between gap-3">
                               <div className="flex items-center gap-2">
                                 <span className="rounded-full bg-slate-200/70 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 dark:bg-slate-800 dark:text-slate-400">
-                                  {m.category || "General"}
+                                  {m.category || t("General")}
                                 </span>
                                 {unread && <span className="h-2.5 w-2.5 rounded-full bg-teal-500 shadow-[0_0_10px_rgba(20,184,166,0.55)]" />}
                               </div>
@@ -259,7 +261,7 @@ export default function StudentMessages({ user, onLogout }: Props) {
                                 disabled={busyId === m._id}
                                 className="rounded-full px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-slate-400 transition hover:bg-slate-100 hover:text-teal-600 disabled:opacity-40 dark:hover:bg-slate-800"
                               >
-                                {m.is_read ? "Unread" : "Read"}
+                                {m.is_read ? t("Unread") : t("Read")}
                               </button>
                             </div>
                           </div>
@@ -276,9 +278,9 @@ export default function StudentMessages({ user, onLogout }: Props) {
                     <div className="mb-5 flex h-24 w-24 items-center justify-center rounded-[32px] bg-white text-slate-300 shadow-inner dark:bg-slate-900 dark:text-slate-700">
                       <span className="material-icons-outlined text-5xl">mark_email_read</span>
                     </div>
-                    <h3 className="text-xl font-black tracking-tight text-slate-900 dark:text-white">Choose a conversation</h3>
+                    <h3 className="text-xl font-black tracking-tight text-slate-900 dark:text-white">{t("Choose a conversation")}</h3>
                     <p className="mt-2 max-w-md text-sm font-medium text-slate-400 dark:text-slate-500">
-                      Pick any dispatch from the list and we’ll open it in this chat-style view.
+                      {t("Pick any dispatch from the list and we’ll open it in this chat-style view.")}
                     </p>
                   </div>
                 ) : (
@@ -288,7 +290,7 @@ export default function StudentMessages({ user, onLogout }: Props) {
                         <button
                           onClick={() => setSelectedId(null)}
                           className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-slate-500 shadow-sm transition hover:text-teal-600 xl:hidden dark:bg-slate-900 dark:text-slate-300"
-                          aria-label="Back to message list"
+                          aria-label={t("Back to message list")}
                         >
                           <span className="material-icons-outlined">arrow_back</span>
                         </button>
@@ -297,10 +299,10 @@ export default function StudentMessages({ user, onLogout }: Props) {
                         </div>
                         <div className="min-w-0">
                           <p className="truncate text-sm font-black tracking-tight text-slate-900 dark:text-white">
-                            {selected.sender_id || "System Administrator"}
+                            {selected.sender_id || t("System Administrator")}
                           </p>
                           <p className="truncate text-xs font-semibold uppercase tracking-[0.18em] text-slate-400 dark:text-slate-500">
-                            {selected.category || "General Dispatch"}
+                            {selected.category || t("General Dispatch")}
                           </p>
                         </div>
                       </div>
@@ -314,7 +316,7 @@ export default function StudentMessages({ user, onLogout }: Props) {
                             : "bg-teal-500 text-white shadow-lg shadow-teal-500/20 hover:bg-teal-600"
                         }`}
                       >
-                        {selected.is_read ? "Mark Unread" : "Acknowledge"}
+                        {selected.is_read ? t("Mark Unread") : t("Acknowledge")}
                       </button>
                     </div>
 
@@ -328,55 +330,36 @@ export default function StudentMessages({ user, onLogout }: Props) {
                           <div className="mb-3 flex items-start justify-between gap-4">
                             <div>
                               <p className="text-xs font-black uppercase tracking-[0.22em] text-teal-600 dark:text-teal-400">
-                                {selected.category || "General Dispatch"}
+                                {selected.category || t("General Dispatch")}
                               </p>
                               <h2 className="mt-2 text-2xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-white">
-                                {selected.subject || "Untitled Protocol"}
+                                {selected.subject || t("Untitled Protocol")}
                               </h2>
                             </div>
                             {!selected.is_read && (
                               <span className="mt-1 rounded-full bg-teal-100 px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] text-teal-700 dark:bg-teal-900/30 dark:text-teal-300">
-                                New
+                                {t("New")}
                               </span>
                             )}
                           </div>
 
                           <div className="mb-5 flex flex-wrap items-center gap-x-6 gap-y-3 text-sm">
                             <div>
-                              <p className="text-[10px] font-black uppercase tracking-[0.22em] text-slate-300 dark:text-slate-600">Origin Source</p>
-                              <p className="mt-1 font-bold text-slate-700 dark:text-slate-300">{selected.sender_id || "System Administrator"}</p>
+                              <p className="text-[10px] font-black uppercase tracking-[0.22em] text-slate-300 dark:text-slate-600">{t("Origin Source")}</p>
+                              <p className="mt-1 font-bold text-slate-700 dark:text-slate-300">{selected.sender_id || t("System Administrator")}</p>
                             </div>
                             <div>
-                              <p className="text-[10px] font-black uppercase tracking-[0.22em] text-slate-300 dark:text-slate-600">Status</p>
+                              <p className="text-[10px] font-black uppercase tracking-[0.22em] text-slate-300 dark:text-slate-600">{t("Status")}</p>
                               <p className="mt-1 font-bold text-slate-700 dark:text-slate-300">
-                                {selected.is_read ? "Reviewed" : "Awaiting attention"}
+                                {selected.is_read ? t("Reviewed") : t("Awaiting attention")}
                               </p>
                             </div>
                           </div>
 
                           <div className="whitespace-pre-wrap text-[15px] leading-8 text-slate-600 dark:text-slate-300">
-                            {selected.body || "End of transmission."}
+                            {selected.body || t("End of transmission.")}
                           </div>
                         </div>
-
-                        {!!selected.attachments?.length && (
-                          <div className="w-full mt-4">
-                            <div className="mb-4 text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 dark:text-slate-500">
-                              Attachments
-                            </div>
-                            <div className="flex flex-wrap gap-3">
-                              {selected.attachments.map((a, idx) => (
-                                <button
-                                  key={`${a}-${idx}`}
-                                  className="flex items-center gap-3 rounded-full bg-slate-100 px-4 py-3 text-xs font-black text-slate-600 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
-                                >
-                                  <span className="material-icons-outlined text-base">attach_file</span>
-                                  {a}
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-                        )}
                       </div>
                     </div>
                   </>
@@ -385,10 +368,6 @@ export default function StudentMessages({ user, onLogout }: Props) {
             </div>
           </section>
         </main>
-
-        {/* Global UI Decoration */}
-        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-teal-500/[0.02] rounded-full blur-[120px] pointer-events-none -translate-y-1/2 translate-x-1/2 -z-10" />
-        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-indigo-500/[0.02] rounded-full blur-[100px] pointer-events-none translate-y-1/2 -translate-x-1/2 -z-10" />
       </div>
     </div>
   );
