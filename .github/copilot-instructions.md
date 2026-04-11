@@ -16,3 +16,8 @@ Follow these standards for all code generation and project assistance.
 - Use **Generics** in API requests to maintain type safety.
 - Centralize all constants and interfaces in [types.ts](types.ts).
 - Refer to [lib/api.ts](lib/api.ts) for all backend communication logic.
+
+## Environment & Scripts
+- **Terminal Execution**: Keep in mind the active environment runs **PowerShell** on **Windows**.
+- **No Bash Syntax**: Never use bash `heredoc` (`cat << 'EOF'`) or `> file` redirections with complex content directly.
+- **Node Scripts**: When creating patch scripts, use the `create_file` tool to create a physical `.cjs` file and then execute it via `node file.cjs`. Do not run inline `node -e "..."` scripts with quotes, as PowerShell escaping causes `SyntaxError: Invalid or unexpected token`.

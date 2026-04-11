@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
@@ -66,35 +67,36 @@ type ToastType = "success" | "error" | "info";
 type Toast = { id: string; type: ToastType; title: string; message?: string };
 
 function ToastHost({ toasts, onDismiss }: { toasts: Toast[]; onDismiss: (id: string) => void }) {
+  const { t } = useTranslation();
   return (
     <div className="fixed z-[9999] right-4 bottom-4 space-y-3 w-[360px] max-w-[92vw]">
-      {toasts.map((t) => (
+      {toasts.map((toast) => (
         <div
-          key={t.id}
+          key={toast.id}
           className="rounded-xl border shadow-lg p-4 bg-white dark:bg-surface-dark dark:border-gray-700 animate-[toastIn_.18s_ease-out]"
         >
           <div className="flex items-start gap-3">
             <div
               className={[
                 "h-9 w-9 rounded-lg flex items-center justify-center shrink-0",
-                t.type === "success"
+                toast.type === "success"
                   ? "bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-300"
-                  : t.type === "error"
+                  : toast.type === "error"
                   ? "bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-300"
                   : "bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300",
               ].join(" ")}
             >
               <span className="material-icons-outlined">
-                {t.type === "success" ? "check_circle" : t.type === "error" ? "error" : "info"}
+                {toast.type === "success" ? "check_circle" : toast.type === "error" ? "error" : "info"}
               </span>
             </div>
 
             <div className="min-w-0 flex-1">
-              <div className="text-sm font-bold text-gray-900 dark:text-white">{t.title}</div>
-              {t.message ? <div className="mt-1 text-xs text-gray-600 dark:text-gray-300 break-words">{t.message}</div> : null}
+              <div className="text-sm font-bold text-gray-900 dark:text-white">{toast.title}</div>
+              {toast.message ? <div className="mt-1 text-xs text-gray-600 dark:text-gray-300 break-words">{toast.message}</div> : null}
             </div>
 
-            <button onClick={() => onDismiss(t.id)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200" title="Dismiss">
+            <button onClick={() => onDismiss(toast.id)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200" title="Dismiss">
               <span className="material-icons-outlined text-base">close</span>
             </button>
           </div>
@@ -133,6 +135,7 @@ function ConfirmModal({
   onCancel: () => void;
   onConfirm: () => void;
 }) {
+  const { t } = useTranslation();
   if (!open) return null;
 
   return (
@@ -160,9 +163,7 @@ function ConfirmModal({
             onClick={onCancel}
             disabled={!!loading}
             className="rounded-xl border border-gray-200 dark:border-gray-700 px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-800"
-          >
-            Cancel
-          </button>
+          >{t("Cancel")}</button>
           <button
             onClick={onConfirm}
             disabled={!!loading}
@@ -194,6 +195,7 @@ function MultiSelectChips({
   placeholder?: string;
   helper?: string;
 }) {
+  const { t } = useTranslation();
   const add = (val: string) => {
     if (!val) return;
     if (selected.includes(val)) return;
@@ -242,7 +244,7 @@ function MultiSelectChips({
             </span>
           ))
         ) : (
-          <div className="text-xs text-gray-500 dark:text-gray-400">None selected.</div>
+          <div className="text-xs text-gray-500 dark:text-gray-400">{t("None selected.")}</div>
         )}
       </div>
     </div>
@@ -265,6 +267,7 @@ function TagInput({
   placeholder?: string;
   helper?: string;
 }) {
+  const { t } = useTranslation();
   const [text, setText] = useState("");
 
   const add = (raw: string) => {
@@ -299,9 +302,7 @@ function TagInput({
           onKeyDown={onKeyDown}
           placeholder={placeholder}
         />
-        <button type="button" onClick={() => add(text)} className="rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-white hover:bg-primary-hover">
-          Add
-        </button>
+        <button type="button" onClick={() => add(text)} className="rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-white hover:bg-primary-hover">{t("Add")}</button>
       </div>
 
       {helper ? <div className="mt-2 text-[11px] text-gray-400">{helper}</div> : null}
@@ -321,7 +322,7 @@ function TagInput({
             </span>
           ))
         ) : (
-          <div className="text-xs text-gray-500 dark:text-gray-400">No schedule added.</div>
+          <div className="text-xs text-gray-500 dark:text-gray-400">{t("No schedule added.")}</div>
         )}
       </div>
     </div>
@@ -427,6 +428,7 @@ const CourseWizardModal = React.memo(function CourseWizardModal({
   onSubmit: (payload: any) => Promise<void>;
   prerequisiteOptions: { label: string; value: string }[];
 }) {
+  const { t } = useTranslation();
   const [step, setStep] = useState(0);
   const [draft, setDraft] = useState<CourseDraft>(initial);
 
@@ -502,7 +504,7 @@ const CourseWizardModal = React.memo(function CourseWizardModal({
           <div className="min-w-0 space-y-4">
             <div className="space-y-1">
               <div className="text-2xl font-black text-slate-900 dark:text-white tracking-tight leading-none">{headerTitle}</div>
-              <div className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Curriculum Provisioning Wizard</div>
+              <div className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">{t("Curriculum Provisioning Wizard")}</div>
             </div>
 
             <div className="flex flex-wrap gap-3">
@@ -534,113 +536,113 @@ const CourseWizardModal = React.memo(function CourseWizardModal({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
               {isCreate && (
                 <div className="space-y-2">
-                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] ml-1">Protocol Code</label>
+                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] ml-1">{t("Protocol Code")}</label>
                   <input
                     ref={codeRef}
                     className="w-full rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 px-6 py-4 font-bold text-sm focus:ring-4 focus:ring-teal-500/10 outline-none transition-all dark:text-white placeholder:text-slate-300"
                     value={draft.course_code}
                     onChange={(e) => setField("course_code", e.target.value)}
-                    placeholder="e.g. CST-1010"
+                    placeholder={t("e.g. CST-1010")}
                   />
-                  <p className="px-1 text-[9px] font-bold text-slate-300 uppercase tracking-tighter italic">Persistent unique identifier.</p>
+                  <p className="px-1 text-[9px] font-bold text-slate-300 uppercase tracking-tighter italic">{t("Persistent unique identifier.")}</p>
                 </div>
               )}
 
               <div className={isCreate ? "space-y-2" : "md:col-span-2 space-y-2"}>
-                <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] ml-1">Nomenclature</label>
+                <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] ml-1">{t("Nomenclature")}</label>
                 <input
                   ref={titleRef}
                   className="w-full rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 px-6 py-4 font-bold text-sm focus:ring-4 focus:ring-teal-500/10 outline-none transition-all dark:text-white placeholder:text-slate-300"
                   value={draft.title}
                   onChange={(e) => setField("title", e.target.value)}
-                  placeholder="Official course designation"
+                  placeholder={t("Official course designation")}
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] ml-1">Department Hub</label>
+                <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] ml-1">{t("Department Hub")}</label>
                 <input
                   className="w-full rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 px-6 py-4 font-bold text-sm focus:ring-4 focus:ring-teal-500/10 outline-none transition-all dark:text-white placeholder:text-slate-300"
                   value={draft.department}
                   onChange={(e) => setField("department", e.target.value)}
-                  placeholder="e.g. Computer Science"
+                  placeholder={t("e.g. Computer Science")}
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] ml-1">Credit Weight (CU)</label>
+                <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] ml-1">{t("Credit Weight (CU)")}</label>
                 <input
                   className="w-full rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 px-6 py-4 font-bold text-sm focus:ring-4 focus:ring-teal-500/10 outline-none transition-all dark:text-white placeholder:text-slate-300"
                   value={draft.credits}
                   onChange={(e) => setField("credits", e.target.value)}
-                  placeholder="e.g. 3.0"
+                  placeholder={t("e.g. 3.0")}
                   inputMode="decimal"
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] ml-1">Classification</label>
+                <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] ml-1">{t("Classification")}</label>
                 <select
                   className="w-full rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950 px-6 py-4 font-bold text-sm outline-none transition-all dark:text-white cursor-pointer focus:ring-4 focus:ring-teal-500/10"
                   value={draft.type}
                   onChange={(e) => setField("type", e.target.value)}
                 >
-                  <option value="Core">Core Registry</option>
-                  <option value="Elective">Elective Matrix</option>
-                  <option value="Major">Specialization</option>
+                  <option value="Core">{t("Core Registry")}</option>
+                  <option value="Elective">{t("Elective Matrix")}</option>
+                  <option value="Major">{t("Specialization")}</option>
                 </select>
               </div>
 
               <div className="space-y-2">
-                <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] ml-1">Lead Academic</label>
+                <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] ml-1">{t("Lead Academic")}</label>
                 <input
                   className="w-full rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 px-6 py-4 font-bold text-sm focus:ring-4 focus:ring-teal-500/10 outline-none transition-all dark:text-white placeholder:text-slate-300"
                   value={draft.instructor}
                   onChange={(e) => setField("instructor", e.target.value)}
-                  placeholder="Optional"
+                  placeholder={t("Optional")}
                 />
               </div>
 
               {/*  NEW */}
               <div className="space-y-2">
-                <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] ml-1">Major Alignment</label>
+                <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] ml-1">{t("Major Alignment")}</label>
                 <input
                   className="w-full rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 px-6 py-4 font-bold text-sm focus:ring-4 focus:ring-teal-500/10 outline-none transition-all dark:text-white placeholder:text-slate-300"
                   value={draft.major}
                   onChange={(e) => setField("major", e.target.value)}
-                  placeholder="e.g. Software Engineering"
+                  placeholder={t("e.g. Software Engineering")}
                 />
               </div>
 
               {/*  NEW */}
               <div className="space-y-2">
-                <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] ml-1">Track Vector</label>
+                <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] ml-1">{t("Track Vector")}</label>
                 <input
                   className="w-full rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 px-6 py-4 font-bold text-sm focus:ring-4 focus:ring-teal-500/10 outline-none transition-all dark:text-white placeholder:text-slate-300"
                   value={draft.track}
                   onChange={(e) => setField("track", e.target.value)}
-                  placeholder="e.g. CS / CT"
+                  placeholder={t("e.g. CS / CT")}
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] ml-1">Vector Room</label>
+                <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] ml-1">{t("Vector Room")}</label>
                 <input
                   className="w-full rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 px-6 py-4 font-bold text-sm focus:ring-4 focus:ring-teal-500/10 outline-none transition-all dark:text-white placeholder:text-slate-300"
                   value={draft.room}
                   onChange={(e) => setField("room", e.target.value)}
-                  placeholder="Optional"
+                  placeholder={t("Optional")}
                 />
               </div>
 
               <div className="md:col-span-2 space-y-2">
-                <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] ml-1">Abstract Description</label>
+                <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] ml-1">{t("Abstract Description")}</label>
                 <textarea
                   className="w-full rounded-[24px] border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 px-6 py-4 font-medium text-sm focus:ring-4 focus:ring-teal-500/10 outline-none transition-all dark:text-white placeholder:text-slate-300"
                   rows={4}
                   value={draft.description}
                   onChange={(e) => setField("description", e.target.value)}
-                  placeholder="Comprehensive course overview..."
+                  placeholder={t("Comprehensive course overview...")}
                 />
               </div>
             </div>
@@ -655,8 +657,8 @@ const CourseWizardModal = React.memo(function CourseWizardModal({
                   options={SEMESTER_OPTIONS}
                   selected={draft.semester}
                   onChange={(vals) => setField("semester", vals)}
-                  placeholder="Select valid intervals..."
-                  helper="Concurrent period selection supported."
+                  placeholder={t("Select valid intervals...")}
+                  helper={t("Concurrent period selection supported.")}
                 />
               </div>
 
@@ -665,8 +667,8 @@ const CourseWizardModal = React.memo(function CourseWizardModal({
                   label="Execution Schedule"
                   values={draft.schedule}
                   onChange={(vals) => setField("schedule", vals)}
-                  placeholder='e.g. "Interval 10:00 - 11:30 (Alpha)"'
-                  helper="Tip: ENTER to commit node. BACKSPACE to purge."
+                  placeholder={t('e.g. "Interval 10:00 - 11:30 (Alpha)"')}
+                  helper={t("Tip: ENTER to commit node. BACKSPACE to purge.")}
                 />
               </div>
             </div>
@@ -681,8 +683,8 @@ const CourseWizardModal = React.memo(function CourseWizardModal({
                   options={prerequisiteOptions}
                   selected={draft.prerequisites}
                   onChange={(vals) => setField("prerequisites", vals)}
-                  placeholder="Audit existing curriculum..."
-                  helper="Map required parent nodes for this curriculum sequence."
+                  placeholder={t("Audit existing curriculum...")}
+                  helper={t("Map required parent nodes for this curriculum sequence.")}
                 />
               </div>
             </div>
@@ -724,7 +726,7 @@ const CourseWizardModal = React.memo(function CourseWizardModal({
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="rounded-[24px] bg-white dark:bg-slate-950 border border-slate-100 dark:border-slate-800 p-6 space-y-4 shadow-sm">
-                    <div className="text-[9px] font-black text-slate-300 uppercase tracking-[0.2em]">Active Periods</div>
+                    <div className="text-[9px] font-black text-slate-300 uppercase tracking-[0.2em]">{t("Active Periods")}</div>
                     <div className="flex flex-wrap gap-2">
                       {draft.semester.length ? (
                         draft.semester.map((s) => (
@@ -733,13 +735,13 @@ const CourseWizardModal = React.memo(function CourseWizardModal({
                           </span>
                         ))
                       ) : (
-                        <span className="text-xs font-bold text-slate-200 italic">No periods assigned.</span>
+                        <span className="text-xs font-bold text-slate-200 italic">{t("No periods assigned.")}</span>
                       )}
                     </div>
                   </div>
 
                   <div className="rounded-[24px] bg-white dark:bg-slate-950 border border-slate-100 dark:border-slate-800 p-6 space-y-4 shadow-sm">
-                    <div className="text-[9px] font-black text-slate-300 uppercase tracking-[0.2em]">Matrix Schedule</div>
+                    <div className="text-[9px] font-black text-slate-300 uppercase tracking-[0.2em]">{t("Matrix Schedule")}</div>
                     <div className="space-y-2">
                       {draft.schedule.length ? (
                         draft.schedule.map((s, i) => (
@@ -749,13 +751,13 @@ const CourseWizardModal = React.memo(function CourseWizardModal({
                           </div>
                         ))
                       ) : (
-                        <span className="text-xs font-bold text-slate-200 italic">Unscheduled.</span>
+                        <span className="text-xs font-bold text-slate-200 italic">{t("Unscheduled.")}</span>
                       )}
                     </div>
                   </div>
 
                   <div className="rounded-[24px] bg-white dark:bg-slate-950 border border-slate-100 dark:border-slate-800 p-6 space-y-4 md:col-span-2 shadow-sm">
-                    <div className="text-[9px] font-black text-slate-300 uppercase tracking-[0.2em]">Logical Dependencies</div>
+                    <div className="text-[9px] font-black text-slate-300 uppercase tracking-[0.2em]">{t("Logical Dependencies")}</div>
                     <div className="flex flex-wrap gap-2">
                       {draft.prerequisites.length ? (
                         draft.prerequisites.map((p) => (
@@ -764,7 +766,7 @@ const CourseWizardModal = React.memo(function CourseWizardModal({
                           </span>
                         ))
                       ) : (
-                        <span className="text-xs font-bold text-slate-200 italic">No dependencies found.</span>
+                        <span className="text-xs font-bold text-slate-200 italic">{t("No dependencies found.")}</span>
                       )}
                     </div>
                   </div>
@@ -775,7 +777,7 @@ const CourseWizardModal = React.memo(function CourseWizardModal({
                     "{draft.description.trim()}"
                   </div>
                 ) : (
-                  <div className="text-[10px] font-black text-slate-300 uppercase tracking-widest text-center py-4 italic opacity-50">Abstract Manifest Missing</div>
+                  <div className="text-[10px] font-black text-slate-300 uppercase tracking-widest text-center py-4 italic opacity-50">{t("Abstract Manifest Missing")}</div>
                 )}
               </div>
             </div>
@@ -787,27 +789,21 @@ const CourseWizardModal = React.memo(function CourseWizardModal({
             onClick={onClose}
             disabled={busy}
             className="h-14 px-8 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 hover:text-slate-600 transition-all active:scale-95"
-          >
-            Abort Wizard
-          </button>
+          >{t("Abort Wizard")}</button>
 
           <div className="flex items-center gap-4">
             <button
               onClick={() => setStep((s) => Math.max(0, s - 1))}
               disabled={busy || step === 0}
               className="h-14 px-8 rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 text-[10px] font-black uppercase tracking-[0.2em] text-slate-600 dark:text-white transition-all active:scale-95 disabled:opacity-20 shadow-sm hover:bg-slate-50"
-            >
-              Previous
-            </button>
+            >{t("Previous")}</button>
 
             {step < 3 ? (
               <button
                 onClick={() => setStep((s) => Math.min(3, s + 1))}
                 disabled={busy || (step === 0 && !canNextStep0)}
                 className="h-14 px-10 rounded-2xl bg-slate-900 dark:bg-teal-600 font-black text-[10px] uppercase tracking-[0.2em] text-white transition-all active:scale-95 disabled:opacity-30 shadow-xl shadow-slate-200 dark:shadow-teal-900/20"
-              >
-                Proceed
-              </button>
+              >{t("Proceed")}</button>
             ) : (
               <button
                 onClick={submit}
@@ -817,11 +813,11 @@ const CourseWizardModal = React.memo(function CourseWizardModal({
                 {busy ? (
                   <>
                     <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    <span>Synchronizing...</span>
+                    <span>{t("Synchronizing...")}</span>
                   </>
                 ) : (
                   <>
-                    <span>Execute Commit</span>
+                    <span>{t("Execute Commit")}</span>
                     <span className="material-icons-outlined text-lg">verified</span>
                   </>
                 )}
@@ -864,6 +860,7 @@ function CourseCardSkeleton() {
 // Main component
 // -----------------------------
 const AdminCourses: React.FC<CoursesProps> = ({ user, onLogout }) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   const [rawCourses, setRawCourses] = useState<any[]>([]);
@@ -1107,20 +1104,18 @@ const AdminCourses: React.FC<CoursesProps> = ({ user, onLogout }) => {
                   <div className="h-12 w-12 rounded-2xl bg-teal-50 dark:bg-teal-900/20 flex items-center justify-center text-teal-600 dark:text-teal-400">
                     <span className="material-icons-outlined text-2xl">auto_stories</span>
                   </div>
-                  <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">Curriculum Inventory</h2>
+                  <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">{t("Curriculum Inventory")}</h2>
                 </div>
-                <p className="text-sm font-medium text-slate-500 dark:text-slate-400 max-w-xl">
-                  Global management of courses, academic prerequisites, and institutional tracks.
-                </p>
+                <p className="text-sm font-medium text-slate-500 dark:text-slate-400 max-w-xl">{t("Global management of courses, academic prerequisites, and institutional tracks.")}</p>
 
                 <div className="pt-4 flex flex-wrap gap-3">
                   <div className="px-3 py-1 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 shadow-sm flex items-center gap-2">
                     <span className="material-icons-outlined text-xs">database</span>
-                    {courses.length} Total
+                    {courses.length} {t("Total")}
                   </div>
                   <div className="px-3 py-1 rounded-full bg-teal-50 dark:bg-teal-900/20 border border-teal-100 dark:border-teal-800 text-[10px] font-bold uppercase tracking-widest text-teal-700 dark:text-teal-400 shadow-sm flex items-center gap-2">
                     <span className="material-icons-outlined text-xs">filter_list</span>
-                    {filtered.length} Filtered
+                    {filtered.length} {t("Filtered")}
                   </div>
                 </div>
               </div>
@@ -1131,18 +1126,14 @@ const AdminCourses: React.FC<CoursesProps> = ({ user, onLogout }) => {
                   onClick={() => toast("info", "Excel import", "Bulk import interface will be integrated in version 2.5.")}
                   disabled={mutating}
                 >
-                  <span className="material-icons-outlined text-lg">publish</span>
-                  Bulk Import
-                </button>
+                  <span className="material-icons-outlined text-lg">publish</span>{t("Bulk Import")}</button>
 
                 <button
                   className="flex items-center justify-center gap-2 rounded-2xl bg-teal-600 px-8 py-3.5 text-sm font-bold text-white hover:bg-teal-700 transition-all shadow-lg active:scale-[0.98]"
                   onClick={openCreate}
                   disabled={mutating}
                 >
-                  <span className="material-icons-outlined text-lg">add</span>
-                  Create Course
-                </button>
+                  <span className="material-icons-outlined text-lg">add</span>{t("Create Course")}</button>
               </div>
             </div>
 
@@ -1154,7 +1145,7 @@ const AdminCourses: React.FC<CoursesProps> = ({ user, onLogout }) => {
                   </span>
                   <input
                     className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 py-3 pl-12 pr-4 text-sm font-medium focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500/50 outline-none transition-all dark:text-white"
-                    placeholder="Filter by code, title, or academic lead..."
+                    placeholder={t("Filter by code, title, or academic lead...")}
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                   />
@@ -1166,7 +1157,7 @@ const AdminCourses: React.FC<CoursesProps> = ({ user, onLogout }) => {
                     value={deptFilter}
                     onChange={(e) => setDeptFilter(e.target.value)}
                   >
-                    <option value="">All Departments</option>
+                    <option value="">{t("All Departments")}</option>
                     {departments.map((d) => (
                       <option key={d} value={d}>
                         {d}
@@ -1181,7 +1172,7 @@ const AdminCourses: React.FC<CoursesProps> = ({ user, onLogout }) => {
                     value={typeFilter}
                     onChange={(e) => setTypeFilter(e.target.value)}
                   >
-                    <option value="">All Types</option>
+                    <option value="">{t("All Types")}</option>
                     {types.map((t) => (
                       <option key={t} value={t}>
                         {t}
@@ -1196,7 +1187,7 @@ const AdminCourses: React.FC<CoursesProps> = ({ user, onLogout }) => {
                     value={semesterFilter}
                     onChange={(e) => setSemesterFilter(e.target.value.trim())}
                   >
-                    <option value="">All Periods</option>
+                    <option value="">{t("All Periods")}</option>
                     {semesterOptions.map((s) => (
                       <option key={s} value={s}>
                         {s}
@@ -1219,8 +1210,8 @@ const AdminCourses: React.FC<CoursesProps> = ({ user, onLogout }) => {
               <div className="mx-auto h-20 w-20 rounded-3xl bg-slate-50 dark:bg-slate-950 flex items-center justify-center text-slate-300 dark:text-slate-700 mb-8 border border-slate-100 dark:border-slate-800">
                 <span className="material-icons-outlined text-4xl">inventory_2</span>
               </div>
-              <h3 className="text-xl font-extrabold text-slate-900 dark:text-white mb-2">No matching curriculum found</h3>
-              <p className="text-sm text-slate-400 font-medium max-w-sm mx-auto mb-10 leading-relaxed">Adjust your filters or initiate a new course record to expand the catalog.</p>
+              <h3 className="text-xl font-extrabold text-slate-900 dark:text-white mb-2">{t("No matching curriculum found")}</h3>
+              <p className="text-sm text-slate-400 font-medium max-w-sm mx-auto mb-10 leading-relaxed">{t("Adjust your filters or initiate a new course record to expand the catalog.")}</p>
               <div className="flex justify-center gap-4">
                 <button
                   onClick={() => {
@@ -1230,12 +1221,8 @@ const AdminCourses: React.FC<CoursesProps> = ({ user, onLogout }) => {
                     setSemesterFilter("");
                   }}
                   className="px-8 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 text-sm font-bold text-slate-600 dark:text-white hover:bg-slate-50 dark:hover:bg-slate-800 transition-all"
-                >
-                  Reset Parameters
-                </button>
-                <button onClick={openCreate} className="px-10 py-3 rounded-2xl bg-teal-600 text-sm font-bold text-white hover:bg-teal-700 shadow-lg transition-all active:scale-[0.98]">
-                  Initialize Course
-                </button>
+                >{t("Reset Parameters")}</button>
+                <button onClick={openCreate} className="px-10 py-3 rounded-2xl bg-teal-600 text-sm font-bold text-white hover:bg-teal-700 shadow-lg transition-all active:scale-[0.98]">{t("Initialize Course")}</button>
               </div>
             </div>
           ) : (

@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
 import { DetailedCardGridSkeleton, Skeleton } from "../components/Skeleton";
@@ -78,6 +79,7 @@ function clsx(...parts: Array<string | false | null | undefined>) {
 }
 
 export default function AdminMessages({ user, onLogout }: Props) {
+  const { t } = useTranslation();
   const [items, setItems] = useState<Msg[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -133,7 +135,7 @@ export default function AdminMessages({ user, onLogout }: Props) {
         }
       }
     } catch (e: any) {
-      setError(e?.message || "Failed to load messages");
+      setError(e?.message || t("Failed to load messages"));
     } finally {
       setLoading(false);
     }
@@ -152,7 +154,7 @@ export default function AdminMessages({ user, onLogout }: Props) {
         setStudentOptions(Array.isArray(data) ? data : []);
       } catch (e: any) {
         // don’t hard fail the page, just show error banner
-        setError(e?.message || "Failed to load student options");
+        setError(e?.message || t("Failed to load student options"));
         setStudentOptions([]);
       } finally {
         setStudentIdsLoading(false);
@@ -246,7 +248,7 @@ export default function AdminMessages({ user, onLogout }: Props) {
     setError(null);
 
     if (!receiverId.trim() || !subject.trim() || !body.trim()) {
-      setError("Receiver ID, subject, and body are required.");
+      setError(t("Receiver ID, subject, and body are required."));
       return;
     }
 
@@ -267,12 +269,12 @@ export default function AdminMessages({ user, onLogout }: Props) {
       await load({ keepSelection: true });
       listTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
 
-      showToast("Message sent", "success");
+      showToast(t("Message sent"), "success");
       setComposeOpen(false);
       setReceiverOpen(false);
       setStudentSearch("");
     } catch (e: any) {
-      setError(e?.message || "Failed to send message");
+      setError(e?.message || t("Failed to send message"));
     } finally {
       setSending(false);
     }
@@ -289,12 +291,12 @@ export default function AdminMessages({ user, onLogout }: Props) {
       await api.adminMarkMessageRead(messageId, nextIsRead);
       // don't spam toast for auto-mark-read
       if (!opts?.silent) {
-        showToast(nextIsRead ? "Marked as read" : "Marked as unread", "info");
+        showToast(nextIsRead ? t("Marked as read") : t("Marked as unread"), "info");
       }
     } catch (e: any) {
       // rollback
       setItems((p) => p.map((x) => (x._id === messageId ? { ...x, is_read: prev.is_read } : x)));
-      if (!opts?.silent) setError(e?.message || "Failed to update read status");
+      if (!opts?.silent) setError(e?.message || t("Failed to update read status"));
     }
   }
 
@@ -308,7 +310,7 @@ export default function AdminMessages({ user, onLogout }: Props) {
   }
 
   async function onDelete(messageId: string) {
-    const ok = window.confirm("Delete this message?");
+    const ok = window.confirm(t("Delete this message?"));
     if (!ok) return;
 
     setError(null);
@@ -322,17 +324,17 @@ export default function AdminMessages({ user, onLogout }: Props) {
 
     try {
       await api.adminDeleteMessage(messageId);
-      showToast("Message deleted", "success");
+      showToast(t("Message deleted"), "success");
     } catch (e: any) {
       setItems(prevItems);
-      setError(e?.message || "Failed to delete message");
+      setError(e?.message || t("Failed to delete message"));
     }
   }
 
   async function markAllVisibleAsRead() {
     const toMark = filtered.filter((m) => !m.is_read);
     if (toMark.length === 0) {
-      showToast("No unread messages in view", "info");
+      showToast(t("No unread messages in view"), "info");
       return;
     }
 
@@ -343,11 +345,11 @@ export default function AdminMessages({ user, onLogout }: Props) {
 
     try {
       await Promise.all(toMark.map((m) => api.adminMarkMessageRead(m._id, true)));
-      showToast(`Marked ${toMark.length} as read`, "success");
+      showToast(`${t("Marked as read")} (${toMark.length})`, "success");
     } catch (e: any) {
       // safest rollback: re-fetch
       await load({ keepSelection: true });
-      setError(e?.message || "Failed to mark all as read");
+      setError(e?.message || t("Failed to mark all as read"));
     }
   }
 
@@ -359,7 +361,7 @@ export default function AdminMessages({ user, onLogout }: Props) {
     <div className="flex h-screen overflow-hidden bg-white dark:bg-slate-950 font-poppins">
       <Sidebar user={user} onLogout={onLogout} />
       <div className="flex flex-1 flex-col overflow-hidden">
-        <Header title="Communications" user={user} />
+        <Header title={t("Communications")} user={user} />
 
         <main className="flex-1 overflow-y-auto p-8 animate-in fade-in duration-700 slide-in-from-bottom-4 scrollbar-hide">
           <div className="flex flex-col gap-10 pb-10 max-w-[1600px] mx-auto">
@@ -400,7 +402,7 @@ export default function AdminMessages({ user, onLogout }: Props) {
                     <span className="material-icons-outlined text-2xl">send</span>
                   </div>
                   <div>
-                    <div className="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">New Communication</div>
+                    <div className="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">{t("New Communication")}</div>
                     <div className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-1">
                       Direct message to student directory
                     </div>
@@ -409,10 +411,10 @@ export default function AdminMessages({ user, onLogout }: Props) {
 
                 <div className="flex items-center gap-8">
                   <div className="hidden sm:block text-[11px] font-bold text-slate-400 uppercase tracking-widest">
-                    Pending Inbox: <span className="text-slate-900 dark:text-white ml-1">{unreadCount} items</span>
+                    {t("Pending Inbox:")} <span className="text-slate-900 dark:text-white ml-1">{unreadCount}{t(" items")}</span>
                   </div>
                   <div className={`h-10 px-5 rounded-xl flex items-center text-xs font-extrabold uppercase tracking-widest transition-all ${composeOpen ? 'bg-slate-900 text-white' : 'bg-teal-50 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400'}`}>
-                    {composeOpen ? "Discard" : "Compose"}
+                    {composeOpen ? t("Discard") : t("Compose")}
                   </div>
                 </div>
               </button>
@@ -422,7 +424,7 @@ export default function AdminMessages({ user, onLogout }: Props) {
                   <form onSubmit={onSend} className="grid grid-cols-1 xl:grid-cols-12 gap-8">
                     {/* Receiver (strict searchable select) */}
                     <div className="xl:col-span-4 relative space-y-2">
-                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Recipient ID *</label>
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t("Recipient ID *")}</label>
 
                       <button
                         type="button"
@@ -457,14 +459,14 @@ export default function AdminMessages({ user, onLogout }: Props) {
                               autoFocus
                               value={studentSearch}
                               onChange={(e) => setStudentSearch(e.target.value)}
-                              placeholder="Type student name or ID..."
+                              placeholder={t("Type student name or ID...")}
                               className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2.5 text-sm font-bold text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-teal-500/20"
                             />
                           </div>
 
                           <div className="max-h-64 overflow-y-auto scrollbar-hide">
                             {studentMatches.length === 0 ? (
-                              <div className="p-6 text-center text-sm text-slate-400 italic">No matches in directory.</div>
+                              <div className="p-6 text-center text-sm text-slate-400 italic">{t("No matches in directory.")}</div>
                             ) : (
                               studentMatches.map((s) => (
                                 <button
@@ -491,7 +493,7 @@ export default function AdminMessages({ user, onLogout }: Props) {
                     </div>
 
                     <div className="xl:col-span-3 space-y-2">
-                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Category</label>
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t("Category")}</label>
                       <select
                         className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 px-5 py-3.5 text-sm font-bold text-slate-900 dark:text-white outline-none focus:ring-4 focus:ring-teal-500/10 transition-all cursor-pointer shadow-sm"
                         value={category}
@@ -506,22 +508,22 @@ export default function AdminMessages({ user, onLogout }: Props) {
                     </div>
 
                     <div className="xl:col-span-5 space-y-2">
-                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Subject Title *</label>
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t("Subject Title *")}</label>
                       <input
                         className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 px-5 py-3.5 text-sm font-bold text-slate-900 dark:text-white outline-none focus:ring-4 focus:ring-teal-500/10 transition-all shadow-sm placeholder:text-slate-300"
                         value={subject}
                         onChange={(e) => setSubject(e.target.value)}
-                        placeholder="Purpose of this communication..."
+                        placeholder={t("Purpose of this communication...")}
                       />
                     </div>
 
                     <div className="xl:col-span-12 space-y-2">
-                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Message Content *</label>
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t("Message Content *")}</label>
                       <textarea
                         className="w-full min-h-[160px] rounded-[32px] border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 px-8 py-6 text-sm font-medium text-slate-900 dark:text-white outline-none focus:ring-4 focus:ring-teal-500/10 transition-all shadow-sm leading-relaxed placeholder:text-slate-300"
                         value={body}
                         onChange={(e) => setBody(e.target.value)}
-                        placeholder="Draft your detailed message here..."
+                        placeholder={t("Draft your detailed message here...")}
                       />
                     </div>
 
@@ -542,7 +544,7 @@ export default function AdminMessages({ user, onLogout }: Props) {
                         disabled={sending}
                         className="rounded-2xl bg-slate-900 dark:bg-slate-800 px-10 py-3 text-sm font-bold text-white hover:bg-slate-800 dark:hover:bg-slate-700 transition-all shadow-lg active:scale-[0.98] disabled:opacity-40"
                       >
-                        {sending ? "Processing..." : "Dispatch Message"}
+                        {sending ? t("Processing...") : t("Dispatch Message")}
                       </button>
                     </div>
                   </form>
@@ -557,13 +559,13 @@ export default function AdminMessages({ user, onLogout }: Props) {
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
                   <div className="space-y-1">
                     <div className="flex items-center gap-3">
-                      <h3 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">Communication Logs</h3>
+                      <h3 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">{t("Communication Logs")}</h3>
                       <div className="px-3 py-1 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase tracking-widest border border-slate-300 dark:border-slate-700">
-                        {filtered.length} of {items.length} records
+                        {filtered.length}{t(" of ")}{items.length}{t(" records")}
                       </div>
                     </div>
                     <p className="text-sm font-medium text-slate-400 dark:text-slate-500">
-                      Archive of all dispatched and received communications.
+                      {t("Archive of all dispatched and received communications.")}
                     </p>
                   </div>
 
@@ -626,7 +628,7 @@ export default function AdminMessages({ user, onLogout }: Props) {
                       </span>
                       <input
                         className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 pl-12 pr-4 py-3 text-sm font-bold text-slate-900 dark:text-white focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500/50 outline-none transition-all shadow-sm"
-                        placeholder="Search logs..."
+                        placeholder={t("Search logs...")}
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
                       />
@@ -637,9 +639,9 @@ export default function AdminMessages({ user, onLogout }: Props) {
                       value={catFilter}
                       onChange={(e) => setCatFilter(e.target.value)}
                     >
-                      <option value="All">All Categories</option>
+                      <option value="All">{t("All Categories")}</option>
                       {CATEGORIES.map((c) => (
-                        <option key={c} value={c}>{c}</option>
+                        <option key={c} value={c}>{t(c)}</option>
                       ))}
                     </select>
 
@@ -648,8 +650,8 @@ export default function AdminMessages({ user, onLogout }: Props) {
                       value={sortDir}
                       onChange={(e) => setSortDir(e.target.value as any)}
                     >
-                      <option value="Newest">Newest First</option>
-                      <option value="Oldest">Oldest First</option>
+                      <option value="Newest">{t("Newest First")}</option>
+                      <option value="Oldest">{t("Oldest First")}</option>
                     </select>
                   </div>
                 </div>
@@ -675,8 +677,8 @@ export default function AdminMessages({ user, onLogout }: Props) {
                       <div className="h-20 w-20 rounded-full bg-slate-100 dark:bg-slate-900 flex items-center justify-center mx-auto mb-6">
                         <span className="material-icons-outlined text-slate-300 text-3xl">inbox</span>
                       </div>
-                      <div className="text-sm font-bold text-slate-400 uppercase tracking-widest">No logs found</div>
-                      <div className="mt-2 text-xs text-slate-400 font-medium">Try clearing your filters.</div>
+                      <div className="text-sm font-bold text-slate-400 uppercase tracking-widest">{t("No logs found")}</div>
+                      <div className="mt-2 text-xs text-slate-400 font-medium">{t("Try clearing your filters.")}</div>
                     </div>
                   ) : (
                     <div className="flex-1 min-h-0 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800/50 scrollbar-hide">
@@ -708,7 +710,7 @@ export default function AdminMessages({ user, onLogout }: Props) {
                                       : "bg-teal-50 text-teal-700 border-teal-100 dark:bg-teal-900/30 dark:text-teal-400 dark:border-teal-900"
                                   )}
                                 >
-                                  {m.category ?? "General"}
+                                  t(m.category ?? "General")
                                 </span>
                                 <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-tight">
                                   {formatListDate(m.sent_at)}
@@ -725,7 +727,7 @@ export default function AdminMessages({ user, onLogout }: Props) {
                                     : "text-slate-600 dark:text-slate-400 font-medium"
                                 )}
                               >
-                                {m.subject || "(No subject)"}
+                                {m.subject || t("(No subject)")}
                               </div>
 
                               <div
@@ -742,7 +744,7 @@ export default function AdminMessages({ user, onLogout }: Props) {
                               <div className="flex items-center gap-3 pt-1">
                                 <div className="flex items-center gap-1.5">
                                   <div className="w-1.5 h-1.5 rounded-full bg-slate-200 dark:bg-slate-800" />
-                                  <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-tighter">TO: {m.receiver_id}</span>
+                                  <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-tighter">{t("TO: ")}{m.receiver_id}</span>
                                 </div>
                                 {isUnread && (
                                   <div className="ml-auto h-2 w-2 rounded-full bg-teal-500 shadow-sm" />
@@ -765,9 +767,9 @@ export default function AdminMessages({ user, onLogout }: Props) {
                 >
                   {!selected ? (
                     <div className="h-full flex flex-col items-center justify-center p-20 text-slate-300 dark:text-slate-700">
-                      <div className="text-8xl mb-8 opacity-10">Mail</div>
-                      <div className="text-lg font-bold uppercase tracking-[0.3em] mb-2">Selection Required</div>
-                      <div className="text-sm font-medium">Select a communication record to expand details</div>
+                      <div className="text-8xl mb-8 opacity-10">{t("Mail")}</div>
+                      <div className="text-lg font-bold uppercase tracking-[0.3em] mb-2">{t("Selection Required")}</div>
+                      <div className="text-sm font-medium">{t("Select a communication record to expand details")}</div>
                     </div>
                   ) : (
                     <div className="h-full min-h-0 flex flex-col animate-in fade-in duration-500">
@@ -784,7 +786,7 @@ export default function AdminMessages({ user, onLogout }: Props) {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-3 mb-6">
                             <span className="text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-400 border border-teal-100 dark:border-teal-800">
-                              {selected.category ?? "Institutional"}
+                              t(selected.category ?? "Institutional")
                             </span>
 
                             <span
@@ -795,31 +797,31 @@ export default function AdminMessages({ user, onLogout }: Props) {
                                   : "bg-emerald-50 text-emerald-700 border-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-900"
                               )}
                             >
-                              {selected.is_read ? "Archived" : "Unread"}
+                              {selected.is_read ? t("Archived") : t("Unread")}
                             </span>
                           </div>
 
                           <h2 className="text-4xl font-extrabold text-slate-900 dark:text-white leading-tight tracking-tight mb-8">
-                            {selected.subject || "(No subject)"}
+                            {selected.subject || t("(No subject)")}
                           </h2>
 
                           <div className="flex flex-wrap items-center gap-x-10 gap-y-4">
                             <div className="space-y-1.5">
-                              <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">Sender ID</span>
+                              <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t("Sender ID")}</span>
                               <div className="flex items-center gap-2">
                                 <div className="w-8 h-8 rounded-full bg-slate-900 dark:bg-slate-800 flex items-center justify-center text-white text-[10px] font-bold">A</div>
                                 <span className="text-sm font-bold text-slate-900 dark:text-white">{selected.sender_id}</span>
                               </div>
                             </div>
                             <div className="space-y-1.5">
-                              <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">Recipient</span>
+                              <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t("Recipient")}</span>
                               <div className="flex items-center gap-2">
                                 <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 text-[10px] font-bold">S</div>
                                 <span className="text-sm font-bold text-slate-900 dark:text-white">{selected.receiver_id}</span>
                               </div>
                             </div>
                             <div className="space-y-1.5">
-                              <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">Dispatch Timestamp</span>
+                              <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t("Dispatch Timestamp")}</span>
                               <span className="block text-sm font-bold text-slate-700 dark:text-slate-300">{formatLocal(selected.sent_at)}</span>
                             </div>
                           </div>
@@ -830,7 +832,7 @@ export default function AdminMessages({ user, onLogout }: Props) {
                             onClick={() => setReadState(selected._id, !selected.is_read)}
                             className="w-full sm:w-40 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-6 py-3 text-[11px] font-bold uppercase tracking-widest text-slate-700 dark:text-white hover:bg-slate-50 dark:hover:bg-slate-800 shadow-sm transition-all"
                           >
-                            Mark {selected.is_read ? "Unread" : "Read"}
+                            {selected.is_read ? t("Mark Unread") : t("Mark Read")}
                           </button>
 
                           <button

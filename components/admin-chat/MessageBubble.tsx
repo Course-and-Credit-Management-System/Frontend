@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { AdminChatMessage } from "../../types/adminChat";
 import MarkdownContent from "./MarkdownContent";
 
@@ -7,6 +8,7 @@ interface MessageBubbleProps {
 }
 
 const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
+  const { t } = useTranslation();
   const isUser = message.role === "user";
   const [showSources, setShowSources] = useState(false);
 
@@ -30,7 +32,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
         </div>
         
         <div className={`mt-4 flex items-center gap-3 text-[10px] font-bold uppercase tracking-widest ${isUser ? "text-white/50" : "text-slate-400"}`}>
-          <span>{isUser ? 'Administrator' : 'System Assistant'}</span>
+          <span>{isUser ? t("Administrator") : t("System Assistant")}</span>
           <span className="opacity-30">•</span>
           <span>{new Date(message.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
         </div>
@@ -44,7 +46,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
               aria-expanded={showSources}
             >
               <span className="material-icons-outlined text-sm">{showSources ? 'expand_less' : 'expand_more'}</span>
-              {showSources ? "Conceal Citations" : `View Evidence (${message.sources.length})`}
+              {showSources ? t("Conceal Citations") : `${t("View Evidence")} (${message.sources.length})`}
             </button>
             {showSources && (
               <div className="mt-4 space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">

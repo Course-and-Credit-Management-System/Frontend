@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 
 interface ChatComposerProps {
   value: string;
@@ -13,6 +14,7 @@ const ChatComposer: React.FC<ChatComposerProps> = ({
   onSend,
   disabled = false,
 }) => {
+  const { t } = useTranslation();
   const canSend = !disabled && value.trim().length > 0;
 
   return (
@@ -33,14 +35,14 @@ const ChatComposer: React.FC<ChatComposerProps> = ({
           }}
           rows={1}
           className="w-full min-h-[60px] max-h-[300px] resize-none bg-transparent px-2 py-2 text-base font-medium text-slate-900 dark:text-white outline-none placeholder:text-slate-400 leading-relaxed scrollbar-hide"
-          placeholder="Ask anything about courses, faculty, or institutional guidelines..."
-          aria-label="Chat message input"
+          placeholder={t("Ask anything about courses, faculty, or institutional guidelines...")}
+          aria-label={t("Chat message input")}
           disabled={disabled}
         />
         <div className="flex items-center justify-between px-2 pb-1">
           <div className="flex items-center gap-4">
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest hidden md:block">
-              {value.length > 0 ? `${value.length} characters` : 'Neural Processing Active'}
+              {value.length > 0 ? `${value.length} ${t("characters")}` : t("Neural Processing Active")}
             </span>
           </div>
           <button
@@ -52,9 +54,9 @@ const ChatComposer: React.FC<ChatComposerProps> = ({
                 ? "bg-slate-900 dark:bg-teal-600 text-white shadow-md hover:bg-slate-800 dark:hover:bg-teal-700" 
                 : "bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed"
             }`}
-            aria-label="Send message"
+            aria-label={t("Send message")}
           >
-            <span className="hidden md:inline">Execute</span>
+            <span className="hidden md:inline">{t("Execute")}</span>
             <span className="material-icons-outlined text-lg">arrow_upward</span>
           </button>
         </div>

@@ -1,11 +1,13 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
 import { api } from "../lib/api";
 import { User } from "../types";
 
 const StudentProgressCurrent: React.FC<{ user: User; onLogout: () => void }> = ({ user, onLogout }) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const draftKey = "student_progress_current_draft";
   const [programType, setProgramType] = useState<"4-year" | "5-year">("4-year");
@@ -101,7 +103,7 @@ const StudentProgressCurrent: React.FC<{ user: User; onLogout: () => void }> = (
     e.preventDefault();
     setError("");
     if (!currentYear || !currentSemester) {
-      setError("Please select current study year and semester");
+      setError(t("Please select current study year and semester"));
       return;
     }
     setLoading(true);
@@ -135,15 +137,15 @@ const StudentProgressCurrent: React.FC<{ user: User; onLogout: () => void }> = (
     <div className="flex h-screen overflow-hidden bg-background-light dark:bg-background-dark">
       <Sidebar user={user} onLogout={onLogout} />
       <div className="flex flex-1 flex-col overflow-hidden">
-        <Header title="Major Selection Progress" user={user} />
+        <Header title={t("Major Selection Progress")} user={user} />
         <main className="flex-1 overflow-y-auto p-6 lg:p-8">
           <div className="max-w-xl mx-auto bg-white dark:bg-[#162a2d] rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-            <h1 className="text-xl font-bold text-[#0d1a1c] dark:text-white mb-4">Step 2: Current Year & Semester</h1>
-            <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">Program: {ruleNote}</p>
+            <h1 className="text-xl font-bold text-[#0d1a1c] dark:text-white mb-4">{t("Step 2: Current Year & Semester")}</h1>
+            <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">{t("Program")}: {t(ruleNote)}</p>
             {error && <div className="mb-3 text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg p-3">{error}</div>}
             <form onSubmit={submit} className="space-y-4">
               <div className="text-sm">
-                <div className="font-semibold text-[#0d1a1c] dark:text-gray-200 mb-1">Current Study Year</div>
+                <div className="font-semibold text-[#0d1a1c] dark:text-gray-200 mb-1">{t("Current Study Year")}</div>
                 <select
                   value={currentYear}
                   onChange={(e) => {
@@ -152,14 +154,14 @@ const StudentProgressCurrent: React.FC<{ user: User; onLogout: () => void }> = (
                   }}
                   className="w-full h-11 px-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-[#0d1a1c] text-[#0d1a1c] dark:text-white"
                 >
-                  <option value="">Select year</option>
+                  <option value="">{t("Select year")}</option>
                   {yearOptions.map((y) => (
-                    <option key={y} value={y}>{y}</option>
+                    <option key={y} value={y}>{t(y)}</option>
                   ))}
                 </select>
               </div>
               <div className="text-sm">
-                <div className="font-semibold text-[#0d1a1c] dark:text-gray-200 mb-1">Current Semester</div>
+                <div className="font-semibold text-[#0d1a1c] dark:text-gray-200 mb-1">{t("Current Semester")}</div>
                 <select
                   value={currentSemester}
                   onChange={(e) => {
@@ -168,14 +170,14 @@ const StudentProgressCurrent: React.FC<{ user: User; onLogout: () => void }> = (
                   }}
                   className="w-full h-11 px-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-[#0d1a1c] text-[#0d1a1c] dark:text-white"
                 >
-                  <option value="">Select semester</option>
+                  <option value="">{t("Select semester")}</option>
                   {semesterOptions.map((s) => (
-                    <option key={s} value={s}>{s}</option>
+                    <option key={s} value={s}>{t(s)}</option>
                   ))}
                 </select>
               </div>
               <button disabled={loading} className="w-full h-11 rounded-lg bg-primary text-white font-bold hover:bg-opacity-90 transition">
-                {loading ? "Saving..." : "Confirm Selection"}
+                {loading ? t("Saving...") : t("Confirm Selection")}
               </button>
             </form>
           </div>

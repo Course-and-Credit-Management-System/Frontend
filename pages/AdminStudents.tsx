@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
@@ -122,6 +123,7 @@ const formatSemesterLabel = (semester: number): string => `${formatOrdinal(semes
 
 
 const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
   
@@ -453,21 +455,21 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
     <div className="flex h-screen overflow-hidden bg-white dark:bg-slate-950">
       <Sidebar user={user} onLogout={onLogout} />
       <div className="flex flex-1 flex-col overflow-hidden">
-        <Header title="Students Directory" user={user} />
+        <Header title={t("Students Directory")} user={user} />
         <main className="flex-1 overflow-y-auto p-8 animate-in fade-in duration-700 slide-in-from-bottom-4 scrollbar-hide">
           {/* Filters Row */}
           <div className="mb-10 flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
             <div className="flex flex-1 flex-wrap items-end gap-4">
               {/* Search */}
               <div className="space-y-1.5 flex-1 min-w-[300px] max-w-md">
-                <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Search Directory</label>
+                <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">{t("Search Directory")}</label>
                 <div className="relative group">
                   <span className="absolute inset-y-0 left-0 flex items-center pl-4">
                     <span className="material-icons-outlined text-slate-400 group-focus-within:text-teal-500 transition-colors">search</span>
                   </span>
                   <input 
                     className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 py-3 pl-12 pr-4 text-sm font-medium focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500/50 outline-none transition-all dark:text-white placeholder:text-slate-400" 
-                    placeholder="Search name, ID or email..." 
+                    placeholder={t("Search name, ID or email...")} 
                     type="text"
                     value={searchQuery}
                     onChange={(e) => {
@@ -481,7 +483,7 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
               <div className="flex flex-wrap items-end gap-3">
                 {/* Year Filter */}
                 <div className="space-y-1.5 w-full sm:w-32 z-50">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Year</label>
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t("Year")}</label>
                   <CustomSelect
                     value={year?.toString() || ""}
                     onChange={(newVal) => {
@@ -502,7 +504,7 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
                       }
                     }}
                     options={[
-                      { value: "", label: "All Years" },
+                      { value: "", label: t("All Years") },
                       { value: "1", label: "1st Year" },
                       { value: "2", label: "2nd Year" },
                       { value: "3", label: "3rd Year" },
@@ -515,7 +517,7 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
 
                 {/* Semester Filter */}
                 <div className="space-y-1.5 w-full sm:w-24 z-40">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Sem</label>
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t("Sem")}</label>
                   <CustomSelect
                     value={semester?.toString() || ""}
                     onChange={(val) => {
@@ -523,7 +525,7 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
                       setCurrentPage(1); // Reset pagination
                     }}
                     options={[
-                      { value: "", label: "All" },
+                      { value: "", label: t("All") },
                       { value: "1", label: "1st" },
                       { value: "2", label: "2nd" }
                     ]}
@@ -534,7 +536,7 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
                 {/* Section Filter */}
                 {showSection && (
                   <div className="space-y-1.5 w-full sm:w-24 z-30 animate-in fade-in slide-in-from-left-2">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Section</label>
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t("Section")}</label>
                     <CustomSelect
                       value={sectionFilter}
                       onChange={(val) => {
@@ -542,7 +544,7 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
                         setCurrentPage(1); // Reset pagination
                       }}
                       options={[
-                        { value: "", label: "All" },
+                        { value: "", label: t("All") },
                         { value: "A", label: "A" },
                         { value: "B", label: "B" },
                         { value: "C", label: "C" }
@@ -555,7 +557,7 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
                 {/* Major Filter */}
                 {showMajorFilter && (
                   <div className="space-y-1.5 w-full sm:w-36 z-20 animate-in fade-in slide-in-from-left-2">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Major</label>
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t("Major")}</label>
                     <CustomSelect
                       value={major}
                       onChange={(val) => {
@@ -563,7 +565,7 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
                         setCurrentPage(1); // Reset pagination
                       }}
                       options={[
-                        { value: "", label: "All Majors" },
+                        { value: "", label: t("All Majors") },
                         ...majorOptions.map((m: any) => ({ value: m.id, label: m.id ? `${m.id} — ${m.major_name}` : m.major_name }))
                       ]}
                       className="w-full"
@@ -573,7 +575,7 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
 
                 {/* Status Filter */}
                 <div className="space-y-1.5 w-full sm:w-36 z-10">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Status</label>
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t("Status")}</label>
                   <CustomSelect
                     value={statusFilter}
                     onChange={(val) => {
@@ -581,7 +583,7 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
                       setCurrentPage(1); // Reset pagination
                     }}
                     options={[
-                      { value: "", label: "All Status" },
+                      { value: "", label: t("All Status") },
                       { value: "Active", label: "Active" },
                       { value: "Probation", label: "Probation" },
                       { value: "Suspended", label: "Suspended" },
@@ -608,7 +610,7 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
                 className="flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-5 py-3 text-sm font-bold text-slate-700 dark:text-white hover:bg-slate-50 dark:hover:bg-slate-800 transition-all shadow-sm active:scale-[0.98]"
               >
                 <span className="material-icons-outlined text-lg">{importing ? 'sync' : 'upload_file'}</span>
-                {importing ? 'Processing...' : 'Bulk Import'}
+                {importing ? 'Processing...' : t('Bulk Import')}
               </button>
               <button 
                 onClick={() => {
@@ -637,14 +639,14 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
                 <table className="w-full text-left text-sm">
                   <thead className="bg-slate-50/50 dark:bg-slate-950/50 text-[10px] uppercase font-bold tracking-widest text-slate-400 dark:text-slate-500 border-b border-slate-100 dark:border-slate-800">
                     <tr>
-                      <th className="px-8 py-5">ID</th>
-                      <th className="px-8 py-5">Student Identity</th>
-                      <th className="px-8 py-5">Major</th>
-                      <th className="px-8 py-5 text-center">Year/Sem</th>
-                      <th className="px-8 py-5 text-center">Section</th>
-                      <th className="px-8 py-5">Progress</th>
-                      <th className="px-8 py-5">Status</th>
-                      <th className="px-8 py-5 text-right">Actions</th>
+                      <th className="px-8 py-5">{t("ID")}</th>
+                      <th className="px-8 py-5">{t("Student Identity")}</th>
+                      <th className="px-8 py-5">{t("Major")}</th>
+                      <th className="px-8 py-5 text-center">{t("Year/Sem")}</th>
+                      <th className="px-8 py-5 text-center">{t("Section")}</th>
+                      <th className="px-8 py-5">{t("Progress")}</th>
+                      <th className="px-8 py-5">{t("Status")}</th>
+                      <th className="px-8 py-5 text-right">{t("Actions")}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
@@ -652,7 +654,7 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
                       <TableSkeletonRows rows={8} cols={8} />
                     ) : students.length === 0 ? (
                       <tr>
-                        <td colSpan={8} className="px-8 py-20 text-center text-slate-400 italic">No records found matching your filters</td>
+                        <td colSpan={8} className="px-8 py-20 text-center text-slate-400 italic">{t("No records found matching your filters")}</td>
                       </tr>
 	                    ) : (
 	                      students.map((s) => {
@@ -721,21 +723,21 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
                               <button 
                                   onClick={(e) => { e.stopPropagation(); handleStudentClick(s.user_id); }}
                                   className="p-2 rounded-xl text-slate-400 hover:text-teal-600 hover:bg-teal-50 dark:hover:bg-teal-900/20 transition-all"
-                                  title="View Profile"
+                                  title={t("View Profile")}
                               >
                                   <span className="material-icons-outlined text-lg">visibility</span>
                               </button>
                               <button 
                                   onClick={(e) => { e.stopPropagation(); openEditModal(s); }} 
                                   className="p-2 rounded-xl text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-all"
-                                  title="Edit Records"
+                                  title={t("Edit Records")}
                               >
                                   <span className="material-icons-outlined text-lg">edit</span>
                               </button>
                               <button 
                                   onClick={(e) => { e.stopPropagation(); handleDeleteStudent(s); }} 
                                   className="p-2 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-all"
-                                  title="Delete Student"
+                                  title={t("Delete Student")}
                               >
                                   <span className="material-icons-outlined text-lg">delete</span>
                               </button>
@@ -779,8 +781,8 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
           <div className="bg-white dark:bg-slate-900 rounded-[32px] shadow-2xl p-10 w-full max-w-2xl border border-slate-200 dark:border-slate-800 max-h-[90vh] overflow-y-auto scrollbar-hide animate-in zoom-in-95 duration-300">
             <div className="flex items-center justify-between mb-8">
               <div className="space-y-1">
-                <h3 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">Create Student Record</h3>
-                <p className="text-xs font-medium text-slate-400 uppercase tracking-widest">New institutional identity</p>
+                <h3 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">{t("Create Student Record")}</h3>
+                <p className="text-xs font-medium text-slate-400 uppercase tracking-widest">{t("New institutional identity")}</p>
               </div>
               <button onClick={() => setShowAddModal(false)} className="h-10 w-10 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
                 <span className="material-icons-outlined">close</span>
@@ -790,7 +792,7 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="space-y-6">
                 <div className="space-y-2">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Student ID *</label>
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t("Student ID *")}</label>
                   <input
                     type="text"
                     value={formData.user_id}
@@ -800,7 +802,7 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Full Name *</label>
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t("Full Name *")}</label>
                   <input
                     type="text"
                     value={formData.name}
@@ -810,7 +812,7 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Primary Email *</label>
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t("Primary Email *")}</label>
                   <input
                     type="email"
                     value={formData.email}
@@ -847,7 +849,7 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
                 </div>
 
                 <div className="space-y-2 relative z-[90]">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Academic Major</label>
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t("Academic Major")}</label>
                   <CustomSelect
                     value={formData.major}
                     onChange={(val) => setFormData(prev => ({ ...prev, major: val }))}
@@ -872,7 +874,7 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Credits</label>
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t("Credits")}</label>
                     <input
                       type="number"
                       value={formData.total_credits}
@@ -914,8 +916,8 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
           <div className="bg-white dark:bg-slate-900 rounded-[32px] shadow-2xl p-10 w-full max-w-2xl border border-slate-200 dark:border-slate-800 max-h-[90vh] overflow-y-auto scrollbar-hide animate-in zoom-in-95 duration-300">
             <div className="flex items-center justify-between mb-8">
               <div className="space-y-1">
-                <h3 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">Edit Student Record</h3>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Modifying {formData.user_id}</p>
+                <h3 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">{t("Edit Student Record")}</h3>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t("Modifying")} {formData.user_id}</p>
               </div>
               <button onClick={() => setEditingStudent(null)} className="h-10 w-10 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
                 <span className="material-icons-outlined">close</span>
@@ -925,7 +927,7 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="space-y-6">
                 <div className="space-y-2">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Student ID (Static)</label>
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t("Student ID (Static)")}</label>
                   <input
                     type="text"
                     value={formData.user_id}
@@ -934,7 +936,7 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Legal Name</label>
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t("Legal Name")}</label>
                   <input
                     type="text"
                     value={formData.name}
@@ -943,7 +945,7 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Institutional Email</label>
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t("Institutional Email")}</label>
                   <input
                     type="email"
                     value={formData.email}
@@ -981,7 +983,7 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
                 {/* Current Major - Only show for 3rd year and above */}
                 {formData.year >= 3 && (
                   <div className="space-y-2 relative z-[90]">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Current Major</label>
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t("Current Major")}</label>
                     <CustomSelect
                       value={formData.major}
                       onChange={(val) => setFormData(prev => ({ ...prev, major: val }))}
@@ -998,10 +1000,10 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
                     value={formData.section === "None" || formData.section === "N/A" || !formData.section ? "" : formData.section}
                     onChange={(val) => setFormData(prev => ({ ...prev, section: val }))}
                     options={[
-                      { value: "", label: "No Section" },
-                      { value: "A", label: "Section A" },
-                      { value: "B", label: "Section B" },
-                      { value: "C", label: "Section C" }
+                      { value: "", label: t("No Section") },
+                      { value: "A", label: t("Section A") },
+                      { value: "B", label: t("Section B") },
+                      { value: "C", label: t("Section C") }
                     ]}
                     className="w-full"
                   />
@@ -1027,7 +1029,7 @@ const AdminStudents: React.FC<StudentsProps> = ({ user, onLogout }) => {
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Credits</label>
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t("Credits")}</label>
                     <input
                       type="number"
                       value={formData.total_credits}

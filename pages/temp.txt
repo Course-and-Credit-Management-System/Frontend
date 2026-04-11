@@ -1,14 +1,11 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useTranslation } from "react-i18next";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
 import { User } from "../types";
 import { api } from "../lib/api";
 
 type MajorMeta = { code: string; title: string; desc: string; rec: string };
-
-import i18n from "../lib/i18n";
 
 const ALL_MAJORS: MajorMeta[] = [
   { code: "SE", title: "Software Engineering", desc: "Software design, development, and quality.", rec: "Enjoy building robust apps" },
@@ -26,7 +23,6 @@ const majorsForTrack = (track: "CS" | "CT"): MajorMeta[] => {
 };
 
 const StudentMajorSelection: React.FC<{ user: User; onLogout: () => void }> = ({ user, onLogout }) => {
-  const { t } = useTranslation();
   const navigate = useNavigate();
   const [programType, setProgramType] = useState<"4-year" | "5-year">("4-year");
   const [track, setTrack] = useState<"CS" | "CT" | null>(null);
@@ -68,7 +64,7 @@ const StudentMajorSelection: React.FC<{ user: User; onLogout: () => void }> = ({
             // If programType changed after state, recompute next render
           }
         } else if (res.type === "tracks") {
-          setError(res.eligibility?.reason || t("Select track first"));
+          setError(res.eligibility?.reason || "Select track first");
         }
         setEligibility(res.eligibility || null);
       })
@@ -88,10 +84,10 @@ const StudentMajorSelection: React.FC<{ user: User; onLogout: () => void }> = ({
       await api.studentSelectMajor({ major: code });
       const st = await api.studentMajorState();
       setSelectedMajor(st?.selected_major || code);
-      alert(t("Major selected and permanently locked. You cannot change it later."));
+      alert("Major selected and permanently locked. You cannot change it later.");
       navigate("/student/dashboard", { replace: true });
     } catch (e: any) {
-      setError(e?.message || t("Failed"));
+      setError(e?.message || "Failed");
     } finally {
       setLoading(false);
     }
@@ -101,16 +97,16 @@ const StudentMajorSelection: React.FC<{ user: User; onLogout: () => void }> = ({
     <div className="flex h-screen overflow-hidden bg-white dark:bg-slate-950 font-poppins">
       <Sidebar user={user} onLogout={onLogout} />
       <div className="flex flex-1 flex-col overflow-hidden relative">
-        <Header title={t("Academic Specialization")} user={user} />
+        <Header title="Academic Specialization" user={user} />
         <main className="flex-1 overflow-y-auto p-10 lg:p-16 scrollbar-hide animate-in fade-in duration-700 slide-in-from-bottom-4">
           <div className="max-w-6xl mx-auto">
             <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
               <div className="space-y-2">
-                <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tight">{t("Select Specialization")}</h1>
-                <p className="text-lg font-medium text-slate-400 dark:text-slate-500">{t("Define your academic trajectory within the {{programType}} framework.", { programType })}</p>
+                <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tight">Select Specialization</h1>
+                <p className="text-lg font-medium text-slate-400 dark:text-slate-500">Define your academic trajectory within the {programType} framework.</p>
               </div>
               <div className="px-4 py-1.5 rounded-full bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-400 text-[10px] font-black uppercase tracking-[0.2em] border border-teal-100 dark:border-teal-800 shadow-sm">
-                {programType} {t("Curriculum")}
+                {programType} Curriculum
               </div>
             </div>
 
@@ -125,8 +121,8 @@ const StudentMajorSelection: React.FC<{ user: User; onLogout: () => void }> = ({
               <div className="mb-10 p-6 rounded-[32px] bg-amber-50/50 border border-amber-100 dark:bg-amber-900/10 dark:border-amber-900/40 text-amber-800 dark:text-amber-200 flex items-start gap-4">
                 <span className="material-icons-outlined text-amber-500 mt-0.5">lock_clock</span>
                 <div>
-                  <p className="font-black uppercase tracking-widest text-[10px] mb-1">{t("State: Synchronized & Locked")}</p>
-                  <p className="text-sm font-medium leading-relaxed">{eligibility.reason || t("The selection window has concluded for this academic cycle.")}</p>
+                  <p className="font-black uppercase tracking-widest text-[10px] mb-1">State: Synchronized & Locked</p>
+                  <p className="text-sm font-medium leading-relaxed">{eligibility.reason || "The selection window has concluded for this academic cycle."}</p>
                 </div>
               </div>
             )}
@@ -136,19 +132,19 @@ const StudentMajorSelection: React.FC<{ user: User; onLogout: () => void }> = ({
                 <div className="h-16 w-16 rounded-[24px] bg-white dark:bg-slate-950 flex items-center justify-center text-slate-300 dark:text-slate-700 mb-6 border border-slate-100 dark:border-slate-800 shadow-sm">
                   <span className="material-icons-outlined text-3xl">history_edu</span>
                 </div>
-                <h3 className="text-xl font-black text-slate-900 dark:text-white mb-2">{t("Foundation Phase Active")}</h3>
+                <h3 className="text-xl font-black text-slate-900 dark:text-white mb-2">Foundation Phase Active</h3>
                 <p className="text-sm font-medium text-slate-400 dark:text-slate-500 max-w-sm mx-auto leading-relaxed">
-                  {t("Specialization selection initiates in the 3rd academic year. Complete your core requirements to unlock this protocol.")}
+                  Specialization selection initiates in the 3rd academic year. Complete your core requirements to unlock this protocol.
                 </p>
               </div>
             )}
 
             {eligibility && !eligibility.can_select_major ? (
               <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-sm text-red-700 dark:border-red-900/40 dark:bg-red-900/20 dark:text-red-200">
-                {eligibility.reason || t("Major selection is not available for the current year or semester.")}
+                {eligibility.reason || "Major selection is not available for the current year or semester."}
                 {(profileMajorId || selectedMajor || profileMajorTrack || track) && (
                   <div className="mt-3 text-[12px] text-gray-700 dark:text-gray-300 font-bold">
-                     {t("Recorded:")} {programType} • {t("Track:")} {track || profileMajorTrack || "-"} • {t("Major:")} {selectedMajor || profileMajorId || "-"}
+                    Recorded: {programType} • Track: {track || profileMajorTrack || "-"} • Major: {selectedMajor || profileMajorId || "-"}
                   </div>
                 )}
               </div>
@@ -167,18 +163,18 @@ const StudentMajorSelection: React.FC<{ user: User; onLogout: () => void }> = ({
                       </div>
                       <div className="min-w-0">
                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">{m.code}</p>
-                        <h3 className="text-lg font-black text-slate-900 dark:text-white tracking-tight truncate group-hover:text-teal-600 transition-colors">{t(m.title)}</h3>
+                        <h3 className="text-lg font-black text-slate-900 dark:text-white tracking-tight truncate group-hover:text-teal-600 transition-colors">{m.title}</h3>
                       </div>
                     </div>
 
                     <div className="space-y-6 flex-1 relative z-10">
                       <div className="space-y-2">
-                        <div className="text-[9px] font-black text-slate-300 dark:text-slate-600 uppercase tracking-[0.3em]">{t("Institutional Definition")}</div>
-                        <p className="text-sm font-medium text-slate-600 dark:text-slate-400 leading-relaxed italic">"{t(m.desc)}"</p>
+                        <div className="text-[9px] font-black text-slate-300 dark:text-slate-600 uppercase tracking-[0.3em]">Institutional Definition</div>
+                        <p className="text-sm font-medium text-slate-600 dark:text-slate-400 leading-relaxed italic">"{m.desc}"</p>
                       </div>
                       <div className="space-y-2">
-                        <div className="text-[9px] font-black text-slate-300 dark:text-slate-600 uppercase tracking-[0.3em]">{t("Optimal Candidate")}</div>
-                        <p className="text-sm font-medium text-slate-600 dark:text-slate-400 leading-relaxed">{t(m.rec)}</p>
+                        <div className="text-[9px] font-black text-slate-300 dark:text-slate-600 uppercase tracking-[0.3em]">Optimal Candidate</div>
+                        <p className="text-sm font-medium text-slate-600 dark:text-slate-400 leading-relaxed">{m.rec}</p>
                       </div>
                     </div>
 
@@ -191,7 +187,7 @@ const StudentMajorSelection: React.FC<{ user: User; onLogout: () => void }> = ({
                           : "bg-slate-900 dark:bg-teal-600 text-white shadow-slate-500/10 hover:bg-slate-800 dark:hover:bg-teal-700"
                       } disabled:opacity-30 disabled:shadow-none`}
                     >
-                      {selectedMajor === m.code ? t("ACTIVE PROTOCOL") : t("INITIATE SELECTION")}
+                      {selectedMajor === m.code ? "ACTIVE PROTOCOL" : "INITIATE SELECTION"}
                     </button>
                   </div>
                 ))}
@@ -209,3 +205,4 @@ const StudentMajorSelection: React.FC<{ user: User; onLogout: () => void }> = ({
 };
 
 export default StudentMajorSelection;
+

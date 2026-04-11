@@ -1,4 +1,7 @@
----
+const fs = require('fs');
+
+const agentPath = 'C:/Frontend/Frontend/.github/agents/i18n-translator.agent.md';
+let agentContent = `---
 name: i18n-translator
 description: "Specialized localization agent. Extracts hardcoded UI text from React components and implements bilingual (English and Myanmar) support using react-i18next."
 tools:
@@ -21,13 +24,32 @@ When invoked to localize a component:
 1. Parse the component using 'read_file'.
 2. Identify all user-facing hardcoded text.
 3. Update 'public/locales/en/translation.json' and 'public/locales/my/translation.json' by physically writing the missing keys using an explicit file system action (like a Node.js script). **DO NOT** just output the strings as text. Avoid 'snake_case' keys. Prefer 't("Readable Text")' keys.
-CRITICAL: For 'public/locales/my/translation.json', you MUST properly translate the English strings into the Myanmar (Burmese) language! Do NOT just copy the English strings as the Myanmar translation value.
 4. Actually overwrite the React component ('.tsx') code directly on disk to inject 'import { useTranslation } from "react-i18next";' and 'const { t } = useTranslation();' and replace the hardcoded strings with exactly 't("key")' bindings.
-CRITICAL WARNING: When using the `t` function from `useTranslation()`, you MUST ensure that no local variables or array `map` parameters are also named `t`. You must rename any conflicting variables (e.g. change `TYPES.map(t => ...)` to `TYPES.map(typeOption => ...)`) to avoid variable shadowing, which will cause a fatal runtime crash.
-CRITICAL WARNING: Always verify the `import { useTranslation } from "react-i18next";` is actually present in the final file. A ReferenceError crash will occur if you fail to inject it correctly because of string matching differences (single vs. double quotes) when writing your script or tool call.
 5. Verify layout and enforce 'Noto Sans Myanmar' typography.
 6. Validate execution natively by running a background TS/Vite compilation if possible ('npm run build').
 
 # Tool Restrictions
 - Focus exclusively on true file manipulation natively. If an edit is large, write a Node.js script to do it.
-- NEVER claim a file was updated without running a tool that modifies it.
+- NEVER claim a file was updated without running a tool that modifies it.`;
+
+fs.writeFileSync(agentPath, agentContent, 'utf8');
+
+const promptPath = 'C:/Frontend/Frontend/.github/prompts/localize-page.prompt.md';
+let promptContent = `---
+description: "Applies the i18n-translator agent to localize a specific frontend page based on its URL."
+---
+
+@i18n-translator Please localize the React component associated with this frontend URL: {{url}}.
+
+1. Identify the exact '.tsx' file that serves this route (e.g. from 'pages/').
+2. Follow your 'i18n-translator' core directives to extract all hardcoded English UI text displayed to the user.
+3. **MANDATORY**: Physically write/overwrite the '.tsx' file using file editing tools or a Node.js script. Do NOT just output the rewritten code in the chat. You MUST modify the actual file on disk. 
+4. **MANDATORY**: Physically append the newly extracted strings to BOTH 'public/locales/en/translation.json' and 'public/locales/my/translation.json' on disk using a script. Make sure the value for the English keys is actually readable Title Case/Sentence Case English, NOT 'snake_case' variable names! 
+5. Inject 'import { useTranslation } from "react-i18next";' and replace the original strings with 't(...)' bindings, preferring exact English strings as keys.
+6. Verify the files are actually updated.
+
+Here is the URL to process: {{url}}`;
+
+fs.writeFileSync(promptPath, promptContent, 'utf8');
+
+console.log("Documents successfully hardened against hallucinated updates.");

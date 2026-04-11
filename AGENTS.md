@@ -65,6 +65,12 @@ When rules conflict, apply this precedence:
 4. Include loading and error states for data fetches.
 5. Keep code ready for scalable patterns (query caching/interceptors/runtime validation) when extending API layer.
 
+## Scripting & Automation Rules
+1. **Windows PowerShell Environment**: Keep in mind that all terminal commands execute in PowerShell.
+2. **No Heredocs**: Never use bash `cat << 'EOF' > file.ext` or complex terminal output redirection since it leads to syntax errors in PowerShell.
+3. **No Inline Scripts**: Never use `node -e "..."` with embedded quotes or backslashes `\"`, as escaping fails on PowerShell and results in `MODULE_NOT_FOUND` or `SyntaxError: Invalid or unexpected token`. 
+4. ALWAYS use the designated `create_file` tool to drop `.cjs` or script files to disk, execute them via `node file.cjs`, and then optionally delete them.
+
 ## Prompt-Conformant Scaffolding
 When generating a new page:
 1. Use functional React components and hooks.

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
@@ -12,6 +13,7 @@ interface Props {
 }
 
 const AdminManualEnrollment: React.FC<Props> = ({ user, onLogout }) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [courses, setCourses] = useState<Course[]>([]);
   const [students, setStudents] = useState<{id: string, userId: string, name: string}[]>([]);
@@ -58,8 +60,8 @@ const AdminManualEnrollment: React.FC<Props> = ({ user, onLogout }) => {
         const rawStudents = Array.isArray(studentsData) ? studentsData : (studentsData.items || studentsData.data || []);
         const mappedStudents = rawStudents.map((s: any) => ({
              id: s._id || s.id, // Internal ID
-             userId: s.user_id || s.id || "N/A", // Display/Link ID
-             name: s.name || "Unknown Student"
+             userId: s.user_id || s.id || t("N/A"), // Display/Link ID
+             name: s.name || t("Unknown Student")
         }));
 
         // Handle possible { items: [] } structure for courses
@@ -70,13 +72,13 @@ const AdminManualEnrollment: React.FC<Props> = ({ user, onLogout }) => {
             name: c.title || c.name,
             department: c.department || '',
             credits: c.credits || 0,
-            type: c.type || 'Elective'
+            type: c.type || t("Elective")
         }));
 
         setCourses(mappedCourses);
         setStudents(mappedStudents);
       } catch (err: any) {
-        setError(err.message || "Failed to load data");
+        setError(err.message || t("Failed to load data"));
         console.error(err);
       } finally {
         setLoading(false);
@@ -93,7 +95,7 @@ const AdminManualEnrollment: React.FC<Props> = ({ user, onLogout }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedStudentId || !selectedCourseId) {
-      showToast("Please select both student and course", "error");
+      showToast(t("Please select both student and course"), "error");
       return;
     }
 
@@ -102,14 +104,14 @@ const AdminManualEnrollment: React.FC<Props> = ({ user, onLogout }) => {
         student_id: selectedStudentId,
         course_id: selectedCourseId
       });
-      showToast("Enrollment created successfully", "success");
+      showToast(t("Enrollment created successfully"), "success");
       // Reset form
       setSelectedStudentId("");
       setSelectedCourseId("");
       setCourseSearch("");
       setStudentSearch("");
     } catch (err: any) {
-      showToast(err.message || "Failed to create enrollment", "error");
+      showToast(err.message || t("Failed to create enrollment"), "error");
     }
   };
 
@@ -129,7 +131,7 @@ const AdminManualEnrollment: React.FC<Props> = ({ user, onLogout }) => {
       )}
 
       <div className="flex flex-1 flex-col overflow-hidden relative">
-        <Header title="Enrollment Override" user={user} />
+        <Header title={t("Enrollment Override")} user={user} />
         <main className="flex-1 overflow-y-auto p-10 lg:p-16 scrollbar-hide animate-in fade-in duration-1000 slide-in-from-bottom-4">
           <div className="max-w-4xl mx-auto">
             <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-8">
@@ -141,8 +143,8 @@ const AdminManualEnrollment: React.FC<Props> = ({ user, onLogout }) => {
                   <span className="material-icons-outlined text-sm transform group-hover:-translate-x-1 transition-transform">west</span>
                   Return to Matrix
                 </button>
-                <h2 className="text-4xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">Manual Provisioning</h2>
-                <p className="text-lg font-medium text-slate-400 dark:text-slate-500 max-w-xl">Bypass standard enrollment protocols to manually assign institutional courses to students.</p>
+                <h2 className="text-4xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">{t("Manual Provisioning")}</h2>
+                <p className="text-lg font-medium text-slate-400 dark:text-slate-500 max-w-xl">{t("Bypass standard enrollment protocols to manually assign institutional courses to students.")}</p>
               </div>
               <div className="px-4 py-1.5 rounded-full bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-400 text-[10px] font-black uppercase tracking-[0.2em] border border-teal-100 dark:border-teal-800 shadow-sm shrink-0">
                 Override Authorization Active
@@ -167,12 +169,12 @@ const AdminManualEnrollment: React.FC<Props> = ({ user, onLogout }) => {
                   
                   {/* Student Selection (Searchable) */}
                   <div ref={studentDropdownRef} className="relative group/field">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4 block ml-1">Target Subject</label>
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4 block ml-1">{t("Target Subject")}</label>
                     <div className="relative">
                       <span className="material-icons-outlined absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within/field:text-teal-500 transition-colors">person_pin</span>
                       <input
                         type="text"
-                        placeholder="Search student nomenclature or UID..."
+                        placeholder={t("Search student nomenclature or UID...")}
                         value={studentSearch}
                         onChange={(e) => {
                           setStudentSearch(e.target.value);
@@ -194,7 +196,7 @@ const AdminManualEnrollment: React.FC<Props> = ({ user, onLogout }) => {
                             (s.name || "").toLowerCase().includes(studentSearch.toLowerCase())
                         ).length === 0 ? (
                           <li className="px-6 py-10 text-center">
-                            <span className="text-xs font-black text-slate-300 uppercase tracking-widest italic">No Student Records Matching Filter</span>
+                            <span className="text-xs font-black text-slate-300 uppercase tracking-widest italic">{t("No Student Records Matching Filter")}</span>
                           </li>
                         ) : (
                           students.filter(s => 
@@ -224,12 +226,12 @@ const AdminManualEnrollment: React.FC<Props> = ({ user, onLogout }) => {
 
                   {/* Course Selection (Searchable) */}
                   <div ref={courseDropdownRef} className="relative group/field">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4 block ml-1">Institutional Course</label>
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4 block ml-1">{t("Institutional Course")}</label>
                     <div className="relative">
                       <span className="material-icons-outlined absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within/field:text-teal-500 transition-colors">auto_stories</span>
                       <input
                         type="text"
-                        placeholder="Search course code or title..."
+                        placeholder={t("Search course code or title...")}
                         value={courseSearch}
                         onChange={(e) => {
                           setCourseSearch(e.target.value);
@@ -251,7 +253,7 @@ const AdminManualEnrollment: React.FC<Props> = ({ user, onLogout }) => {
                             (c.name || "").toLowerCase().includes(courseSearch.toLowerCase())
                         ).length === 0 ? (
                           <li className="px-6 py-10 text-center">
-                            <span className="text-xs font-black text-slate-300 uppercase tracking-widest italic">No Curriculum Records Matching Filter</span>
+                            <span className="text-xs font-black text-slate-300 uppercase tracking-widest italic">{t("No Curriculum Records Matching Filter")}</span>
                           </li>
                         ) : (
                           courses.filter(c => 
@@ -269,7 +271,7 @@ const AdminManualEnrollment: React.FC<Props> = ({ user, onLogout }) => {
                             >
                               <div className="min-w-0">
                                 <span className="text-xs font-black text-slate-900 dark:text-white group-hover/item:text-teal-600 transition-colors uppercase tracking-tight truncate block">{course.name}</span>
-                                <p className="text-[10px] font-mono font-bold text-slate-400 mt-0.5">{course.code} • {course.credits} CU • {course.type}</p>
+                                <p className="text-[10px] font-mono font-bold text-slate-400 mt-0.5">{course.code} • {course.credits} {t("CU")} • {course.type}</p>
                               </div>
                               <span className="material-icons-outlined text-slate-200 group-hover/item:text-teal-500 opacity-0 group-hover/item:opacity-100 transition-all ml-4 shrink-0">add_task</span>
                             </li>
@@ -285,7 +287,7 @@ const AdminManualEnrollment: React.FC<Props> = ({ user, onLogout }) => {
                       disabled={!selectedStudentId || !selectedCourseId}
                       className="w-full h-16 rounded-[24px] bg-slate-900 dark:bg-teal-600 font-black text-xs uppercase tracking-[0.3em] text-white shadow-2xl shadow-slate-200 dark:shadow-teal-900/20 transition-all hover:bg-slate-800 dark:hover:bg-teal-700 active:scale-95 disabled:opacity-20 disabled:cursor-not-allowed disabled:shadow-none flex items-center justify-center gap-4 group"
                     >
-                      <span>Commit Enrollment</span>
+                      <span>{t("Commit Enrollment")}</span>
                       <span className="material-icons-outlined text-lg transition-transform group-hover:translate-x-1">east</span>
                     </button>
                   </div>

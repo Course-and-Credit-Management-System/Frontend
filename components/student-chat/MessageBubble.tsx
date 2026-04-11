@@ -1,12 +1,14 @@
 import React, { useState } from "react";
 import { StudentChatMessage } from "../../types/studentChat";
 import MarkdownContent from "./MarkdownContent";
+import { useTranslation } from "react-i18next";
 
 interface MessageBubbleProps {
   message: StudentChatMessage;
 }
 
 const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
+  const { t } = useTranslation();
   const isUser = message.role === "user";
   const [showSources, setShowSources] = useState(false);
 
@@ -30,7 +32,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
         </div>
         
         <div className={`mt-4 flex items-center gap-3 text-[10px] font-bold uppercase tracking-widest ${isUser ? "text-white/50" : "text-slate-400"}`}>
-          <span>{isUser ? 'Member' : 'System Intelligence'}</span>
+          <span>{isUser ? t('Member') : t('System Intelligence')}</span>
           <span className="opacity-30">•</span>
           <span>{new Date(message.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
         </div>
@@ -41,10 +43,10 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
               type="button"
               onClick={() => setShowSources((current) => !current)}
               className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-teal-600 hover:text-teal-700 transition-colors"
-              aria-expanded={showSources}
+              aria-expanded={showSources} title={showSources ? t("Conceal Citations") : t("View Evidence")}
             >
               <span className="material-icons-outlined text-sm">{showSources ? 'expand_less' : 'expand_more'}</span>
-              {showSources ? "Conceal Citations" : `View Evidence (${message.sources.length})`}
+              {showSources ? t("Conceal Citations") : `${t("View Evidence")} (${message.sources.length})`}
             </button>
             {showSources && (
               <div className="mt-4 space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">

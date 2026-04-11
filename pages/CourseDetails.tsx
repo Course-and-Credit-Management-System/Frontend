@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
@@ -13,6 +14,7 @@ interface CourseDetailsProps {
 }
 
 const CourseDetails: React.FC<CourseDetailsProps> = ({ user, onLogout }) => {
+  const { t } = useTranslation();
   const { courseId } = useParams<{ courseId: string }>();
   const navigate = useNavigate();
   const location = useLocation();
@@ -59,7 +61,7 @@ const CourseDetails: React.FC<CourseDetailsProps> = ({ user, onLogout }) => {
         setCourse(mapped);
       } catch (e: any) {
         if (!alive) return;
-        setError(e?.message || 'Failed to load course');
+        setError(e?.message || t("Failed to load course"));
       } finally {
         if (!alive) return;
         setLoading(false);
@@ -76,14 +78,14 @@ const CourseDetails: React.FC<CourseDetailsProps> = ({ user, onLogout }) => {
       <div className="flex h-screen overflow-hidden bg-background-light dark:bg-background-dark font-poppins">
         <Sidebar user={user} onLogout={onLogout} />
         <div className="flex flex-1 flex-col overflow-hidden">
-          <Header title="Course Details" user={user} />
+          <Header title={t("Course Details")} user={user} />
           <main className="flex-1 overflow-y-auto p-6 lg:p-8">
             <button
               onClick={() => navigate(-1)}
               className="flex items-center text-sm text-gray-500 hover:text-primary mb-6 transition-colors"
             >
               <span className="material-icons-outlined text-sm mr-1">arrow_back</span>
-              Back to Courses
+              {t("Back to Courses")}
             </button>
             <DetailedCardGridSkeleton count={3} />
           </main>
@@ -97,17 +99,17 @@ const CourseDetails: React.FC<CourseDetailsProps> = ({ user, onLogout }) => {
       <div className="flex h-screen overflow-hidden bg-background-light dark:bg-background-dark font-poppins">
         <Sidebar user={user} onLogout={onLogout} />
         <div className="flex flex-1 flex-col overflow-hidden">
-          <Header title="Course Details" user={user} />
+          <Header title={t("Course Details")} user={user} />
           <main className="flex-1 overflow-y-auto p-6 lg:p-8">
             <button
               onClick={() => navigate(-1)}
               className="flex items-center text-sm text-gray-500 hover:text-primary mb-6 transition-colors"
             >
               <span className="material-icons-outlined text-sm mr-1">arrow_back</span>
-              Back to Courses
+              {t("Back to Courses")}
             </button>
             <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900/40 dark:bg-red-900/20 dark:text-red-200">
-              {error || 'Course not found'}
+              {error || t("Course not found")}
             </div>
           </main>
         </div>
@@ -119,14 +121,14 @@ const CourseDetails: React.FC<CourseDetailsProps> = ({ user, onLogout }) => {
     <div className="flex h-screen overflow-hidden bg-white dark:bg-slate-950 font-poppins">
       <Sidebar user={user} onLogout={onLogout} />
       <div className="flex flex-1 flex-col overflow-hidden relative">
-        <Header title="Course Inventory" user={user} />
+        <Header title={t("Course Inventory")} user={user} />
         <main className="flex-1 overflow-y-auto p-10 lg:p-16 scrollbar-hide animate-in fade-in duration-1000 slide-in-from-bottom-4">
           <button
             onClick={() => navigate(-1)}
             className="group inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 hover:text-teal-600 transition-colors mb-10"
           >
             <span className="material-icons-outlined text-sm transform group-hover:-translate-x-1 transition-transform">west</span>
-            Back to Catalog
+            {t("Back to Catalog")}
           </button>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start max-w-[1600px] mx-auto">
@@ -136,13 +138,13 @@ const CourseDetails: React.FC<CourseDetailsProps> = ({ user, onLogout }) => {
                 <div className="relative z-10">
                   <div className="flex flex-wrap items-center gap-4 mb-8">
                     <span className="bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-400 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] border border-teal-100 dark:border-teal-800 shadow-sm">
-                      {course.type || 'Course Protocol'}
+                      {course.type || t("Course Protocol")}
                     </span>
                     <span className="text-slate-400 dark:text-slate-500 font-mono text-xs font-bold uppercase tracking-[0.2em]">{course.code}</span>
                   </div>
                   <h1 className="text-4xl lg:text-5xl font-black text-slate-900 dark:text-white tracking-tight leading-tight mb-8 group-hover:text-teal-600 transition-colors">{course.title}</h1>
                   <div className="space-y-2">
-                    <p className="text-[10px] font-black text-slate-300 dark:text-slate-600 uppercase tracking-[0.3em] mb-4">Course Abstract</p>
+                    <p className="text-[10px] font-black text-slate-300 dark:text-slate-600 uppercase tracking-[0.3em] mb-4">{t("Course Abstract")}</p>
                     <p className="text-lg font-medium text-slate-500 dark:text-slate-400 leading-relaxed max-w-4xl">{course.description}</p>
                   </div>
                 </div>
@@ -154,8 +156,8 @@ const CourseDetails: React.FC<CourseDetailsProps> = ({ user, onLogout }) => {
                     <span className="material-icons-outlined text-lg">list_alt</span>
                   </div>
                   <div>
-                    <h3 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">Curriculum Lifecycle</h3>
-                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mt-0.5">Weekly Syllabus Manifest</p>
+                    <h3 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">{t("Curriculum Lifecycle")}</h3>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mt-0.5">{t("Weekly Syllabus Manifest")}</p>
                   </div>
                 </div>
 
@@ -174,7 +176,7 @@ const CourseDetails: React.FC<CourseDetailsProps> = ({ user, onLogout }) => {
                     ))
                   ) : (
                     <div className="px-10 py-12 text-center">
-                      <p className="text-sm font-bold text-slate-400 uppercase tracking-widest italic">Syllabus synchronization pending...</p>
+                      <p className="text-sm font-bold text-slate-400 uppercase tracking-widest italic">{t("Syllabus synchronization pending...")}</p>
                     </div>
                   )}
                 </div>
@@ -183,14 +185,14 @@ const CourseDetails: React.FC<CourseDetailsProps> = ({ user, onLogout }) => {
 
             <div className="lg:col-span-4 space-y-10">
               <div className="bg-white dark:bg-slate-900 rounded-[40px] border border-slate-100 dark:border-slate-800 p-10 shadow-sm transition-all hover:shadow-md">
-                <h3 className="text-xs font-black uppercase tracking-[0.3em] text-slate-400 mb-8 ml-1">Logistics Matrix</h3>
+                <h3 className="text-xs font-black uppercase tracking-[0.3em] text-slate-400 mb-8 ml-1">{t("Logistics Matrix")}</h3>
                 <div className="space-y-8">
                   <div className="flex items-start gap-5 group">
                     <div className="h-10 w-10 rounded-2xl bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-400 border border-slate-100 dark:border-slate-800 group-hover:text-teal-600 transition-colors shrink-0">
                       <span className="material-icons-outlined text-lg">person_pin</span>
                     </div>
                     <div>
-                      <p className="text-[9px] font-black text-slate-300 dark:text-slate-600 uppercase tracking-widest mb-1">Academic Lead</p>
+                      <p className="text-[9px] font-black text-slate-300 dark:text-slate-600 uppercase tracking-widest mb-1">{t("Academic Lead")}</p>
                       <p className="text-sm font-black text-slate-900 dark:text-white tracking-tight">{course.instructor}</p>
                     </div>
                   </div>
@@ -200,7 +202,7 @@ const CourseDetails: React.FC<CourseDetailsProps> = ({ user, onLogout }) => {
                       <span className="material-icons-outlined text-lg">timer</span>
                     </div>
                     <div>
-                      <p className="text-[9px] font-black text-slate-300 dark:text-slate-600 uppercase tracking-widest mb-1">Execution Schedule</p>
+                      <p className="text-[9px] font-black text-slate-300 dark:text-slate-600 uppercase tracking-widest mb-1">{t("Execution Schedule")}</p>
                       {course.schedule.length ? (
                         <div className="space-y-2 mt-2">
                           {course.schedule.map((s, i) => (
@@ -220,7 +222,7 @@ const CourseDetails: React.FC<CourseDetailsProps> = ({ user, onLogout }) => {
                       <span className="material-icons-outlined text-lg">place</span>
                     </div>
                     <div>
-                      <p className="text-[9px] font-black text-slate-300 dark:text-slate-600 uppercase tracking-widest mb-1">Vector Location</p>
+                      <p className="text-[9px] font-black text-slate-300 dark:text-slate-600 uppercase tracking-widest mb-1">{t("Vector Location")}</p>
                       <p className="text-sm font-black text-slate-900 dark:text-white tracking-tight">{course.room}</p>
                     </div>
                   </div>
@@ -230,8 +232,8 @@ const CourseDetails: React.FC<CourseDetailsProps> = ({ user, onLogout }) => {
                       <span className="material-icons-outlined text-lg">token</span>
                     </div>
                     <div>
-                      <p className="text-[9px] font-black text-slate-300 dark:text-slate-600 uppercase tracking-widest mb-1">Unit Weight</p>
-                      <p className="text-sm font-black text-slate-900 dark:text-white tracking-tight">{course.credits} Credits</p>
+                      <p className="text-[9px] font-black text-slate-300 dark:text-slate-600 uppercase tracking-widest mb-1">{t("Unit Weight")}</p>
+                      <p className="text-sm font-black text-slate-900 dark:text-white tracking-tight">{course.credits} {t("Credits")}</p>
                     </div>
                   </div>
 
@@ -241,7 +243,7 @@ const CourseDetails: React.FC<CourseDetailsProps> = ({ user, onLogout }) => {
                         <span className="material-icons-outlined text-lg">calendar_today</span>
                       </div>
                       <div>
-                        <p className="text-[9px] font-black text-slate-300 dark:text-slate-600 uppercase tracking-widest mb-1">Semester Cycle</p>
+                        <p className="text-[9px] font-black text-slate-300 dark:text-slate-600 uppercase tracking-widest mb-1">{t("Semester Cycle")}</p>
                         <p className="text-sm font-black text-slate-900 dark:text-white tracking-tight">{course.semester}</p>
                       </div>
                     </div>
@@ -253,7 +255,7 @@ const CourseDetails: React.FC<CourseDetailsProps> = ({ user, onLogout }) => {
                         <span className="material-icons-outlined text-lg">corporate_fare</span>
                       </div>
                       <div>
-                        <p className="text-[9px] font-black text-slate-300 dark:text-slate-600 uppercase tracking-widest mb-1">Department Hub</p>
+                        <p className="text-[9px] font-black text-slate-300 dark:text-slate-600 uppercase tracking-widest mb-1">{t("Department Hub")}</p>
                         <p className="text-sm font-black text-slate-900 dark:text-white tracking-tight">{course.department}</p>
                       </div>
                     </div>
@@ -261,7 +263,7 @@ const CourseDetails: React.FC<CourseDetailsProps> = ({ user, onLogout }) => {
                 </div>
 
                 <div className="mt-12 pt-10 border-t border-slate-50 dark:border-slate-800">
-                  <h4 className="text-[9px] font-black text-slate-300 dark:text-slate-600 uppercase tracking-[0.3em] mb-6 ml-1">System Prerequisites</h4>
+                  <h4 className="text-[9px] font-black text-slate-300 dark:text-slate-600 uppercase tracking-[0.3em] mb-6 ml-1">{t("System Prerequisites")}</h4>
                   <div className="flex flex-wrap gap-3">
                     {course.prerequisites.length ? (
                       course.prerequisites.map((req, i) => (

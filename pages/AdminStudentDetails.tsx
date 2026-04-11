@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
@@ -72,6 +73,7 @@ const API_BASE = API_BASE_URL
   : "/api/v1";
 
 const AdminStudentDetails: React.FC<StudentDetailsProps> = ({ user, onLogout }) => {
+  const { t } = useTranslation();
   const { studentId } = useParams<{ studentId: string }>();
   const navigate = useNavigate();
 
@@ -254,10 +256,10 @@ const AdminStudentDetails: React.FC<StudentDetailsProps> = ({ user, onLogout }) 
       <div className="flex h-screen overflow-hidden bg-background-light dark:bg-background-dark font-sans">
         <Sidebar user={user} onLogout={onLogout} />
         <div className="flex flex-1 flex-col overflow-hidden">
-          <Header title="Student Profile & Enrollment" user={user} />
+          <Header title={t("Student Profile & Enrollment")} user={user} />
           <main className="flex-1 overflow-y-auto p-6 lg:p-8">
             <button onClick={() => navigate(-1)} className="flex items-center text-sm text-gray-500 hover:text-primary mb-6 transition-colors">
-              <span className="material-icons-outlined text-sm mr-1">arrow_back</span> Back to Directory
+              <span className="material-icons-outlined text-sm mr-1">arrow_back</span> {t("Back to Directory")}
             </button>
             <DetailedCardGridSkeleton count={3} />
           </main>
@@ -271,13 +273,13 @@ const AdminStudentDetails: React.FC<StudentDetailsProps> = ({ user, onLogout }) 
       <div className="flex h-screen overflow-hidden bg-background-light dark:bg-background-dark font-sans">
         <Sidebar user={user} onLogout={onLogout} />
         <div className="flex flex-1 flex-col overflow-hidden">
-          <Header title="Student Profile & Enrollment" user={user} />
+          <Header title={t("Student Profile & Enrollment")} user={user} />
           <main className="flex-1 overflow-y-auto p-6 lg:p-8">
             <button onClick={() => navigate(-1)} className="flex items-center text-sm text-gray-500 hover:text-primary mb-6 transition-colors">
-              <span className="material-icons-outlined text-sm mr-1">arrow_back</span> Back to Directory
+              <span className="material-icons-outlined text-sm mr-1">arrow_back</span> {t("Back to Directory")}
             </button>
             <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900/40 dark:bg-red-900/20 dark:text-red-200">
-              {error || 'Student not found'}
+              {error || t('Student not found')}
             </div>
           </main>
         </div>
@@ -289,14 +291,14 @@ const AdminStudentDetails: React.FC<StudentDetailsProps> = ({ user, onLogout }) 
     <div className="flex h-screen overflow-hidden bg-white dark:bg-slate-950 font-poppins relative">
       <Sidebar user={user} onLogout={onLogout} />
       <div className="flex flex-1 flex-col overflow-hidden relative">
-        <Header title="Institutional Profile" user={user} />
+        <Header title={t("Institutional Profile")} user={user} />
         <main className="flex-1 overflow-y-auto p-10 lg:p-16 scrollbar-hide animate-in fade-in duration-1000 slide-in-from-bottom-4">
           <button 
             onClick={() => navigate(-1)} 
             className="group inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 hover:text-teal-600 transition-colors mb-10"
           >
             <span className="material-icons-outlined text-sm transform group-hover:-translate-x-1 transition-transform">west</span>
-            Back to Directory
+            {t("Back to Directory")}
           </button>
 
           {message && (
@@ -332,16 +334,16 @@ const AdminStudentDetails: React.FC<StudentDetailsProps> = ({ user, onLogout }) 
                       {student.status}
                     </span>
                   </div>
-                  <p className="text-lg font-medium text-slate-400 dark:text-slate-500 uppercase tracking-tighter">ID: <span className="font-mono text-slate-900 dark:text-white">{sid}</span> • {displayMajor}</p>
+                  <p className="text-lg font-medium text-slate-400 dark:text-slate-500 uppercase tracking-tighter">{t("ID:")} <span className="font-mono text-slate-900 dark:text-white">{sid}</span> • {displayMajor}</p>
                 </div>
 
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-8 pt-4">
                   <div className="space-y-1">
-                    <span className="block text-[10px] font-black text-slate-300 dark:text-slate-600 uppercase tracking-[0.2em]">Accumulated CU</span>
+                    <span className="block text-[10px] font-black text-slate-300 dark:text-slate-600 uppercase tracking-[0.2em]">{t("Accumulated CU")}</span>
                     <span className="text-3xl font-black text-slate-900 dark:text-white tabular-nums tracking-tighter">{currentCredits.toFixed(1)} CU</span>
                   </div>
                   <div className="space-y-1 border-l border-slate-100 dark:border-slate-800 pl-8">
-                    <span className="block text-[10px] font-black text-slate-300 dark:text-slate-600 uppercase tracking-[0.2em]">Academic Cycle</span>
+                    <span className="block text-[10px] font-black text-slate-300 dark:text-slate-600 uppercase tracking-[0.2em]">{t("Academic Cycle")}</span>
                     <span className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">{displayYear}{displaySemester !== '—' ? ` / S${String(displaySemester)}` : ''}</span>
                   </div>
                 </div>
@@ -352,13 +354,13 @@ const AdminStudentDetails: React.FC<StudentDetailsProps> = ({ user, onLogout }) 
                   onClick={handleEditProfile} 
                   className="h-14 rounded-2xl bg-slate-900 dark:bg-teal-600 font-black text-[10px] uppercase tracking-[0.2em] text-white shadow-2xl shadow-slate-200 dark:shadow-teal-900/20 transition-all hover:bg-slate-800 dark:hover:bg-teal-700 active:scale-95 flex items-center justify-center gap-3"
                 >
-                  <span className="material-icons-outlined text-lg">settings</span> Modify Profile
+                  <span className="material-icons-outlined text-lg">settings</span> {t("Modify Profile")}
                 </button>
                 <button 
                   onClick={handleSendEmail} 
                   className="h-14 rounded-2xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 font-black text-[10px] uppercase tracking-[0.2em] text-slate-600 dark:text-white hover:bg-slate-50 dark:hover:bg-slate-700 transition-all active:scale-95 flex items-center justify-center gap-3 shadow-sm"
                 >
-                  <span className="material-icons-outlined text-lg">alternate_email</span> Dispatch Recall
+                  <span className="material-icons-outlined text-lg">alternate_email</span> {t("Dispatch Recall")}
                 </button>
               </div>
             </div>
@@ -371,13 +373,13 @@ const AdminStudentDetails: React.FC<StudentDetailsProps> = ({ user, onLogout }) 
                   <div className="h-10 w-10 rounded-2xl bg-white dark:bg-slate-900 flex items-center justify-center border border-slate-100 dark:border-slate-800 shadow-sm text-teal-600">
                     <span className="material-icons-outlined text-lg">list_alt</span>
                   </div>
-                  <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">Enrollment Matrix</h2>
+                  <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">{t("Enrollment Matrix")}</h2>
                 </div>
                 <button 
                   onClick={handleOpenAddCourse} 
                   className="px-6 py-2.5 rounded-xl bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-400 text-[10px] font-black uppercase tracking-widest border border-teal-100 dark:border-teal-800 transition-all hover:bg-teal-100 dark:hover:bg-teal-900/40 flex items-center gap-2"
                 >
-                  <span className="material-icons-outlined text-base">add</span> Provision Node
+                  <span className="material-icons-outlined text-base">add</span> {t("Provision Node")}
                 </button>
               </div>
 
@@ -386,11 +388,11 @@ const AdminStudentDetails: React.FC<StudentDetailsProps> = ({ user, onLogout }) 
                   <table className="w-full text-left">
                     <thead className="bg-slate-50/50 dark:bg-slate-950/50 text-[9px] uppercase font-black tracking-[0.3em] text-slate-400 border-b border-slate-50 dark:border-slate-800">
                       <tr>
-                        <th className="px-10 py-6">Curriculum Node</th>
-                        <th className="px-10 py-6 text-center">Volume</th>
-                        <th className="px-10 py-6">Semester</th>
-                        <th className="px-10 py-6">State</th>
-                        <th className="px-10 py-6 text-right">Intervention</th>
+                        <th className="px-10 py-6">{t("Curriculum Node")}</th>
+                        <th className="px-10 py-6 text-center">{t("Volume")}</th>
+                        <th className="px-10 py-6">{t("Semester")}</th>
+                        <th className="px-10 py-6">{t("State")}</th>
+                        <th className="px-10 py-6 text-right">{t("Intervention")}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-50 dark:divide-slate-800/50">
@@ -399,7 +401,7 @@ const AdminStudentDetails: React.FC<StudentDetailsProps> = ({ user, onLogout }) 
                           <div className="h-16 w-16 rounded-[24px] bg-slate-50 dark:bg-slate-950 flex items-center justify-center text-slate-200 dark:text-slate-800 mx-auto border border-slate-100 dark:border-slate-800">
                             <span className="material-icons-outlined text-3xl">inbox</span>
                           </div>
-                          <p className="text-xs font-black text-slate-300 uppercase tracking-widest">Null Enrollment State</p>
+                          <p className="text-xs font-black text-slate-300 uppercase tracking-widest">{t("Null Enrollment State")}</p>
                         </td></tr>
                       ) : (
                         student.enrollments.map((course) => (
@@ -439,7 +441,7 @@ const AdminStudentDetails: React.FC<StudentDetailsProps> = ({ user, onLogout }) 
                     </tbody>
                     <tfoot className="bg-slate-50/30 dark:bg-slate-950/20">
                       <tr>
-                        <td className="px-10 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Aggregate Node Volume</td>
+                        <td className="px-10 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">{t("Aggregate Node Volume")}</td>
                         <td className="px-10 py-6 text-center">
                           <span className="text-xl font-black text-teal-600 dark:text-teal-400 tabular-nums tracking-tighter">{currentCredits.toFixed(1)}</span>
                         </td>
@@ -459,7 +461,7 @@ const AdminStudentDetails: React.FC<StudentDetailsProps> = ({ user, onLogout }) 
                   <div className="h-10 w-10 rounded-2xl bg-white dark:bg-slate-900 flex items-center justify-center border border-slate-100 dark:border-slate-800 shadow-sm text-indigo-600">
                     <span className="material-icons-outlined text-lg">history_edu</span>
                   </div>
-                  <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">Academic History</h2>
+                  <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">{t("Academic History")}</h2>
                 </div>
               </div>
 
@@ -468,11 +470,11 @@ const AdminStudentDetails: React.FC<StudentDetailsProps> = ({ user, onLogout }) 
 	                  <table className="w-full text-left">
 		                    <thead className="bg-slate-50/50 dark:bg-slate-950/50 text-[10px] uppercase font-black tracking-[0.26em] text-slate-400 border-b border-slate-50 dark:border-slate-800">
 		                      <tr>
-		                        <th className="px-6 py-5 min-w-[220px]">Academic Semester</th>
-		                        <th className="px-6 py-5 text-center min-w-[130px]">Course Count</th>
-	                        <th className="px-6 py-5 min-w-[460px]">Courses</th>
-	                        <th className="px-6 py-5 text-center min-w-[150px]">Credits Earned</th>
-	                        <th className="px-6 py-5 text-center min-w-[140px]">Semester GPA</th>
+		                        <th className="px-6 py-5 min-w-[220px]">{t("Academic Semester")}</th>
+		                        <th className="px-6 py-5 text-center min-w-[130px]">{t("Course Count")}</th>
+	                        <th className="px-6 py-5 min-w-[460px]">{t("Courses")}</th>
+	                        <th className="px-6 py-5 text-center min-w-[150px]">{t("Credits Earned")}</th>
+	                        <th className="px-6 py-5 text-center min-w-[140px]">{t("Semester GPA")}</th>
 		                      </tr>
 		                    </thead>
 		                    <tbody className="divide-y divide-slate-50 dark:divide-slate-800/50">
@@ -481,7 +483,7 @@ const AdminStudentDetails: React.FC<StudentDetailsProps> = ({ user, onLogout }) 
 		                          <div className="h-16 w-16 rounded-[24px] bg-slate-50 dark:bg-slate-950 flex items-center justify-center text-slate-200 dark:text-slate-800 mx-auto border border-slate-100 dark:border-slate-800">
 		                            <span className="material-icons-outlined text-3xl">history</span>
 		                          </div>
-	                          <p className="text-xs font-black text-slate-300 uppercase tracking-widest">No Academic History Available</p>
+	                          <p className="text-xs font-black text-slate-300 uppercase tracking-widest">{t("No Academic History Available")}</p>
 	                        </td></tr>
 	                      ) : (
 	                        student.academic_history.map((entry, index) => {
@@ -507,7 +509,7 @@ const AdminStudentDetails: React.FC<StudentDetailsProps> = ({ user, onLogout }) 
                                       <span className="block text-lg font-black text-slate-900 dark:text-white leading-tight">{entry.semester}</span>
                                       {typeof entry.total_grade_points === 'number' ? (
                                         <span className="block text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                                          Grade Points: {entry.total_grade_points.toFixed(2)}
+                                          {t("Grade Points:")} {entry.total_grade_points.toFixed(2)}
                                         </span>
                                       ) : null}
                                     </div>
@@ -526,7 +528,7 @@ const AdminStudentDetails: React.FC<StudentDetailsProps> = ({ user, onLogout }) 
                                         <div key={`${course.course_code}-${courseIndex}`} className="flex items-center justify-between gap-3 rounded-xl border border-slate-100 dark:border-slate-700 bg-slate-50/60 dark:bg-slate-800/50 px-3 py-2">
                                           <div className="min-w-0">
                                             <div className="text-[10px] font-black font-mono text-slate-500 dark:text-slate-300 uppercase tracking-wider">{course.course_code}</div>
-                                            <div className="text-xs font-bold text-slate-900 dark:text-white truncate">{course.course_title || 'Untitled course'}</div>
+                                            <div className="text-xs font-bold text-slate-900 dark:text-white truncate">{course.course_title || t('Untitled course')}</div>
                                           </div>
                                           <div className="shrink-0 flex items-center gap-2">
                                             {course.grade ? (
@@ -585,13 +587,13 @@ const AdminStudentDetails: React.FC<StudentDetailsProps> = ({ user, onLogout }) 
 	                  <div className="h-10 w-10 rounded-2xl bg-white dark:bg-slate-900 flex items-center justify-center border border-slate-100 dark:border-slate-800 shadow-sm text-teal-600">
 	                    <span className="material-icons-outlined text-lg">track_changes</span>
 	                  </div>
-	                  <h3 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">Curriculum Audit</h3>
+	                  <h3 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">{t("Curriculum Audit")}</h3>
 	                </div>
 	                
 	                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 	                  <div className="space-y-4 lg:col-span-1">
 	                    <div className="flex items-end justify-between">
-	                      <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Completion Yield</span>
+	                      <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">{t("Completion Yield")}</span>
 	                      <span className="text-sm font-black text-teal-600 tabular-nums">
                         {student.creditsRequired ? Math.min(100, Math.round((student.creditsEarned / student.creditsRequired) * 100)) : 0}%
                       </span>
@@ -603,7 +605,7 @@ const AdminStudentDetails: React.FC<StudentDetailsProps> = ({ user, onLogout }) 
                       />
                     </div>
                     <p className="text-[9px] font-black text-slate-300 dark:text-slate-600 uppercase tracking-widest text-center">
-                      {student.creditsEarned} node units / {student.creditsRequired} required volume
+                      {student.creditsEarned} {t("node units /")} {student.creditsRequired} {t("required volume")}
                     </p>
                   </div>
 
@@ -611,14 +613,14 @@ const AdminStudentDetails: React.FC<StudentDetailsProps> = ({ user, onLogout }) 
 	                    <div className="flex items-start gap-4">
 	                      <span className="material-icons-outlined text-slate-200 text-lg">school</span>
 	                      <div>
-	                        <p className="text-[9px] font-black text-slate-300 dark:text-slate-600 uppercase tracking-widest mb-1">Academic Advisor</p>
-	                        <p className="text-sm font-bold text-slate-900 dark:text-white tracking-tight">{student.advisor || 'System Default'}</p>
+	                        <p className="text-[9px] font-black text-slate-300 dark:text-slate-600 uppercase tracking-widest mb-1">{t("Academic Advisor")}</p>
+	                        <p className="text-sm font-bold text-slate-900 dark:text-white tracking-tight">{student.advisor || t('System Default')}</p>
 	                      </div>
 	                    </div>
 	                    <div className="flex items-start gap-4">
 	                      <span className="material-icons-outlined text-slate-200 text-lg">alternate_email</span>
 	                      <div>
-	                        <p className="text-[9px] font-black text-slate-300 dark:text-slate-600 uppercase tracking-widest mb-1">Dispatch Origin</p>
+	                        <p className="text-[9px] font-black text-slate-300 dark:text-slate-600 uppercase tracking-widest mb-1">{t("Dispatch Origin")}</p>
 	                        <p className="text-sm font-bold text-slate-900 dark:text-white tracking-tight break-all">{student.email}</p>
 	                      </div>
 	                    </div>
@@ -639,8 +641,8 @@ const AdminStudentDetails: React.FC<StudentDetailsProps> = ({ user, onLogout }) 
           <div className="bg-white dark:bg-slate-900 rounded-[40px] max-w-xl w-full p-10 lg:p-12 shadow-2xl border border-slate-100 dark:border-slate-800 animate-in zoom-in-95 duration-500">
             <div className="flex items-center justify-between mb-10">
               <div className="space-y-1">
-                <h3 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Identity Registry</h3>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Update institutional record fields</p>
+                <h3 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">{t("Identity Registry")}</h3>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t("Update institutional record fields")}</p>
               </div>
               <button 
                 onClick={() => setShowEditModal(false)}
@@ -652,38 +654,38 @@ const AdminStudentDetails: React.FC<StudentDetailsProps> = ({ user, onLogout }) 
 
             <div className="space-y-6">
               <div className="space-y-2">
-                <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Nomenclature</label>
+                <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">{t("Nomenclature")}</label>
                 <input type="text" value={editForm.name} onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))} className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50/50 dark:border-slate-800 dark:bg-slate-950/50 font-bold text-sm focus:ring-4 focus:ring-teal-500/10 outline-none transition-all dark:text-white" />
               </div>
               <div className="space-y-2">
-                <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Recall Dispatch</label>
+                <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">{t("Recall Dispatch")}</label>
                 <input type="email" value={editForm.email} onChange={e => setEditForm(f => ({ ...f, email: e.target.value }))} className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50/50 dark:border-slate-800 dark:bg-slate-950/50 font-bold text-sm focus:ring-4 focus:ring-teal-500/10 outline-none transition-all dark:text-white" />
               </div>
               <div className="grid grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Active Year</label>
+                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">{t("Active Year")}</label>
                   <select value={editForm.year} onChange={e => setEditForm(f => ({ ...f, year: Number(e.target.value) }))} className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50/50 dark:border-slate-800 dark:bg-slate-950/50 font-bold text-sm outline-none transition-all dark:text-white cursor-pointer">{[1,2,3,4,5].map(n => <option key={n} value={n}>{n}</option>)}</select>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Active Period</label>
-                  <select value={editForm.semester} onChange={e => setEditForm(f => ({ ...f, semester: Number(e.target.value) }))} className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50/50 dark:border-slate-800 dark:bg-slate-950/50 font-bold text-sm outline-none transition-all dark:text-white cursor-pointer"><option value={1}>Period 01</option><option value={2}>Period 02</option></select>
+                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">{t("Active Period")}</label>
+                  <select value={editForm.semester} onChange={e => setEditForm(f => ({ ...f, semester: Number(e.target.value) }))} className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50/50 dark:border-slate-800 dark:bg-slate-950/50 font-bold text-sm outline-none transition-all dark:text-white cursor-pointer"><option value={1}>{t("Period 01")}</option><option value={2}>{t("Period 02")}</option></select>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Specialization</label>
+                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">{t("Specialization")}</label>
                   <input type="text" value={editForm.major} onChange={e => setEditForm(f => ({ ...f, major: e.target.value }))} className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50/50 dark:border-slate-800 dark:bg-slate-950/50 font-bold text-sm outline-none transition-all dark:text-white" placeholder="CS" />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Integrity Status</label>
-                  <select value={editForm.status} onChange={e => setEditForm(f => ({ ...f, status: e.target.value }))} className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50/50 dark:border-slate-800 dark:bg-slate-950/50 font-bold text-sm outline-none transition-all dark:text-white cursor-pointer"><option>Active</option><option>Probation</option><option>Suspended</option><option>Graduated</option></select>
+                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">{t("Integrity Status")}</label>
+                  <select value={editForm.status} onChange={e => setEditForm(f => ({ ...f, status: e.target.value }))} className="w-full px-6 py-4 rounded-2xl border border-slate-100 bg-slate-50/50 dark:border-slate-800 dark:bg-slate-950/50 font-bold text-sm outline-none transition-all dark:text-white cursor-pointer"><option value="Active">{t("Active")}</option><option value="Probation">{t("Probation")}</option><option value="Suspended">{t("Suspended")}</option><option value="Graduated">{t("Graduated")}</option></select>
                 </div>
               </div>
             </div>
             
             <div className="flex gap-4 mt-12">
-              <button onClick={() => setShowEditModal(false)} className="flex-1 h-14 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] text-slate-400 hover:text-slate-600 transition-all">Cancel Override</button>
-              <button onClick={handleSaveEdit} disabled={saving} className="flex-1 h-14 rounded-2xl bg-slate-900 dark:bg-teal-600 font-black text-[10px] uppercase tracking-[0.2em] text-white shadow-xl hover:bg-slate-800 dark:hover:bg-teal-700 transition-all active:scale-95 disabled:opacity-30">Commit Record</button>
+              <button onClick={() => setShowEditModal(false)} className="flex-1 h-14 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] text-slate-400 hover:text-slate-600 transition-all">{t("Cancel Override")}</button>
+              <button onClick={handleSaveEdit} disabled={saving} className="flex-1 h-14 rounded-2xl bg-slate-900 dark:bg-teal-600 font-black text-[10px] uppercase tracking-[0.2em] text-white shadow-xl hover:bg-slate-800 dark:hover:bg-teal-700 transition-all active:scale-95 disabled:opacity-30">{t("Commit Record")}</button>
             </div>
           </div>
         </div>
@@ -694,8 +696,8 @@ const AdminStudentDetails: React.FC<StudentDetailsProps> = ({ user, onLogout }) 
           <div className="bg-white dark:bg-slate-900 rounded-[40px] max-w-xl w-full p-10 lg:p-12 shadow-2xl border border-slate-100 dark:border-slate-800 animate-in zoom-in-95 duration-500">
             <div className="flex items-center justify-between mb-10">
               <div className="space-y-1">
-                <h3 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Node Provisioning</h3>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Assign new curriculum node to matrix</p>
+                <h3 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">{t("Node Provisioning")}</h3>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t("Assign new curriculum node to matrix")}</p>
               </div>
               <button 
                 onClick={() => setShowAddCourseModal(false)}
@@ -707,17 +709,17 @@ const AdminStudentDetails: React.FC<StudentDetailsProps> = ({ user, onLogout }) 
 
             <div className="space-y-6">
               <div className="space-y-2">
-                <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Institutional Curriculum</label>
+                <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">{t("Institutional Curriculum")}</label>
                 <select value={selectedCourse} onChange={e => setSelectedCourse(e.target.value)} className="w-full px-6 py-5 rounded-2xl border border-slate-100 bg-slate-50/50 dark:border-slate-800 dark:bg-slate-950/50 font-bold text-sm outline-none transition-all dark:text-white cursor-pointer focus:ring-4 focus:ring-teal-500/10">
-                  <option value="">Select Curriculum Node</option>
+                  <option value="">{t("Select Curriculum Node")}</option>
                   {courses.map(c => <option key={c.course_code} value={c.course_code}>{c.course_code} – {c.title} ({c.credits} CU)</option>)}
                 </select>
               </div>
             </div>
 
             <div className="flex gap-4 mt-12">
-              <button onClick={() => setShowAddCourseModal(false)} className="flex-1 h-14 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] text-slate-400 hover:text-slate-600 transition-all">Cancel Dispatch</button>
-              <button onClick={handleAddCourse} disabled={saving || !selectedCourse} className="flex-1 h-14 rounded-2xl bg-slate-900 dark:bg-teal-600 font-black text-[10px] uppercase tracking-[0.2em] text-white shadow-xl hover:bg-slate-800 dark:hover:bg-teal-700 transition-all active:scale-95 disabled:opacity-30">Authorize Provision</button>
+              <button onClick={() => setShowAddCourseModal(false)} className="flex-1 h-14 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] text-slate-400 hover:text-slate-600 transition-all">{t("Cancel Dispatch")}</button>
+              <button onClick={handleAddCourse} disabled={saving || !selectedCourse} className="flex-1 h-14 rounded-2xl bg-slate-900 dark:bg-teal-600 font-black text-[10px] uppercase tracking-[0.2em] text-white shadow-xl hover:bg-slate-800 dark:hover:bg-teal-700 transition-all active:scale-95 disabled:opacity-30">{t("Authorize Provision")}</button>
             </div>
           </div>
         </div>

@@ -4,6 +4,7 @@ import Header from "../components/Header";
 import { User } from "../types";
 import { api } from "../lib/api";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 interface DashboardProps {
   user: User;
@@ -238,6 +239,7 @@ function Modal({
 }
 
 const AdminDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   const [stats, setStats] = useState<AdminStatisticsResponse | null>(null);
@@ -332,12 +334,12 @@ const AdminDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
         value: x.count,
         color: palette[idx % palette.length],
       })),
-      ...(othersCount > 0 ? [{ label: "Other Majors", value: othersCount, color: palette[palette.length - 1] }] : []),
+      ...(othersCount > 0 ? [{ label: t("Other Majors"), value: othersCount, color: palette[palette.length - 1] }] : []),
     ];
 
     const ranked = [
       ...top.map((x) => ({ label: x.major, value: x.count })),
-      ...(othersCount > 0 ? [{ label: "Other Majors", value: othersCount }] : []),
+      ...(othersCount > 0 ? [{ label: t("Other Majors"), value: othersCount }] : []),
     ];
 
     return { total, segments, ranked };
@@ -349,32 +351,32 @@ const AdminDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
 
     return [
       {
-        label: "Total Students",
+        label: t("Total Students"),
         value: stats ? formatCompact(stats.totalStudents) : "—",
-        sub: "Total active student accounts",
+        sub: t("Total active student accounts"),
         icon: <IconBadge icon="groups" tone="primary" />,
-        rightHint: stats ? `${formatNumber(stats.totalStudents)} records` : "—",
+        rightHint: stats ? `${formatNumber(stats.totalStudents)} ${t("records")}` : "—",
       },
       {
-        label: "Graduated",
+        label: t("Graduated"),
         value: stats ? formatCompact(stats.graduatedCount) : "—",
-        sub: "Academic status: Graduated",
+        sub: t("Academic status: Graduated"),
         icon: <IconBadge icon="school" tone="emerald" />,
-        rightHint: stats ? `${formatNumber(stats.graduatedCount)} completed` : "—",
+        rightHint: stats ? `${formatNumber(stats.graduatedCount)} ${t("completed")}` : "—",
       },
       {
-        label: "Retake Required",
+        label: t("Retake Required"),
         value: stats ? formatCompact(stats.retakeRequirement) : "—",
-        sub: "Needs retake intervention",
+        sub: t("Needs retake intervention"),
         icon: <IconBadge icon="history_edu" tone="amber" />,
-        rightHint: "Needs attention",
+        rightHint: t("Needs attention"),
       },
       {
-        label: "Average GPA",
+        label: t("Average GPA"),
         value: stats ? (stats.averageGPA || 0).toFixed(2) : "—",
-        sub: "Average GPA of active students",
+        sub: t("Average GPA of active students"),
         icon: <IconBadge icon="leaderboard" tone={gpaTone as any} />,
-        rightHint: avgGpa ? (avgGpa >= 3.0 ? "Healthy" : "Watch") : "—",
+        rightHint: avgGpa ? (avgGpa >= 3.0 ? t("Healthy") : t("Watch")) : "—",
       },
     ] as const;
   }, [stats]);
@@ -393,8 +395,8 @@ const AdminDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     }> = [
       {
         key: "passwordResets",
-        title: "Must Reset Password",
-        description: "Accounts requiring password reset on next sign-in.",
+        title: t("Must Reset Password"),
+        description: t("Accounts requiring password reset on next sign-in."),
         count: mustResetPasswordCount || 0,
         tone: "green",
         icon: "lock_reset",
@@ -404,8 +406,8 @@ const AdminDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
       },
       {
         key: "schedulePending",
-        title: "Schedule Pending",
-        description: "Enrollments pending review (previously conflicts).",
+        title: t("Schedule Pending"),
+        description: t("Enrollments pending review (previously conflicts)."),
         count: pendingSchedulePending,
         tone: "rose",
         icon: "error_outline",
@@ -422,16 +424,16 @@ const AdminDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
     "rounded-2xl bg-surface-light shadow-sm border border-border-light dark:bg-surface-dark dark:border-border-dark";
 
   const healthPill = (h: HealthState) => {
-    if (h === "online") return { tone: "green" as const, label: "Online" };
-    if (h === "degraded") return { tone: "amber" as const, label: "Degraded" };
-    if (h === "offline") return { tone: "rose" as const, label: "Offline" };
-    return { tone: "gray" as const, label: "Unknown" };
+    if (h === "online") return { tone: "green" as const, label: t("Online") };
+    if (h === "degraded") return { tone: "amber" as const, label: t("Degraded") };
+    if (h === "offline") return { tone: "rose" as const, label: t("Offline") };
+    return { tone: "gray" as const, label: t("Unknown") };
   };
 
   const sessionPill = (s: SessionState) => {
-    if (s === "active") return { tone: "cyan" as const, label: "Active" };
-    if (s === "expired") return { tone: "rose" as const, label: "Expired" };
-    return { tone: "gray" as const, label: "Unknown" };
+    if (s === "active") return { tone: "cyan" as const, label: t("Active") };
+    if (s === "expired") return { tone: "rose" as const, label: t("Expired") };
+    return { tone: "gray" as const, label: t("Unknown") };
   };
 
   //  Pending modal data (Major Change removed from UI)
@@ -503,7 +505,7 @@ const AdminDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
       <Sidebar user={user} onLogout={onLogout} />
 
       <div className="flex flex-1 flex-col overflow-hidden">
-        <Header title="Admin Dashboard" user={user} />
+        <Header title={t("Admin Dashboard")} user={user} />
 
         <main className="flex-1 overflow-y-auto scrollbar-hide">
           {/* Top command bar */}
@@ -512,24 +514,20 @@ const AdminDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
               <div className="flex flex-col gap-10 xl:flex-row xl:items-end xl:justify-between">
                 <div className="space-y-3">
                   <div className="flex flex-wrap items-center gap-4">
-                    <h1 className="text-4xl font-black tracking-tight text-slate-900 dark:text-white leading-tight">
-                      Operations Overview
-                    </h1>
+                    <h1 className="text-4xl font-black tracking-tight text-slate-900 dark:text-white leading-tight">{t("Operations Overview")}</h1>
                     {refreshing ? (
                       <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-[10px] font-black uppercase tracking-[0.2em]">
                         <span className="material-icons-outlined text-[14px] animate-spin">sync</span>
-                        Synchronizing
+                        {t("Synchronizing")}
                       </div>
                     ) : (
                       <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-400 text-[10px] font-black uppercase tracking-[0.2em] border border-teal-100 dark:border-teal-800">
                         <span className="material-icons-outlined text-[14px]">history</span>
-                        {lastUpdated ? timeAgo(lastUpdated) : "—"}
+                        {lastUpdated ? (Date.now() - lastUpdated < 60000 ? t("Just now") : timeAgo(lastUpdated)) : "—"}
                       </div>
                     )}
                   </div>
-                  <p className="text-lg font-medium text-slate-400 dark:text-slate-500 max-w-2xl leading-relaxed">
-                    Institutional intelligence and administrative priorities synchronized in real-time.
-                  </p>
+                  <p className="text-lg font-medium text-slate-400 dark:text-slate-500 max-w-2xl leading-relaxed">{t("Institutional intelligence and administrative priorities synchronized in real-time.")}</p>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-4">
@@ -539,9 +537,7 @@ const AdminDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                   >
                     <span className={cn("material-icons-outlined text-[20px]", refreshing && "animate-spin")}>
                       refresh
-                    </span>
-                    Sync
-                  </button>
+                    </span>{t("Sync")}</button>
 
                   <div className="hidden sm:block h-10 w-px bg-slate-200 dark:bg-slate-800 mx-4" />
 
@@ -549,9 +545,7 @@ const AdminDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                     onClick={() => go("/admin/announcements")}
                     className="flex-1 sm:flex-none inline-flex items-center justify-center gap-3 rounded-2xl bg-teal-600 px-8 py-4 text-xs font-black uppercase tracking-widest text-white shadow-lg hover:bg-teal-700 transition-all active:scale-[0.98]"
                   >
-                    <span className="material-icons-outlined text-[20px]">campaign</span>
-                    Announce
-                  </button>
+                    <span className="material-icons-outlined text-[20px]">campaign</span>{t("Announce")}</button>
 
                   <button
                     onClick={() => go("/admin/courses")}
@@ -575,16 +569,14 @@ const AdminDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                     <div className="flex items-center gap-3">
                       <span className="material-icons-outlined text-[20px]">error_outline</span>
                       <div>
-                        <span className="font-bold mr-2">Sync Error:</span>
+                        <span className="font-bold mr-2">{t("Sync Error:")}</span>
                         <span className="opacity-90">{error}</span>
                       </div>
                     </div>
                     <button
                       onClick={() => load("refresh")}
                       className="rounded-xl bg-rose-600 px-4 py-2 text-xs font-bold text-white hover:bg-rose-700 transition-colors"
-                    >
-                      Retry Sync
-                    </button>
+                    >{t("Retry Sync")}</button>
                   </div>
                 </div>
               )}
@@ -636,7 +628,7 @@ const AdminDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 mb-10">
                   <div className="space-y-1">
                     <div className="flex items-center gap-3">
-                      <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">Student Analytics</h2>
+                      <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">{t("Student Analytics")}</h2>
                       <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-400 text-[10px] font-bold uppercase tracking-widest border border-teal-100 dark:border-teal-800">
                         <span className="w-1.5 h-1.5 rounded-full bg-teal-500 animate-pulse" />
                         Live Metrics
@@ -663,8 +655,8 @@ const AdminDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                       <div className="flex items-center gap-4">
                         <IconBadge icon="school" tone="emerald" />
                         <div>
-                          <div className="text-base font-bold text-slate-900 dark:text-white">Graduated</div>
-                          <div className="text-xs text-slate-500 dark:text-slate-400">Successfully completed</div>
+                          <div className="text-base font-bold text-slate-900 dark:text-white">{t("Graduated")}</div>
+                          <div className="text-xs text-slate-500 dark:text-slate-400">{t("Successfully completed")}</div>
                         </div>
                       </div>
                       <div className="px-2 py-0.5 rounded-md bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 text-[9px] font-extrabold uppercase tracking-widest">
@@ -690,20 +682,18 @@ const AdminDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                       <div className="flex items-center gap-4">
                         <IconBadge icon="history_edu" tone="amber" />
                         <div>
-                          <div className="text-base font-bold text-slate-900 dark:text-white">Retake Required</div>
-                          <div className="text-xs text-slate-500 dark:text-slate-400">Requires intervention</div>
+                          <div className="text-base font-bold text-slate-900 dark:text-white">{t("Retake Required")}</div>
+                          <div className="text-xs text-slate-500 dark:text-slate-400">{t("Requires intervention")}</div>
                         </div>
                       </div>
-                      <div className="px-2 py-0.5 rounded-md bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 text-[9px] font-extrabold uppercase tracking-widest">
-                        Attention
-                      </div>
+                      <div className="px-2 py-0.5 rounded-md bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 text-[9px] font-extrabold uppercase tracking-widest">{t("Attention")}</div>
                     </div>
 
                     <div className="relative mt-8 flex items-end justify-between">
                       <div className="text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">
                         {loading ? <Skeleton className="h-10 w-32" /> : formatNumber(stats?.retakeRequirement ?? 0)}
                       </div>
-                      <div className="text-xs font-bold text-amber-600 dark:text-amber-400 mb-1">Review pending</div>
+                      <div className="text-xs font-bold text-amber-600 dark:text-amber-400 mb-1">{t("Review pending")}</div>
                     </div>
                   </div>
                 </div>
@@ -715,7 +705,7 @@ const AdminDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                       <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">
                         Major Distribution
                       </h3>
-                      <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Cohort split by academic specialization</p>
+                      <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{t("Cohort split by academic specialization")}</p>
                     </div>
                     <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 text-[10px] font-bold uppercase tracking-widest shadow-sm">
                       <span className="material-icons-outlined text-[14px]">pie_chart</span>
@@ -782,8 +772,8 @@ const AdminDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                 <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-[40px] p-10 shadow-sm transition-all hover:shadow-md">
                   <div className="flex items-start justify-between gap-6 mb-10">
                     <div className="space-y-1">
-                      <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Core Engine</h3>
-                      <p className="text-sm font-bold text-slate-500">Service availability</p>
+                      <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">{t("Core Engine")}</h3>
+                      <p className="text-sm font-bold text-slate-500">{t("Service availability")}</p>
                     </div>
                     {(() => {
                       const pill =
@@ -793,7 +783,7 @@ const AdminDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                           ? { tone: "amber" as const, label: "Warning" }
                           : apiHealth === "offline"
                           ? { tone: "rose" as const, label: "Critical" }
-                          : { tone: "gray" as const, label: "Unknown" };
+                          : { tone: "gray" as const, label: t("Unknown") };
                       return (
                         <div className={cn(
                           "flex items-center gap-2.5 px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-[0.2em] border shadow-sm",
@@ -849,8 +839,8 @@ const AdminDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
                 <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-[40px] p-10 shadow-sm transition-all hover:shadow-md">
                   <div className="flex items-start justify-between gap-6 mb-10">
                     <div className="space-y-1">
-                      <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Action Inbox</h3>
-                      <p className="text-sm font-bold text-slate-500">Awaiting intervention</p>
+                      <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">{t("Action Inbox")}</h3>
+                      <p className="text-sm font-bold text-slate-500">{t("Awaiting intervention")}</p>
                     </div>
 
                     <button onClick={() => openPendingModal("all")} className="text-[10px] font-black text-teal-600 hover:text-teal-700 uppercase tracking-[0.2em] transition-colors border-b-2 border-teal-600/20 pb-1">
@@ -927,8 +917,8 @@ const AdminDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
       {/* Pending Queue Modal */}
       <Modal
         open={pendingModalOpen}
-        title="Institutional Queue"
-        subtitle="Priority protocols from the central records fabric"
+        title={t("Institutional Queue")}
+        subtitle={t("Priority protocols from the central records fabric")}
         onClose={() => setPendingModalOpen(false)}
       >
         <div className="flex flex-col gap-8 sm:flex-row sm:items-center sm:justify-between mb-10 px-2">
@@ -960,7 +950,7 @@ const AdminDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
             <input
               value={pendingSearch}
               onChange={(e) => setPendingSearch(e.target.value)}
-              placeholder="Search protocols..."
+              placeholder={t("Search protocols...")}
               className="w-full rounded-[24px] border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950 pl-14 pr-6 py-4 text-sm font-bold text-slate-900 dark:text-white outline-none focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500/50 transition-all shadow-sm"
             />
           </div>
@@ -968,15 +958,15 @@ const AdminDashboard: React.FC<DashboardProps> = ({ user, onLogout }) => {
 
         <div className="overflow-hidden rounded-[32px] border border-slate-100 dark:border-slate-800 shadow-sm bg-white dark:bg-slate-950 mx-2">
           <div className="grid grid-cols-12 bg-slate-50/50 dark:bg-slate-900/50 px-10 py-5 text-[9px] font-black uppercase tracking-[0.3em] text-slate-400 dark:text-slate-500 border-b border-slate-100 dark:border-slate-800">
-            <div className="col-span-3">Protocol</div>
-            <div className="col-span-5">Subject Matrix</div>
-            <div className="col-span-2">Vector</div>
-            <div className="col-span-2 text-right">Age</div>
+            <div className="col-span-3">{t("Protocol")}</div>
+            <div className="col-span-5">{t("Subject Matrix")}</div>
+            <div className="col-span-2">{t("Vector")}</div>
+            <div className="col-span-2 text-right">{t("Age")}</div>
           </div>
 
           <div className="divide-y divide-slate-50 dark:divide-slate-800/50 max-h-[50vh] overflow-y-auto scrollbar-hide">
             {modalList.length === 0 ? (
-              <div className="p-20 text-center text-sm font-bold text-slate-300 italic uppercase tracking-widest">Zero Matching Records</div>
+              <div className="p-20 text-center text-sm font-bold text-slate-300 italic uppercase tracking-widest">{t("Zero Matching Records")}</div>
             ) : (
               modalList.slice(0, 50).map((row, idx) => {
                 const doc = row.doc || {};
