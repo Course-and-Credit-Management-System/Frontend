@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
@@ -43,8 +44,8 @@ function formatDateTime(value?: string | null) {
   }).format(date);
 }
 
-function formatCountdown(msRemaining: number) {
-  if (msRemaining <= 0) return "Expired";
+function formatCountdown(msRemaining: number, t: any) {
+  if (msRemaining <= 0) return t("Expired");
   const totalSeconds = Math.floor(msRemaining / 1000);
   const days = Math.floor(totalSeconds / 86400);
   const hours = Math.floor((totalSeconds % 86400) / 3600);
@@ -56,6 +57,7 @@ function formatCountdown(msRemaining: number) {
 }
 
 const AdminEnrollmentSettings: React.FC<AdminEnrollmentSettingsProps> = ({ user, onLogout }) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [setting, setSetting] = useState<EnrollmentSetting | null>(null);
   const [loadingCurrent, setLoadingCurrent] = useState(true);
@@ -97,7 +99,7 @@ const AdminEnrollmentSettings: React.FC<AdminEnrollmentSettingsProps> = ({ user,
         setSetting(null);
         setNotFound(true);
       } else {
-        setFetchError(error?.message || "Failed to load enrollment setting.");
+        setFetchError(error?.message || t("Failed to load enrollment setting."));
       }
     } finally {
       setLoadingCurrent(false);
@@ -114,8 +116,8 @@ const AdminEnrollmentSettings: React.FC<AdminEnrollmentSettingsProps> = ({ user,
     if (!Number.isFinite(closeAt)) return "N/A";
     const currentNow = Date.now();
     const remainingMs = closeAt - currentNow;
-    return formatCountdown(remainingMs);
-  }, [setting, tick]);
+    return formatCountdown(remainingMs, t);
+  }, [setting, tick, t]);
 
   const runSubmit = async (action: "post" | "put") => {
     setFormApiError(null);
@@ -132,11 +134,11 @@ const AdminEnrollmentSettings: React.FC<AdminEnrollmentSettingsProps> = ({ user,
       }
       setToast({
         type: "success",
-        message: action === "post" ? "Enrollment setting renewed successfully." : "Enrollment setting updated successfully.",
+        message: action === "post" ? t("Enrollment setting renewed successfully.") : t("Enrollment setting updated successfully."),
       });
       await fetchCurrent();
     } catch (error: any) {
-      setFormApiError(error?.message || "Failed to save setting.");
+      setFormApiError(error?.message || t("Failed to save setting."));
     } finally {
       setSubmitAction(null);
     }
@@ -149,13 +151,13 @@ const AdminEnrollmentSettings: React.FC<AdminEnrollmentSettingsProps> = ({ user,
       await api.adminSetEnrollmentSettingStatus({ status });
       setToast({
         type: "success",
-        message: `Enrollment is now ${status === "open" ? "Open" : "Closed"}.`,
+        message: `Enrollment is now ${status === "open" ? t("Open") : t("Closed")}.`,
       });
       await fetchCurrent();
     } catch (error: any) {
       setToast({
         type: "error",
-        message: error?.message || "Failed to change enrollment status.",
+        message: error?.message || t("Failed to change enrollment status."),
       });
     } finally {
       setStatusLoading(false);
@@ -184,7 +186,7 @@ const AdminEnrollmentSettings: React.FC<AdminEnrollmentSettingsProps> = ({ user,
       ) : null}
 
       <div className="flex flex-1 flex-col overflow-hidden">
-        <Header title="Enrollment Controls" user={user} />
+        <Header title={t("Enrollment Controls")} user={user} />
         <main className="flex-1 overflow-y-auto p-8 animate-in fade-in duration-700 slide-in-from-bottom-4 scrollbar-hide max-w-[1200px] mx-auto w-full">
           <section className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div className="space-y-2">
@@ -195,14 +197,14 @@ const AdminEnrollmentSettings: React.FC<AdminEnrollmentSettingsProps> = ({ user,
                 <span className="material-icons-outlined text-sm transform group-hover:-translate-x-1 transition-transform">west</span>
                 Return to Management
               </button>
-              <h1 className="text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">Global Parameters</h1>
-              <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Master configuration for institutional enrollment windows</p>
+              <h1 className="text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">{t("Global Parameters")}</h1>
+              <p className="text-sm font-medium text-slate-500 dark:text-slate-400">{t("Master configuration for institutional enrollment windows")}</p>
             </div>
           </section>
 
           <section className="rounded-[32px] border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30 p-8 shadow-sm mb-10 transition-all hover:bg-white dark:hover:bg-slate-900 hover:shadow-md">
             <div className="flex items-center justify-between mb-8">
-              <h2 className="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">Active Policy</h2>
+              <h2 className="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">{t("Active Policy")}</h2>
               <div className="h-px flex-1 mx-6 bg-slate-200 dark:bg-slate-800 hidden md:block" />
               {setting && (
                 <div className={`px-4 py-1.5 rounded-full text-[10px] font-extrabold uppercase tracking-widest border ${
@@ -233,8 +235,8 @@ const AdminEnrollmentSettings: React.FC<AdminEnrollmentSettingsProps> = ({ user,
                 <div className="h-16 w-16 rounded-3xl bg-white dark:bg-slate-950 flex items-center justify-center mx-auto mb-4 shadow-sm border border-teal-100/50">
                   <span className="material-icons-outlined text-teal-600 text-3xl">settings_input_component</span>
                 </div>
-                <p className="text-sm font-bold text-teal-700 dark:text-teal-400">System configuration not initialized.</p>
-                <p className="text-xs text-teal-600/70 dark:text-teal-500/70 mt-1">Use the interface below to define the first singleton policy.</p>
+                <p className="text-sm font-bold text-teal-700 dark:text-teal-400">{t("System configuration not initialized.")}</p>
+                <p className="text-xs text-teal-600/70 dark:text-teal-500/70 mt-1">{t("Use the interface below to define the first singleton policy.")}</p>
               </div>
             ) : null}
 
@@ -246,7 +248,7 @@ const AdminEnrollmentSettings: React.FC<AdminEnrollmentSettingsProps> = ({ user,
                       <span className="material-icons-outlined text-xl">timer</span>
                     </div>
                     <div>
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Time Buffer</p>
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t("Time Buffer")}</p>
                       <p className="text-lg font-extrabold text-slate-900 dark:text-white tracking-tight">{openRemaining}</p>
                     </div>
                   </div>
@@ -256,29 +258,29 @@ const AdminEnrollmentSettings: React.FC<AdminEnrollmentSettingsProps> = ({ user,
                 </div>
 
                 <div className="rounded-2xl bg-white dark:bg-slate-950 p-6 border border-slate-100 dark:border-slate-800 shadow-sm transition-all hover:border-teal-500/30">
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Availability Window</p>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">{t("Availability Window")}</p>
                   <div className="space-y-4">
                     <div className="flex justify-between items-center">
-                      <span className="text-xs font-bold text-slate-500">Commencement</span>
+                      <span className="text-xs font-bold text-slate-500">{t("Commencement")}</span>
                       <span className="text-sm font-extrabold text-slate-900 dark:text-white">{formatDateTime(setting.enrollment_open_at)}</span>
                     </div>
                     <div className="h-px bg-slate-50 dark:bg-slate-900" />
                     <div className="flex justify-between items-center">
-                      <span className="text-xs font-bold text-slate-500">Termination</span>
+                      <span className="text-xs font-bold text-slate-500">{t("Termination")}</span>
                       <span className="text-sm font-extrabold text-slate-900 dark:text-white">{formatDateTime(setting.enrollment_close_at)}</span>
                     </div>
                   </div>
                 </div>
 
                 <div className="rounded-2xl bg-white dark:bg-slate-950 p-6 border border-slate-100 dark:border-slate-800 shadow-sm transition-all hover:border-teal-500/30">
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Constraint Matrix</p>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">{t("Constraint Matrix")}</p>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="bg-slate-50 dark:bg-slate-900 p-3 rounded-xl">
-                      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">Credits</p>
+                      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">{t("Credits")}</p>
                       <p className="text-xl font-black text-slate-900 dark:text-white">{setting.max_credits}</p>
                     </div>
                     <div className="bg-slate-50 dark:bg-slate-900 p-3 rounded-xl">
-                      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">Waitlist</p>
+                      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">{t("Waitlist")}</p>
                       <p className="text-xl font-black text-slate-900 dark:text-white">{setting.allow_waitlist ? "ON" : "OFF"}</p>
                     </div>
                   </div>
@@ -289,14 +291,14 @@ const AdminEnrollmentSettings: React.FC<AdminEnrollmentSettingsProps> = ({ user,
 
           <div className="grid grid-cols-1 xl:grid-cols-12 gap-10 items-start">
             <section className="xl:col-span-8 rounded-[32px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm p-10">
-              <h3 className="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-8">Policy Definition</h3>
+              <h3 className="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-8">{t("Policy Definition")}</h3>
 
               <form
                 className="space-y-8"
                 onSubmit={(e) => e.preventDefault()}
               >
                 <div className="space-y-3">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Temporal Unit</label>
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t("Temporal Unit")}</label>
                   <div className="inline-flex rounded-2xl bg-slate-100 dark:bg-slate-950 p-1.5 border border-slate-200 dark:border-slate-800">
                     <button
                       type="button"
@@ -341,7 +343,7 @@ const AdminEnrollmentSettings: React.FC<AdminEnrollmentSettingsProps> = ({ user,
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Credit Ceiling</label>
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t("Credit Ceiling")}</label>
                     <input
                       type="number"
                       min={1}
@@ -353,7 +355,7 @@ const AdminEnrollmentSettings: React.FC<AdminEnrollmentSettingsProps> = ({ user,
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Course Capacity (Optional)</label>
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t("Course Capacity (Optional)")}</label>
                     <input
                       type="number"
                       min={1}
@@ -368,7 +370,7 @@ const AdminEnrollmentSettings: React.FC<AdminEnrollmentSettingsProps> = ({ user,
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <label className="flex items-center justify-between rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 p-5 cursor-pointer group">
                     <div className="space-y-0.5">
-                      <span className="block text-sm font-extrabold text-slate-900 dark:text-white">Allow Waitlist</span>
+                      <span className="block text-sm font-extrabold text-slate-900 dark:text-white">{t("Allow Waitlist")}</span>
                       <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Queueing overflow overflow</span>
                     </div>
                     <input
@@ -380,8 +382,8 @@ const AdminEnrollmentSettings: React.FC<AdminEnrollmentSettingsProps> = ({ user,
                   </label>
                   <label className="flex items-center justify-between rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 p-5 cursor-pointer group">
                     <div className="space-y-0.5">
-                      <span className="block text-sm font-extrabold text-slate-900 dark:text-white">Active Status</span>
-                      <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Immediate deployment</span>
+                      <span className="block text-sm font-extrabold text-slate-900 dark:text-white">{t("Active Status")}</span>
+                      <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-tighter">{t("Immediate deployment")}</span>
                     </div>
                     <input
                       type="checkbox"
@@ -421,8 +423,8 @@ const AdminEnrollmentSettings: React.FC<AdminEnrollmentSettingsProps> = ({ user,
 
             <section className="xl:col-span-4 space-y-8">
               <div className="rounded-[32px] bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-8 shadow-sm">
-                <h3 className="text-lg font-extrabold text-slate-900 dark:text-white tracking-tight mb-2">Gate Controls</h3>
-                <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-8 leading-relaxed">Instantly toggle institutional enrollment access</p>
+                <h3 className="text-lg font-extrabold text-slate-900 dark:text-white tracking-tight mb-2">{t("Gate Controls")}</h3>
+                <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-8 leading-relaxed">{t("Instantly toggle institutional enrollment access")}</p>
                 <div className="space-y-4">
                   <button
                     disabled={!setting || statusLoading}
@@ -445,7 +447,7 @@ const AdminEnrollmentSettings: React.FC<AdminEnrollmentSettingsProps> = ({ user,
                 <div className="flex gap-4">
                   <span className="text-2xl">Tip:</span>
                   <div className="space-y-2">
-                    <p className="text-xs font-bold text-teal-800 dark:text-teal-300 uppercase tracking-widest">Operational Tip</p>
+                    <p className="text-xs font-bold text-teal-800 dark:text-teal-300 uppercase tracking-widest">{t("Operational Tip")}</p>
                     <p className="text-xs text-teal-700 dark:text-teal-400 leading-relaxed font-medium">
                       Singleton settings apply globally to all departments. Use "Renew" only when starting a completely new academic cycle.
                     </p>
@@ -463,7 +465,7 @@ const AdminEnrollmentSettings: React.FC<AdminEnrollmentSettingsProps> = ({ user,
             <div className={`h-20 w-20 rounded-3xl flex items-center justify-center mx-auto mb-6 ${confirmStatus === 'open' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
               <span className="material-icons-outlined text-4xl">{confirmStatus === 'open' ? 'lock_open' : 'lock'}</span>
             </div>
-            <h4 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-2">Gate Confirmation</h4>
+            <h4 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-2">{t("Gate Confirmation")}</h4>
             <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-10 leading-relaxed">
               Are you prepared to set the global enrollment state to{" "}
               <span className={`font-black uppercase ${confirmStatus === 'open' ? 'text-emerald-600' : 'text-rose-600'}`}>{confirmStatus}</span>?

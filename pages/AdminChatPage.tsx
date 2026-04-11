@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
 import ChatWindow from "../components/admin-chat/ChatWindow";
@@ -59,6 +60,7 @@ const createMessage = (
 });
 
 const AdminChatPage: React.FC<AdminChatPageProps> = ({ user, onLogout }) => {
+  const { t } = useTranslation();
   const initialState = useMemo(() => getInitialState(), []);
   const [selectedMode, setSelectedMode] = useState<AdminChatMode>(initialState.selectedMode);
   const [messages, setMessages] = useState<AdminChatMessage[]>(initialState.messages);
@@ -124,20 +126,20 @@ const AdminChatPage: React.FC<AdminChatPageProps> = ({ user, onLogout }) => {
     } catch (error) {
       if (error instanceof HttpStatusError) {
         if (error.status === 401) {
-          setErrorMessage("Your session expired. Please sign in again.");
+          setErrorMessage(t("Your session expired. Please sign in again."));
         } else if (error.status === 403) {
-          setErrorMessage("You do not have permission to use Admin AI Assistant.");
+          setErrorMessage(t("You do not have permission to use Admin AI Assistant."));
         } else if (error.status === 429) {
-          setErrorMessage("Too many requests. Please wait a moment and retry.");
+          setErrorMessage(t("Too many requests. Please wait a moment and retry."));
         } else if (error.status >= 500) {
-          setErrorMessage("The AI service is temporarily unavailable. Please try again shortly.");
+          setErrorMessage(t("The AI service is temporarily unavailable. Please try again shortly."));
         } else {
           setErrorMessage(error.message);
         }
       } else if (error instanceof Error) {
         setErrorMessage(error.message);
       } else {
-        setErrorMessage("Unexpected error while contacting AI service.");
+        setErrorMessage(t("Unexpected error while contacting AI service."));
       }
     } finally {
       setIsPending(false);

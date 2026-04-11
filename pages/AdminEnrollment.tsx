@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
+// import React, { useState, useEffect } from 'react';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
 import { TableSkeletonRows } from '../components/Skeleton';
@@ -78,6 +80,7 @@ interface EnrollmentProps {
 type SemesterKey = 'fall' | 'summer';
 
 const AdminEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [requests, setRequests] = useState<EnrollmentRequest[]>([]);
   const [loading, setLoading] = useState(true);
@@ -125,7 +128,7 @@ const AdminEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
       setRequests(mapped);
     } catch (err: any) {
       console.error(err);
-      setError("Failed to load enrollments");
+      setError(t("Failed to load enrollments"));
     } finally {
       setLoading(false);
     }
@@ -236,10 +239,10 @@ const AdminEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
     if (selectedRequestId) {
       try {
         await api.adminUpdateEnrollmentStatus(selectedRequestId, { status: "Dropped", reason: rejectReason });
-        showToast("Mission Complete", 'success');
+        showToast(t("Mission Complete"), 'success');
         setRequests(prev => prev.filter(r => r.id !== selectedRequestId));
       } catch (err: any) {
-        showToast(err.message || "Failed to reject enrollment", 'error');
+        showToast(err.message || t("Failed to reject enrollment"), 'error');
       } finally {
         setIsRejectModalOpen(false);
       }
@@ -252,7 +255,7 @@ const AdminEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
       showToast("Mission Complete", 'success');
       setRequests(prev => prev.map(r => r.id === id ? { ...r, status: 'Enrolled' } : r));
     } catch (err: any) {
-      showToast(err.message || "Failed to approve enrollment", 'error');
+      showToast(err.message || t("Failed to approve enrollment"), 'error');
     }
   };
 
@@ -263,19 +266,19 @@ const AdminEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
       setAdvanceLoading(targetSemester);
       setAdvanceDetail(null);
       const res = await api.adminAdvanceSemester();
-      const detail = res?.detail || "Semester advanced successfully.";
+      const detail = res?.detail || t("Semester advanced successfully.");
       const isBlocked = detail.toLowerCase().includes("blocked");
       if (isBlocked) {
         setAdvanceState('error');
-        setAdvanceDetail("Can't advance now.");
+        setAdvanceDetail(t("Can't advance now."));
         showToast("Can't advance now.", 'error');
       } else {
         setAdvanceState('success');
         setCurrentSemester(targetSemester);
         localStorage.setItem("admin_current_semester", targetSemester);
         const targetLabel = targetSemester === 'fall' ? 'Fall (First Sem)' : 'Summer (Second Sem)';
-        setAdvanceDetail(`Changed to ${targetLabel}.`);
-        showToast("Semester changed successfully.", 'success');
+        setAdvanceDetail(t("Changed to {{targetLabel}}.", { targetLabel }));
+        showToast(t("Semester changed successfully."), 'success');
       }
     } catch (err: any) {
       setAdvanceState('error');
@@ -304,7 +307,7 @@ const AdminEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
       )}
 
       <div className="flex flex-1 flex-col overflow-hidden">
-        <Header title="Enrollment Management" user={user} />
+        <Header title={t("Enrollment Management")} user={user} />
         <main className="flex-1 overflow-y-auto p-8 animate-in fade-in duration-700 slide-in-from-bottom-4 scrollbar-hide">
           <div className="mb-10 grid grid-cols-1 gap-8 md:grid-cols-2">
              <div className="group relative overflow-hidden rounded-3xl bg-slate-50/50 dark:bg-slate-900/30 p-8 border border-slate-200/60 dark:border-slate-800/60 transition-all hover:bg-white dark:hover:bg-slate-900 hover:shadow-lg hover:-translate-y-1">
@@ -315,13 +318,13 @@ const AdminEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
                 </div>
               </div>
               <div className="relative z-10">
-                <h3 className="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">Manual Enrollment</h3>
-                <p className="mt-2 text-sm text-slate-500 dark:text-slate-400 leading-relaxed font-medium">Direct student-to-course registration.</p>
+                <h3 className="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">{t("Manual Enrollment")}</h3>
+                <p className="mt-2 text-sm text-slate-500 dark:text-slate-400 leading-relaxed font-medium">{t("Direct student-to-course registration.")}</p>
                 <button 
                   onClick={() => window.location.hash = "#/admin/enrollment/manual"}
                   className="mt-6 inline-flex items-center text-sm font-bold text-teal-600 hover:text-teal-700 dark:text-teal-400 group/btn"
                 >
-                  Launch Form 
+                  {t("Launch Form")} 
                   <span className="material-icons-outlined ml-2 text-sm transform group-hover/btn:translate-x-1 transition-transform">arrow_forward</span>
                 </button>
               </div>
@@ -335,13 +338,13 @@ const AdminEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
                 </div>
               </div>
               <div className="relative z-10">
-                <h3 className="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">Enrollment Settings</h3>
-                <p className="mt-2 text-sm text-slate-500 dark:text-slate-400 leading-relaxed font-medium">Periods, limits, and prerequisites.</p>
+                <h3 className="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">{t("Enrollment Settings")}</h3>
+                <p className="mt-2 text-sm text-slate-500 dark:text-slate-400 leading-relaxed font-medium">{t("Periods, limits, and prerequisites.")}</p>
                 <button
                   onClick={() => navigate('/admin/enrollment-settings')}
                   className="mt-6 inline-flex items-center text-sm font-bold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 group/btn"
                 >
-                  Global Config 
+                  {t("Global Config")} 
                   <span className="material-icons-outlined ml-2 text-sm transform group-hover/btn:translate-x-1 transition-transform">arrow_forward</span>
                 </button>
               </div>
@@ -352,8 +355,8 @@ const AdminEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
             <div className="rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
                <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 px-8 py-6">
                 <div className="space-y-1">
-                  <h3 className="text-lg font-extrabold text-slate-900 dark:text-white tracking-tight">Recent Requests</h3>
-                  <p className="text-xs font-medium text-slate-400 dark:text-slate-500">Live feed of student submissions</p>
+                  <h3 className="text-lg font-extrabold text-slate-900 dark:text-white tracking-tight">{t("Recent Requests")}</h3>
+                  <p className="text-xs font-medium text-slate-400 dark:text-slate-500">{t("Live feed of student submissions")}</p>
                 </div>
                 <div className="flex items-center gap-3">
                   <CustomSelect
@@ -363,7 +366,7 @@ const AdminEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
                       setCurrentPage(1);
                     }}
                     options={[
-                      { value: "all", label: "All Semesters" },
+                      { value: "all", label: t("All Semesters") },
                       ...semesterOptions.map(s => ({ value: s, label: s }))
                     ]}
                   />
@@ -375,9 +378,9 @@ const AdminEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
                       setCurrentPage(1);
                     }}
                     options={[
-                      { value: "all", label: "All Status" },
-                      { value: "Pending", label: "Pending" },
-                      { value: "Enrolled", label: "Enrolled" }
+                      { value: "all", label: t("All Status") },
+                      { value: "Pending", label: t("Pending") },
+                      { value: "Enrolled", label: t("Enrolled") }
                     ]}
                   />
 
@@ -388,7 +391,7 @@ const AdminEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
                       setCurrentPage(1);
                     }}
                     options={[
-                      { value: "all", label: "All Academic Years" },
+                      { value: "all", label: t("All Academic Years") },
                       ...academicYearOptions.map(y => ({ value: y, label: y }))
                     ]}
                   />
@@ -396,7 +399,7 @@ const AdminEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
                     onClick={() => handleSort('status')} 
                     className="flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all"
                   >
-                     <span className="material-icons-outlined text-sm">sort</span> Sort
+                     <span className="material-icons-outlined text-sm">sort</span> {t("Sort")}
                   </button>
                 </div>
               </div>
@@ -405,21 +408,21 @@ const AdminEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
                    <thead className="bg-slate-50/50 dark:bg-slate-950/50 text-[10px] uppercase font-bold tracking-widest text-slate-400 dark:text-slate-500 sticky top-0 z-10 border-b border-slate-100 dark:border-slate-800">
                     <tr>
                       <th className="px-8 py-4 cursor-pointer hover:text-slate-900 dark:hover:text-white transition-colors" onClick={() => handleSort('studentName')}>
-                        <div className="flex items-center">Student {sortConfig?.key === 'studentName' && <span className="material-icons-outlined text-xs ml-1">{sortConfig.direction === 'asc' ? 'north' : 'south'}</span>}</div>
+                        <div className="flex items-center">{t("Student")} {sortConfig?.key === 'studentName' && <span className="material-icons-outlined text-xs ml-1">{sortConfig.direction === 'asc' ? 'north' : 'south'}</span>}</div>
                       </th>
                       <th className="px-8 py-4 cursor-pointer hover:text-slate-900 dark:hover:text-white transition-colors" onClick={() => handleSort('courseName')}>
-                        <div className="flex items-center">Course {sortConfig?.key === 'courseName' && <span className="material-icons-outlined text-xs ml-1">{sortConfig.direction === 'asc' ? 'north' : 'south'}</span>}</div>
+                        <div className="flex items-center">{t("Course")} {sortConfig?.key === 'courseName' && <span className="material-icons-outlined text-xs ml-1">{sortConfig.direction === 'asc' ? 'north' : 'south'}</span>}</div>
                       </th>
                       <th className="px-8 py-4 cursor-pointer hover:text-slate-900 dark:hover:text-white transition-colors" onClick={() => handleSort('semester')}>
-                        <div className="flex items-center">Semester {sortConfig?.key === 'semester' && <span className="material-icons-outlined text-xs ml-1">{sortConfig.direction === 'asc' ? 'north' : 'south'}</span>}</div>
+                        <div className="flex items-center">{t("Semester")} {sortConfig?.key === 'semester' && <span className="material-icons-outlined text-xs ml-1">{sortConfig.direction === 'asc' ? 'north' : 'south'}</span>}</div>
                       </th>
                       <th className="px-8 py-4 cursor-pointer hover:text-slate-900 dark:hover:text-white transition-colors" onClick={() => handleSort('academicYear')}>
-                        <div className="flex items-center">Academic Year {sortConfig?.key === 'academicYear' && <span className="material-icons-outlined text-xs ml-1">{sortConfig.direction === 'asc' ? 'north' : 'south'}</span>}</div>
+                        <div className="flex items-center">{t("Academic Year")} {sortConfig?.key === 'academicYear' && <span className="material-icons-outlined text-xs ml-1">{sortConfig.direction === 'asc' ? 'north' : 'south'}</span>}</div>
                       </th>
                       <th className="px-8 py-4 cursor-pointer hover:text-slate-900 dark:hover:text-white transition-colors" onClick={() => handleSort('status')}>
-                        <div className="flex items-center">Status {sortConfig?.key === 'status' && <span className="material-icons-outlined text-xs ml-1">{sortConfig.direction === 'asc' ? 'north' : 'south'}</span>}</div>
+                        <div className="flex items-center">{t("Status")} {sortConfig?.key === 'status' && <span className="material-icons-outlined text-xs ml-1">{sortConfig.direction === 'asc' ? 'north' : 'south'}</span>}</div>
                       </th>
-                      <th className="px-8 py-4 text-right">Action</th>
+                      <th className="px-8 py-4 text-right">{t("Action")}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
@@ -428,7 +431,7 @@ const AdminEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
                     ) : error ? (
                       <tr><td colSpan={6} className="px-8 py-12 text-center text-rose-500 font-bold">{error}</td></tr>
                     ) : paginatedRequests.length === 0 ? (
-                      <tr><td colSpan={6} className="px-8 py-12 text-center text-slate-400 italic">No pending requests found.</td></tr>
+                      <tr><td colSpan={6} className="px-8 py-12 text-center text-slate-400 italic">{t("No pending requests found.")}</td></tr>
                     ) : (
                       paginatedRequests.map((req, i) => (
                       <tr key={i} className="group hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors">
@@ -496,7 +499,7 @@ const AdminEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
               {!loading && !error && totalPages > 1 && (
                 <div className="flex items-center justify-between border-t border-slate-100 dark:border-slate-800 px-8 py-4">
                   <span className="text-sm text-slate-500 dark:text-slate-400">
-                    Showing <span className="font-bold text-slate-900 dark:text-white">{(currentPage - 1) * pageSize + 1}</span> to <span className="font-bold text-slate-900 dark:text-white">{Math.min(currentPage * pageSize, sortedRequests.length)}</span> of <span className="font-bold text-slate-900 dark:text-white">{sortedRequests.length}</span> entries
+                    {t("Showing")} <span className="font-bold text-slate-900 dark:text-white">{(currentPage - 1) * pageSize + 1}</span> {t("to")} <span className="font-bold text-slate-900 dark:text-white">{Math.min(currentPage * pageSize, sortedRequests.length)}</span> {t("of")} <span className="font-bold text-slate-900 dark:text-white">{sortedRequests.length}</span> {t("entries")}
                   </span>
                   <div className="flex gap-2">
                     <button
@@ -519,15 +522,15 @@ const AdminEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
             </div>
 
             <div className="rounded-3xl bg-slate-50/50 dark:bg-slate-900/30 p-8 border border-slate-200/60 dark:border-slate-800/60 shadow-sm">
-              <h3 className="text-lg font-extrabold text-slate-900 dark:text-white tracking-tight">Advance Semester</h3>
+              <h3 className="text-lg font-extrabold text-slate-900 dark:text-white tracking-tight">{t("Advance Semester")}</h3>
               <p className="mt-2 text-sm text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
                 Switch the institutional active period.
               </p>
 
               <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2">
                 {([
-                  { key: 'fall' as SemesterKey, title: 'Fall Semester', subtitle: 'Academic Period 1', icon: 'wb_sunny' },
-                  { key: 'summer' as SemesterKey, title: 'Summer Semester', subtitle: 'Academic Period 2', icon: 'dark_mode' },
+                  { key: 'fall' as SemesterKey, title: t("Fall Semester"), subtitle: t("Academic Period 1"), icon: 'wb_sunny' },
+                  { key: 'summer' as SemesterKey, title: t("Summer Semester"), subtitle: t("Academic Period 2"), icon: 'dark_mode' },
                 ]).map((item) => {
                   const isActive = currentSemester === item.key;
                   const isLoading = advanceLoading === item.key;
@@ -576,7 +579,7 @@ const AdminEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
                       : 'bg-indigo-50 text-indigo-700 border border-indigo-100 dark:bg-indigo-950/40 dark:text-indigo-400 dark:border-indigo-900/40'
                   }`}
                 >
-                  <span className="mr-2">Info:</span> {advanceDetail}
+                  <span className="mr-2">{t("Info:")}</span> {advanceDetail}
                 </div>
               )}
             </div>
@@ -588,8 +591,8 @@ const AdminEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
               <div className="w-full max-w-lg bg-white dark:bg-slate-900 rounded-[32px] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 border border-slate-200 dark:border-slate-800">
                 <div className="px-10 py-8 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
                   <div className="space-y-1">
-                    <h3 className="font-extrabold text-2xl text-slate-900 dark:text-white tracking-tight">Decline Request</h3>
-                    <p className="text-xs font-medium text-slate-400">Provide administrative feedback</p>
+                    <h3 className="font-extrabold text-2xl text-slate-900 dark:text-white tracking-tight">{t("Decline Request")}</h3>
+                    <p className="text-xs font-medium text-slate-400">{t("Provide administrative feedback")}</p>
                   </div>
                   <button onClick={() => setIsRejectModalOpen(false)} className="h-10 w-10 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
                     <span className="material-icons-outlined">close</span>
@@ -600,7 +603,7 @@ const AdminEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
                     Rejecting this enrollment will notify the student immediately. Please specify the reason for this decision below.
                   </p>
                   <div className="space-y-3">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Rejection Reason</label>
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t("Rejection Reason")}</label>
                     <textarea 
                       value={rejectReason}
                       onChange={(e) => setRejectReason(e.target.value)}
@@ -621,7 +624,7 @@ const AdminEnrollment: React.FC<EnrollmentProps> = ({ user, onLogout }) => {
                      disabled={!rejectReason.trim()}
                      className="px-8 py-3 text-sm font-bold text-white bg-slate-900 dark:bg-slate-800 rounded-2xl hover:bg-slate-800 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed shadow-lg transition-all flex items-center gap-3"
                    >
-                     <span>Decline Enrollment</span>
+                     <span>{t("Decline Enrollment")}</span>
                      <span className="material-icons-outlined text-sm">gavel</span>
                    </button>
                 </div>

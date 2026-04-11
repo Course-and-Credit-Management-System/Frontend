@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
 import { DetailedCardGridSkeleton } from "../components/Skeleton";
@@ -131,12 +132,12 @@ function normalizeAnnouncement(a: any): Announcement {
 
 function nextExpiryText(a: Announcement) {
   const exp = safeDate(a.expiry_date ?? null);
-  if (!exp) return "No expiry";
+  if (!exp) return t("No expiry");
   const ms = exp.getTime() - Date.now();
   const absDays = Math.floor(Math.abs(ms) / (1000 * 60 * 60 * 24));
-  if (ms < 0) return `Expired ${absDays}d ago`;
-  if (absDays === 0) return "Expires today";
-  return `Expires in ${absDays}d`;
+  if (ms < 0) return `${t("Expired")} ${absDays}${t("d ago")}`;
+  if (absDays === 0) return t("Expires today");
+  return `${t("Expires in")} ${absDays}${t("d")}`;
 }
 
 async function copy(text: string) {
@@ -262,6 +263,7 @@ function Toast({
 }
 
 const AdminAnnouncements: React.FC<Props> = ({ user, onLogout }) => {
+  const { t } = useTranslation();
   const [items, setItems] = useState<Announcement[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -348,8 +350,8 @@ const AdminAnnouncements: React.FC<Props> = ({ user, onLogout }) => {
       await confirmAction();
       setConfirmOpen(false);
     } catch (e: any) {
-      setError(e?.message || "Action failed");
-      showToast("error", e?.message || "Action failed");
+      setError(e?.message || t("Action failed"));
+      showToast("error", e?.message || t("Action failed"));
     } finally {
       setConfirmLoading(false);
     }
@@ -364,7 +366,7 @@ const AdminAnnouncements: React.FC<Props> = ({ user, onLogout }) => {
       setItems(arr.map(normalizeAnnouncement));
       setSelected({});
     } catch (e: any) {
-      setError(e?.message || "Failed to load announcements");
+      setError(e?.message || t("Failed to load announcements"));
     } finally {
       setLoading(false);
     }
@@ -433,7 +435,7 @@ const AdminAnnouncements: React.FC<Props> = ({ user, onLogout }) => {
   async function onCreate(e: React.FormEvent) {
     e.preventDefault();
     if (!title.trim() || !content.trim()) {
-      setError("Title and content are required.");
+      setError(t("Title and content are required."));
       return;
     }
 
@@ -466,10 +468,10 @@ const AdminAnnouncements: React.FC<Props> = ({ user, onLogout }) => {
       setExpiry("");
 
       await load();
-      showToast("success", "Announcement created");
+      showToast("success", t("Announcement created"));
     } catch (e: any) {
-      setError(e?.message || "Failed to create announcement");
-      showToast("error", e?.message || "Failed to create announcement");
+      setError(e?.message || t("Failed to create announcement"));
+      showToast("error", e?.message || t("Failed to create announcement"));
     } finally {
       setSubmitting(false);
     }
@@ -492,7 +494,7 @@ const AdminAnnouncements: React.FC<Props> = ({ user, onLogout }) => {
     if (!editing) return;
 
     if (!editTitle.trim() || !editContent.trim()) {
-      setError("Title and content are required.");
+      setError(t("Title and content are required."));
       return;
     }
 
@@ -521,10 +523,10 @@ const AdminAnnouncements: React.FC<Props> = ({ user, onLogout }) => {
 
       setEditing(null);
       await load();
-      showToast("success", "Announcement updated");
+      showToast("success", t("Announcement updated"));
     } catch (err: any) {
-      setError(err?.message || "Failed to update announcement");
-      showToast("error", err?.message || "Failed to update announcement");
+      setError(err?.message || t("Failed to update announcement"));
+      showToast("error", err?.message || t("Failed to update announcement"));
     } finally {
       setSavingEdit(false);
     }
@@ -540,12 +542,12 @@ const AdminAnnouncements: React.FC<Props> = ({ user, onLogout }) => {
 
   function onDelete(id: string) {
     openConfirm({
-      title: "Delete announcement?",
-      description: "This will permanently delete the announcement. This cannot be undone.",
-      confirmText: "Delete",
+      title: t("Delete announcement?"),
+      description: t("This will permanently delete the announcement. This cannot be undone."),
+      confirmText: t("Delete"),
       variant: "danger",
       action: async () => {
-        await doAction(() => api.adminDeleteAnnouncement(id), "Announcement deleted");
+        await doAction(() => api.adminDeleteAnnouncement(id), t("Announcement deleted"));
         setSelected((prev) => {
           const { [id]: _, ...rest } = prev;
           return rest;
@@ -556,21 +558,21 @@ const AdminAnnouncements: React.FC<Props> = ({ user, onLogout }) => {
 
   function onPublish(a: Announcement) {
     openConfirm({
-      title: "Publish announcement?",
-      description: "Publishing will mark this announcement as Published.",
+      title: t("Publish announcement?"),
+      description: t("Publishing will mark this announcement as Published."),
       confirmText: "Publish",
       variant: "primary",
-      action: async () => doAction(() => api.adminPublishAnnouncement(a._id), "Announcement published"),
+      action: async () => doAction(() => api.adminPublishAnnouncement(a._id), t("Announcement published")),
     });
   }
 
   function onArchive(a: Announcement) {
     openConfirm({
-      title: "Archive announcement?",
-      description: "Archived announcements are kept in DB but treated as inactive.",
+      title: t("Archive announcement?"),
+      description: t("Archived announcements are kept in DB but treated as inactive."),
       confirmText: "Archive",
       variant: "neutral",
-      action: async () => doAction(() => api.adminArchiveAnnouncement(a._id), "Announcement archived"),
+      action: async () => doAction(() => api.adminArchiveAnnouncement(a._id), t("Announcement archived")),
     });
   }
 
@@ -579,25 +581,25 @@ const AdminAnnouncements: React.FC<Props> = ({ user, onLogout }) => {
       setError(null);
       if (a.pinned) {
         await api.adminUnpinAnnouncement(a._id);
-        showToast("success", "Announcement unpinned");
+        showToast("success", t("Announcement unpinned"));
       } else {
         await api.adminPinAnnouncement(a._id);
-        showToast("success", "Announcement pinned");
+        showToast("success", t("Announcement pinned"));
       }
       await load();
     } catch (e: any) {
-      setError(e?.message || "Failed to update pin");
-      showToast("error", e?.message || "Failed to update pin");
+      setError(e?.message || t("Failed to update pin"));
+      showToast("error", e?.message || t("Failed to update pin"));
     }
   }
 
   function onDuplicate(a: Announcement) {
     openConfirm({
-      title: "Duplicate announcement?",
-      description: "This will create a new Draft copy you can edit.",
-      confirmText: "Duplicate",
+      title: t("Duplicate announcement?"),
+      description: t("This will create a new Draft copy you can edit."),
+      confirmText: t("Duplicate"),
       variant: "primary",
-      action: async () => doAction(() => api.adminDuplicateAnnouncement(a._id), "Announcement duplicated"),
+      action: async () => doAction(() => api.adminDuplicateAnnouncement(a._id), t("Announcement duplicated")),
     });
   }
 
@@ -615,36 +617,36 @@ const AdminAnnouncements: React.FC<Props> = ({ user, onLogout }) => {
   function bulkPublish() {
     if (selectedIds.length === 0) return;
     openConfirm({
-      title: `Publish ${selectedIds.length} announcements?`,
-      description: "They will be marked as Published.",
+      title: `${t("Publish")} ${selectedIds.length} ${t("announcements?")}`,
+      description: t("They will be marked as Published."),
       confirmText: "Publish",
       variant: "primary",
       action: async () =>
-        doAction(() => api.adminBulkAnnouncements({ action: "publish", ids: selectedIds }), "Bulk publish done"),
+        doAction(() => api.adminBulkAnnouncements({ action: "publish", ids: selectedIds }), t("Bulk publish done")),
     });
   }
 
   function bulkArchive() {
     if (selectedIds.length === 0) return;
     openConfirm({
-      title: `Archive ${selectedIds.length} announcements?`,
-      description: "They will be marked as Archived.",
+      title: `${t("Archive")} ${selectedIds.length} ${t("announcements?")}`,
+      description: t("They will be marked as Archived."),
       confirmText: "Archive",
       variant: "neutral",
       action: async () =>
-        doAction(() => api.adminBulkAnnouncements({ action: "archive", ids: selectedIds }), "Bulk archive done"),
+        doAction(() => api.adminBulkAnnouncements({ action: "archive", ids: selectedIds }), t("Bulk archive done")),
     });
   }
 
   function bulkDelete() {
     if (selectedIds.length === 0) return;
     openConfirm({
-      title: `Delete ${selectedIds.length} announcements?`,
-      description: "This will permanently delete them. This cannot be undone.",
-      confirmText: "Delete",
+      title: `${t("Delete")} ${selectedIds.length} ${t("announcements?")}`,
+      description: t("This will permanently delete them. This cannot be undone."),
+      confirmText: t("Delete"),
       variant: "danger",
       action: async () =>
-        doAction(() => api.adminBulkAnnouncements({ action: "delete", ids: selectedIds }), "Bulk delete done"),
+        doAction(() => api.adminBulkAnnouncements({ action: "delete", ids: selectedIds }), t("Bulk delete done")),
     });
   }
 
@@ -652,7 +654,7 @@ const AdminAnnouncements: React.FC<Props> = ({ user, onLogout }) => {
     <div className="flex h-screen overflow-hidden bg-white dark:bg-slate-950 font-poppins">
       <Sidebar user={user} onLogout={onLogout} />
       <div className="flex flex-1 flex-col overflow-hidden">
-        <Header title="Announcements" user={user} />
+        <Header title={t("Announcements")} user={user} />
 
         <main className="flex-1 overflow-y-auto p-8 animate-in fade-in duration-700 slide-in-from-bottom-4 scrollbar-hide max-w-[1600px] mx-auto w-full">
           {error && (
@@ -669,70 +671,70 @@ const AdminAnnouncements: React.FC<Props> = ({ user, onLogout }) => {
                 <span className="material-icons-outlined text-2xl">campaign</span>
               </div>
               <div>
-                <h3 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">Dispatch Broadcast</h3>
-                <p className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-0.5">Institutional Communication Protocol</p>
+                <h3 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">{t("Dispatch Broadcast")}</h3>
+                <p className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-0.5">{t("Institutional Communication Protocol")}</p>
               </div>
             </div>
 
             <form onSubmit={onCreate} className="grid grid-cols-1 lg:grid-cols-12 gap-6">
               <div className="lg:col-span-12 space-y-2">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Subject Title *</label>
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t("Subject Title *")}</label>
                 <input
                   className="w-full rounded-xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950 px-4 py-3 text-sm font-bold text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500/50 transition-all shadow-sm placeholder:text-slate-300"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder="e.g., Campus Network Maintenance Schedule"
+                  placeholder={t("e.g., Campus Network Maintenance Schedule")}
                 />
               </div>
 
               <div className="lg:col-span-12 space-y-2">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Announcement Body *</label>
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t("Announcement Body *")}</label>
                 <textarea
                   className="w-full min-h-[120px] rounded-xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950 px-4 py-3 text-sm font-medium text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500/50 transition-all shadow-sm leading-relaxed placeholder:text-slate-300 scrollbar-hide"
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
-                  placeholder="Draft your message content here..."
+                  placeholder={t("Draft your message content here...")}
                 />
               </div>
 
               <div className="lg:col-span-3 space-y-2">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Type Vector</label>
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t("Type Vector")}</label>
                 <select
                   className="w-full rounded-xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950 px-4 py-3 text-sm font-bold text-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-teal-500/20 transition-all cursor-pointer shadow-sm appearance-none"
                   value={type}
                   onChange={(e) => setType(e.target.value as AnnouncementType)}
                 >
-                  {TYPES.map((t) => (
-                    <option key={t} value={t}>{t}</option>
+                  {TYPES.map((typeOption) => (
+                    <option key={typeOption} value={typeOption}>{t(typeOption)}</option>
                   ))}
                 </select>
               </div>
 
               <div className="lg:col-span-3 space-y-2">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Initial State</label>
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t("Initial State")}</label>
                 <select
                   className="w-full rounded-xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950 px-4 py-3 text-sm font-bold text-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-teal-500/20 transition-all cursor-pointer shadow-sm appearance-none"
                   value={statusVal}
                   onChange={(e) => setStatusVal(e.target.value as AnnouncementStatus)}
                 >
-                  <option value="draft">Draft (Restricted)</option>
-                  <option value="published">Published (Live)</option>
-                  <option value="archived">Archived</option>
+                  <option value="draft">{t("Draft (Restricted)")}</option>
+                  <option value="published">{t("Published (Live)")}</option>
+                  <option value="archived">{t("Archived")}</option>
                 </select>
               </div>
 
               <div className="lg:col-span-3 space-y-2">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Target Audience</label>
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t("Target Audience")}</label>
                 <input
                   className="w-full rounded-xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950 px-4 py-3 text-sm font-bold text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-teal-500/20 transition-all shadow-sm"
                   value={targetAudience}
                   onChange={(e) => setTargetAudience(e.target.value)}
-                  placeholder='e.g., Global Students'
+                  placeholder={t("e.g., Global Students")}
                 />
               </div>
 
               <div className="lg:col-span-3 space-y-2">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Termination Date</label>
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t("Termination Date")}</label>
                 <input
                   type="datetime-local"
                   className="w-full rounded-xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950 px-4 py-3 text-sm font-bold text-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-teal-500/20 transition-all shadow-sm"
@@ -755,8 +757,8 @@ const AdminAnnouncements: React.FC<Props> = ({ user, onLogout }) => {
                     </div>
                   </div>
                   <div className="space-y-0.5">
-                    <span className="block text-sm font-black text-slate-900 dark:text-white transition-colors">Prioritize Placement</span>
-                    <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">Pin to global feed apex</span>
+                    <span className="block text-sm font-black text-slate-900 dark:text-white transition-colors">{t("Prioritize Placement")}</span>
+                    <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t("Pin to global feed apex")}</span>
                   </div>
                 </label>
 
@@ -765,7 +767,7 @@ const AdminAnnouncements: React.FC<Props> = ({ user, onLogout }) => {
                   disabled={submitting}
                   className="px-10 py-3 rounded-xl bg-slate-900 dark:bg-teal-600 text-xs font-bold uppercase tracking-widest text-white hover:bg-slate-800 dark:hover:bg-teal-700 transition-all shadow-md active:scale-[0.98] disabled:opacity-40"
                 >
-                  {submitting ? "Processing..." : "Commit Broadcast"}
+                  {submitting ? t("Processing...") : t("Commit Broadcast")}
                 </button>
               </div>
             </form>
@@ -775,14 +777,14 @@ const AdminAnnouncements: React.FC<Props> = ({ user, onLogout }) => {
           <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm p-6 lg:p-8 space-y-6 mb-8">
             <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
               <div className="flex flex-wrap gap-1.5 p-1 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-100 dark:border-slate-800 shadow-inner">
-                {STATUSES.map((t) => (
+                {STATUSES.map((statusOption) => (
                   <button
-                    key={t.key}
+                    key={statusOption.key}
                     type="button"
-                    onClick={() => setStatusFilter(t.key)}
+                    onClick={() => setStatusFilter(statusOption.key)}
                     className={clsx(
                       "rounded-lg px-4 py-2 text-[10px] font-bold uppercase tracking-widest transition-all",
-                      statusFilter === t.key
+                      statusFilter === statusOption.key
                         ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm ring-1 ring-slate-100 dark:ring-slate-700"
                         : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
                     )}
@@ -794,7 +796,7 @@ const AdminAnnouncements: React.FC<Props> = ({ user, onLogout }) => {
 
               <div className="flex flex-wrap items-center gap-4">
                 <div className="text-[10px] font-bold text-slate-300 dark:text-slate-600 uppercase tracking-widest mr-2">
-                  Active Selection: <span className="text-slate-900 dark:text-white ml-1">{selectedIds.length} items</span>
+                  {t("Active Selection: ")}<span className="text-slate-900 dark:text-white ml-1">{selectedIds.length} {t('items')}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <button
@@ -802,25 +804,19 @@ const AdminAnnouncements: React.FC<Props> = ({ user, onLogout }) => {
                     onClick={bulkPublish}
                     disabled={selectedIds.length === 0}
                     className="h-9 px-4 rounded-xl bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400 text-[10px] font-bold uppercase tracking-widest border border-emerald-100 dark:border-emerald-800/50 transition-all disabled:opacity-30 active:scale-95 shadow-sm"
-                  >
-                    Publish
-                  </button>
+                  >{t("Publish")}</button>
                   <button
                     type="button"
                     onClick={bulkArchive}
                     disabled={selectedIds.length === 0}
                     className="h-9 px-4 rounded-xl bg-slate-50 text-slate-700 dark:bg-slate-800 dark:text-slate-300 text-[10px] font-bold uppercase tracking-widest border border-slate-200 dark:border-slate-700 transition-all disabled:opacity-30 active:scale-95 shadow-sm"
-                  >
-                    Archive
-                  </button>
+                  >{t("Archive")}</button>
                   <button
                     type="button"
                     onClick={bulkDelete}
                     disabled={selectedIds.length === 0}
                     className="h-9 px-4 rounded-xl bg-rose-50 text-rose-700 dark:bg-rose-900/20 dark:text-rose-400 text-[10px] font-bold uppercase tracking-widest border border-rose-100 dark:border-rose-800/50 transition-all disabled:opacity-30 active:scale-95 shadow-sm"
-                  >
-                    Purge
-                  </button>
+                  >{t("Purge")}</button>
                 </div>
               </div>
             </div>
@@ -830,7 +826,7 @@ const AdminAnnouncements: React.FC<Props> = ({ user, onLogout }) => {
                 <span className="material-icons-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-teal-500 transition-colors text-lg">search</span>
                 <input
                   className="w-full rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 pl-10 pr-4 py-2.5 text-sm font-bold text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-teal-500/20 transition-all shadow-sm"
-                  placeholder="Filter broadcast logs..."
+                  placeholder={t("Filter broadcast logs...")}
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                 />
@@ -841,7 +837,7 @@ const AdminAnnouncements: React.FC<Props> = ({ user, onLogout }) => {
                 value={typeFilter}
                 onChange={(e) => setTypeFilter(e.target.value as any)}
               >
-                <option value="All">All Categories</option>
+                <option value="All">{t("All Categories")}</option>
                 {TYPES.map((t) => (
                   <option key={t} value={t}>{t}</option>
                 ))}
@@ -852,9 +848,9 @@ const AdminAnnouncements: React.FC<Props> = ({ user, onLogout }) => {
                 value={pinnedFilter}
                 onChange={(e) => setPinnedFilter(e.target.value as any)}
               >
-                <option value="All">All Tiers</option>
-                <option value="Pinned">Pinned Records</option>
-                <option value="Unpinned">Standard Records</option>
+                <option value="All">{t("All Tiers")}</option>
+                <option value="Pinned">{t("Pinned Records")}</option>
+                <option value="Unpinned">{t("Standard Records")}</option>
               </select>
 
               <select
@@ -862,10 +858,10 @@ const AdminAnnouncements: React.FC<Props> = ({ user, onLogout }) => {
                 value={sortMode}
                 onChange={(e) => setSortMode(e.target.value as any)}
               >
-                <option value="Pinned+Newest">Priority Flow</option>
-                <option value="Newest">Newest Dispatch</option>
-                <option value="Oldest">Oldest Dispatch</option>
-                <option value="Expiring Soon">Termination Velocity</option>
+                <option value="Pinned+Newest">{t("Priority Flow")}</option>
+                <option value="Newest">{t("Newest Dispatch")}</option>
+                <option value="Oldest">{t("Oldest Dispatch")}</option>
+                <option value="Expiring Soon">{t("Termination Velocity")}</option>
               </select>
             </div>
           </div>
@@ -874,9 +870,9 @@ const AdminAnnouncements: React.FC<Props> = ({ user, onLogout }) => {
           <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden transition-all hover:shadow-md">
             <div className="border-b border-slate-100 dark:border-slate-800 px-6 py-4 flex items-center justify-between bg-slate-50/30 dark:bg-slate-950/30">
               <div className="space-y-0.5">
-                <h3 className="text-lg font-extrabold text-slate-900 dark:text-white tracking-tight">Broadcast Repository</h3>
+                <h3 className="text-lg font-extrabold text-slate-900 dark:text-white tracking-tight">{t("Broadcast Repository")}</h3>
                 <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
-                  Showing {filtered.length} matching communications
+                  {t('Showing')} {filtered.length} {t('matching communications')}
                 </p>
               </div>
               <button 
@@ -885,7 +881,7 @@ const AdminAnnouncements: React.FC<Props> = ({ user, onLogout }) => {
                 disabled={loading}
               >
                 <span className={clsx("material-icons-outlined text-sm", loading && "animate-spin")}>sync</span>
-                Refresh
+                {t("Refresh")}
               </button>
             </div>
 
@@ -898,8 +894,8 @@ const AdminAnnouncements: React.FC<Props> = ({ user, onLogout }) => {
                 <div className="h-24 w-24 rounded-full bg-slate-50 dark:bg-slate-950 flex items-center justify-center mx-auto mb-8 border border-slate-100 dark:border-slate-800">
                   <span className="material-icons-outlined text-slate-200 dark:text-slate-800 text-5xl">cloud_off</span>
                 </div>
-                <h4 className="text-lg font-bold text-slate-400 uppercase tracking-widest">No matching records</h4>
-                <p className="mt-2 text-sm text-slate-400 font-medium">Try refining your search parameters.</p>
+                <h4 className="text-lg font-bold text-slate-400 uppercase tracking-widest">{t("No matching records")}</h4>
+                <p className="mt-2 text-sm text-slate-400 font-medium">{t("Try refining your search parameters.")}</p>
               </div>
             ) : (
               <div className="divide-y divide-slate-100 dark:divide-slate-800/50">
@@ -913,10 +909,10 @@ const AdminAnnouncements: React.FC<Props> = ({ user, onLogout }) => {
                       className="h-3.5 w-3.5 rounded border-slate-300 dark:border-slate-700 accent-teal-600"
                     />
                   </div>
-                  <span className="w-20">Category</span>
-                  <span className="w-24">Status</span>
-                  <span className="flex-1">Announcement Details</span>
-                  <span className="w-[280px] text-right">Administrative Actions</span>
+                  <span className="w-20">{t("Category")}</span>
+                  <span className="w-24">{t("Status")}</span>
+                  <span className="flex-1">{t("Announcement Details")}</span>
+                  <span className="w-[280px] text-right">{t("Administrative Actions")}</span>
                 </div>
 
                 <div className="divide-y divide-slate-300 dark:divide-slate-700">
@@ -929,7 +925,7 @@ const AdminAnnouncements: React.FC<Props> = ({ user, onLogout }) => {
                     return (
                       <div key={a._id} className="group px-6 py-5 hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-all relative">
                         {a.pinned && (
-                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-yellow-500" title="Pinned Announcement" />
+                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-yellow-500" title={t("Pinned Announcement")} />
                       )}
                       <div className="flex flex-col lg:flex-row lg:items-start gap-6">
                         <div className="flex items-center gap-4 shrink-0">
@@ -967,7 +963,7 @@ const AdminAnnouncements: React.FC<Props> = ({ user, onLogout }) => {
                         <div className="min-w-0 flex-1">
                           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mb-2">
                             <div className="flex items-center gap-2">
-                              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Audience:</span>
+                              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">{t("Audience: ")}</span>
                               <span className="text-[10px] font-extrabold text-slate-900 dark:text-white uppercase tracking-widest">{a.target_audience ?? "Global"}</span>
                             </div>
 
@@ -984,7 +980,7 @@ const AdminAnnouncements: React.FC<Props> = ({ user, onLogout }) => {
                                 expired ? "text-rose-500" : "text-slate-400 dark:text-slate-500"
                               )}>
                                 <span className="material-icons-outlined text-sm opacity-60">timer_off</span>
-                                {expired ? "Lapsed" : `Ends: ${formatLocalWithTz(expIso)}`}
+                                {expired ? "Lapsed" : `{t("Ends: ")}${formatLocalWithTz(expIso)}`}
                               </div>
                             )}
                           </div>
@@ -994,13 +990,13 @@ const AdminAnnouncements: React.FC<Props> = ({ user, onLogout }) => {
 
                           <div className="flex items-center gap-6">
                             <div className="flex items-center gap-2 py-1 px-2.5 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800">
-                              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">UUID:</span>
+                              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">{t("UUID:")}</span>
                               <span className="text-[10px] font-bold font-mono text-slate-600 dark:text-slate-400">{shortId(a._id)}</span>
                               <button onClick={() => copy(a._id)} className="text-teal-600 hover:text-teal-700 material-icons-outlined text-sm ml-1">content_copy</button>
                             </div>
                             {a.posted_by && (
                               <div className="flex items-center gap-2">
-                                <div className="w-5 h-5 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center text-[8px] font-bold">BY</div>
+                                <div className="w-5 h-5 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center text-[8px] font-bold">{t("BY")}</div>
                                 <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{a.posted_by}</span>
                               </div>
                             )}
@@ -1013,17 +1009,13 @@ const AdminAnnouncements: React.FC<Props> = ({ user, onLogout }) => {
                               <button
                                 onClick={() => onPublish(a)}
                                 className="h-8 px-4 rounded-xl bg-teal-600 text-[9px] font-bold uppercase tracking-widest text-white hover:bg-teal-700 transition-all shadow-sm active:scale-95"
-                              >
-                                Publish
-                              </button>
+                              >{t("Publish")}</button>
                             )}
                             {status === "published" && (
                               <button
                                 onClick={() => onArchive(a)}
                                 className="h-8 px-4 rounded-xl bg-slate-900 dark:bg-slate-800 text-[9px] font-bold uppercase tracking-widest text-white hover:bg-slate-800 transition-all shadow-sm active:scale-95"
-                              >
-                                Archive
-                              </button>
+                              >{t("Archive")}</button>
                             )}
 
                             <button
@@ -1034,7 +1026,7 @@ const AdminAnnouncements: React.FC<Props> = ({ user, onLogout }) => {
                                   ? "bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-400"
                                   : "bg-white text-slate-400 border-slate-200 dark:bg-slate-900 dark:border-slate-700 hover:text-slate-600"
                               )}
-                              title={a.pinned ? "Unpin" : "Pin to top"}
+                              title={a.pinned ? t("Unpin") : t("Pin to top")}
                             >
                               <span className="material-icons-outlined text-base">push_pin</span>
                             </button>
@@ -1042,7 +1034,7 @@ const AdminAnnouncements: React.FC<Props> = ({ user, onLogout }) => {
                             <button
                               onClick={() => openEdit(a)}
                               className="h-8 w-8 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 flex items-center justify-center text-slate-400 hover:text-teal-600 hover:border-teal-500/50 transition-all shadow-sm active:scale-95"
-                              title="Edit Record"
+                              title={t("Edit Record")}
                             >
                               <span className="material-icons-outlined text-base">edit</span>
                             </button>
@@ -1050,7 +1042,7 @@ const AdminAnnouncements: React.FC<Props> = ({ user, onLogout }) => {
                             <button
                               onClick={() => onDelete(a._id)}
                               className="h-8 w-8 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 flex items-center justify-center text-slate-400 hover:text-rose-600 hover:border-rose-500/50 transition-all shadow-sm active:scale-95"
-                              title="Purge Record"
+                              title={t("Purge Record")}
                             >
                               <span className="material-icons-outlined text-base">delete_outline</span>
                             </button>
@@ -1065,7 +1057,7 @@ const AdminAnnouncements: React.FC<Props> = ({ user, onLogout }) => {
                {filtered.length > itemsPerPage && (
                  <div className="border-t border-slate-100 dark:border-slate-800 px-6 py-4 flex items-center justify-between bg-slate-50/50 dark:bg-slate-950/50">
                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-                     Showing {Math.min(filtered.length, (currentPage - 1) * itemsPerPage + 1)} - {Math.min(filtered.length, currentPage * itemsPerPage)} of {filtered.length}
+                     {t('Showing')} {Math.min(filtered.length, (currentPage - 1) * itemsPerPage + 1)} {t('to')} {Math.min(filtered.length, currentPage * itemsPerPage)} {t('of')} {filtered.length}
                    </p>
                    <div className="flex items-center gap-2">
                      <button
@@ -1095,8 +1087,8 @@ const AdminAnnouncements: React.FC<Props> = ({ user, onLogout }) => {
               <div className="w-full max-w-2xl bg-white dark:bg-slate-900 rounded-[32px] border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
                 <div className="px-10 py-8 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-950/50">
                   <div className="space-y-1">
-                    <h3 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">Edit Announcement</h3>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Modifying record: {editing._id}</p>
+                    <h3 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">{t("Edit Announcement")}</h3>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t("Modifying record:")} {editing._id}</p>
                   </div>
                   <button onClick={() => setEditing(null)} className="h-10 w-10 rounded-full flex items-center justify-center text-slate-400 hover:bg-white dark:hover:bg-slate-800 transition-all">
                     <span className="material-icons-outlined">close</span>
@@ -1105,7 +1097,7 @@ const AdminAnnouncements: React.FC<Props> = ({ user, onLogout }) => {
 
                 <form onSubmit={saveEdit} className="p-6 lg:p-8 space-y-4">
                   <div className="space-y-2">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Announcement Title</label>
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t("Announcement Title")}</label>
                     <input
                       className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-4 py-2.5 text-sm font-bold text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-teal-500/20 transition-all"
                       value={editTitle}
@@ -1114,7 +1106,7 @@ const AdminAnnouncements: React.FC<Props> = ({ user, onLogout }) => {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Content Body</label>
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t("Content Body")}</label>
                     <textarea
                       className="w-full min-h-[120px] rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-4 py-3 text-sm font-medium text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-teal-500/20 transition-all leading-relaxed"
                       value={editContent}
@@ -1124,7 +1116,7 @@ const AdminAnnouncements: React.FC<Props> = ({ user, onLogout }) => {
 
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Type</label>
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t("Type")}</label>
                       <select
                         className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-4 py-2.5 text-sm font-bold text-slate-700 dark:text-white cursor-pointer outline-none focus:ring-2 focus:ring-teal-500/20"
                         value={editType}
@@ -1135,15 +1127,15 @@ const AdminAnnouncements: React.FC<Props> = ({ user, onLogout }) => {
                     </div>
 
                     <div className="space-y-2">
-                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Status</label>
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t("Status")}</label>
                       <select
                         className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-4 py-2.5 text-sm font-bold text-slate-700 dark:text-white cursor-pointer outline-none focus:ring-2 focus:ring-teal-500/20"
                         value={editStatus}
                         onChange={(e) => setEditStatus(e.target.value as AnnouncementStatus)}
                       >
-                        <option value="draft">Draft</option>
-                        <option value="published">Published</option>
-                        <option value="archived">Archived</option>
+                        <option value="draft">{t("Draft")}</option>
+                        <option value="published">{t("Published")}</option>
+                        <option value="archived">{t("Archived")}</option>
                       </select>
                     </div>
 
@@ -1160,12 +1152,12 @@ const AdminAnnouncements: React.FC<Props> = ({ user, onLogout }) => {
                             <div className={`bg-white w-3.5 h-3.5 rounded-full shadow-sm transform transition-transform duration-300 ${editPinned ? 'translate-x-5' : 'translate-x-0'}`} />
                           </div>
                         </div>
-                        <span className="text-xs font-bold text-slate-600 dark:text-slate-300">Pinned announcement (appears first)</span>
+                        <span className="text-xs font-bold text-slate-600 dark:text-slate-300">{t("Pinned announcement (appears first)")}</span>
                       </label>
                     </div>
 
                     <div className="space-y-2">
-                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Target Audience</label>
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t("Target Audience")}</label>
                       <input
                         className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-4 py-2.5 text-sm font-bold text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-teal-500/20"
                         value={editTargetAudience}
@@ -1174,7 +1166,7 @@ const AdminAnnouncements: React.FC<Props> = ({ user, onLogout }) => {
                     </div>
 
                     <div className="space-y-2">
-                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Expiry Date</label>
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t("Expiry Date")}</label>
                       <input
                         type="datetime-local"
                         className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-5 py-3 text-sm font-bold text-slate-700 dark:text-white outline-none focus:ring-2 focus:ring-teal-500/20"
@@ -1189,15 +1181,13 @@ const AdminAnnouncements: React.FC<Props> = ({ user, onLogout }) => {
                       type="button"
                       onClick={() => setEditing(null)}
                       className="px-5 py-2.5 rounded-lg text-xs font-bold uppercase tracking-widest text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all active:scale-95"
-                    >
-                      Discard Changes
-                    </button>
+                    >{t("Discard Changes")}</button>
                     <button
                       type="submit"
                       disabled={savingEdit}
                       className="px-6 py-2.5 rounded-lg bg-teal-600 text-xs font-bold uppercase tracking-widest text-white hover:bg-teal-700 shadow-sm transition-all active:scale-95 disabled:opacity-50"
                     >
-                      {savingEdit ? "Updating..." : "Commit Updates"}
+                      {savingEdit ? t("Updating...") : t("Commit Updates")}
                     </button>
                   </div>
                 </form>

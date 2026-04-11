@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
 import { DetailedCardGridSkeleton } from "../components/Skeleton";
@@ -21,6 +22,7 @@ type Announcement = {
 const TYPES: string[] = ["All", "General", "Urgent", "Event", "Academic"];
 
 const StudentAnnouncements: React.FC<{ user: User; onLogout: () => void }> = ({ user, onLogout }) => {
+  const { t } = useTranslation();
   const location = useLocation();
 
   const [items, setItems] = useState<Announcement[]>([]);
@@ -42,7 +44,7 @@ const StudentAnnouncements: React.FC<{ user: User; onLogout: () => void }> = ({ 
           await api.studentAnnouncementsMarkAllRead();
         } catch {}
       } catch (e: any) {
-        setError(e?.message || "Failed to load announcements");
+        setError(e?.message || t("Failed to load announcements"));
       } finally {
         setLoading(false);
       }
@@ -86,13 +88,13 @@ const StudentAnnouncements: React.FC<{ user: User; onLogout: () => void }> = ({ 
     <div className="flex h-screen overflow-hidden bg-white dark:bg-slate-950 font-poppins relative">
       <Sidebar user={user} onLogout={onLogout} />
       <div className="flex flex-1 flex-col overflow-hidden relative">
-        <Header title="Institutional Dispatches" user={user} />
+        <Header title={t("Institutional Dispatches")} user={user} />
         <main className="flex-1 overflow-y-auto p-10 lg:p-16 scrollbar-hide animate-in fade-in duration-1000 slide-in-from-bottom-4">
           <div className="max-w-5xl mx-auto space-y-12">
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
               <div className="space-y-3">
-                <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">Announcements</h1>
-                <p className="text-lg font-medium text-slate-400 dark:text-slate-500">Official broadcasts and academic updates from the administrative nexus.</p>
+                <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">{t("Announcements")}</h1>
+                <p className="text-lg font-medium text-slate-400 dark:text-slate-500">{t("Official broadcasts and academic updates from the administrative nexus.")}</p>
               </div>
             </div>
 
@@ -112,7 +114,7 @@ const StudentAnnouncements: React.FC<{ user: User; onLogout: () => void }> = ({ 
                   <input
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
-                    placeholder="Filter dispatches by content..."
+                    placeholder={t("Filter dispatches by content...")}
                     className="w-full rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950 px-12 py-3.5 text-sm font-bold focus:ring-4 focus:ring-teal-500/10 outline-none transition-all dark:text-white"
                   />
                 </div>
@@ -121,8 +123,8 @@ const StudentAnnouncements: React.FC<{ user: User; onLogout: () => void }> = ({ 
                   value={typeFilter}
                   onChange={(e) => setTypeFilter(e.target.value)}
                 >
-                  {TYPES.map((t) => (
-                    <option key={t} value={t}>{t.toUpperCase()} CATEGORY</option>
+                  {TYPES.map((typeOption) => (
+                    <option key={typeOption} value={typeOption}>{t(typeOption).toUpperCase()} {t("CATEGORY")}</option>
                   ))}
                 </select>
                 <select
@@ -130,8 +132,8 @@ const StudentAnnouncements: React.FC<{ user: User; onLogout: () => void }> = ({ 
                   value={sortDir}
                   onChange={(e) => setSortDir(e.target.value as any)}
                 >
-                  <option>Newest</option>
-                  <option>Oldest</option>
+                  <option value="Newest">{t("Newest")}</option>
+                  <option value="Oldest">{t("Oldest")}</option>
                 </select>
               </div>
             </div>
@@ -148,8 +150,8 @@ const StudentAnnouncements: React.FC<{ user: User; onLogout: () => void }> = ({ 
                   <div className="h-20 w-20 rounded-3xl bg-slate-50 dark:bg-slate-950 flex items-center justify-center text-slate-200 dark:text-slate-800 mx-auto mb-8 border border-slate-100 dark:border-slate-800 shadow-inner">
                     <span className="material-icons-outlined text-4xl">notifications_off</span>
                   </div>
-                  <h3 className="text-xl font-black text-slate-300 dark:text-slate-700 uppercase tracking-[0.4em]">Null Dispatch Set</h3>
-                  <p className="text-sm font-medium text-slate-400 mt-2">No active announcements matching your parameters</p>
+                  <h3 className="text-xl font-black text-slate-300 dark:text-slate-700 uppercase tracking-[0.4em]">{t("Null Dispatch Set")}</h3>
+                  <p className="text-sm font-medium text-slate-400 mt-2">{t("No active announcements matching your parameters")}</p>
                 </div>
               ) : (
                 filtered.map((a) => (
@@ -161,7 +163,7 @@ const StudentAnnouncements: React.FC<{ user: User; onLogout: () => void }> = ({ 
                         <div className="flex items-center gap-3">
                           <h3 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight leading-tight group-hover:text-teal-600 transition-colors">{a.title}</h3>
                           {!a.is_read && (
-                            <span className="h-2 w-2 rounded-full bg-teal-500 animate-pulse shadow-[0_0_8px_rgba(20,184,166,0.6)]" title="New Dispatch" />
+                            <span className="h-2 w-2 rounded-full bg-teal-500 animate-pulse shadow-[0_0_8px_rgba(20,184,166,0.6)]" title={t("New Dispatch")} />
                           )}
                         </div>
                         
@@ -180,7 +182,7 @@ const StudentAnnouncements: React.FC<{ user: User; onLogout: () => void }> = ({ 
                               <span className="opacity-20 text-lg">•</span>
                               <span className="flex items-center gap-2 text-rose-500/80">
                                 <span className="material-icons-outlined text-sm">timer_off</span>
-                                Recall: {new Date(a.expiry_date).toLocaleDateString()}
+                                {t("Recall:")} {new Date(a.expiry_date).toLocaleDateString()}
                               </span>
                             </>
                           )}
@@ -197,7 +199,7 @@ const StudentAnnouncements: React.FC<{ user: User; onLogout: () => void }> = ({ 
                           {a.type || "General"}
                         </span>
                         {!a.is_read && (
-                          <span className="px-3 py-1.5 rounded-xl bg-emerald-500 text-white text-[9px] font-black uppercase tracking-widest shadow-lg shadow-emerald-500/20">Active</span>
+                          <span className="px-3 py-1.5 rounded-xl bg-emerald-500 text-white text-[9px] font-black uppercase tracking-widest shadow-lg shadow-emerald-500/20">{t("Active")}</span>
                         )}
                       </div>
                     </div>
@@ -213,10 +215,10 @@ const StudentAnnouncements: React.FC<{ user: User; onLogout: () => void }> = ({ 
                         <div className="h-8 w-8 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 text-xs font-black">
                           {String(a.posted_by || "A").charAt(0).toUpperCase()}
                         </div>
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Origin: {a.posted_by || "Institutional Admin"}</span>
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t("Origin:")} {a.posted_by || t("Institutional Admin")}</span>
                       </div>
                       <button className="text-[10px] font-black text-slate-300 uppercase tracking-widest hover:text-teal-600 transition-colors flex items-center gap-2 group/btn">
-                        Dispatch Log <span className="material-icons-outlined text-sm transform group-hover/btn:translate-x-1 transition-transform">east</span>
+                        {t("Dispatch Log")} <span className="material-icons-outlined text-sm transform group-hover/btn:translate-x-1 transition-transform">east</span>
                       </button>
                     </div>
                   </div>

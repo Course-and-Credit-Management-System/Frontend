@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
 import { TableSkeletonRows } from '../components/Skeleton';
@@ -99,6 +100,7 @@ function CustomSelect({
 }
 
 const AdminGrading: React.FC<GradingProps> = ({ user, onLogout }) => {
+  const { t } = useTranslation();
   const [year, setYear] = useState<number | ''>('');
   const [semester, setSemester] = useState<number | ''>('');
   const [section, setSection] = useState<string>('');
@@ -106,6 +108,8 @@ const AdminGrading: React.FC<GradingProps> = ({ user, onLogout }) => {
   const [courseCode, setCourseCode] = useState<string>('');
   const [results, setResults] = useState<ExamResult[]>([]);
   const [editedScores, setEditedScores] = useState<EditedScore>({});
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10;
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [importing, setImporting] = useState(false);
@@ -154,6 +158,7 @@ const AdminGrading: React.FC<GradingProps> = ({ user, onLogout }) => {
           result.status === 'Passed' || result.status === 'Failed'
         );
         setResults(filteredData);
+        setCurrentPage(1); // Reset page on fetch
         setEditedScores({}); // Reset edited scores when fetching new data
       }
     } catch (err) {
@@ -420,7 +425,7 @@ const AdminGrading: React.FC<GradingProps> = ({ user, onLogout }) => {
             <div className="flex flex-wrap items-end gap-5">
               {/* Year Selection */}
               <div className="space-y-2.5">
-                <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] ml-1">Academic Year</label>
+                <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] ml-1">{t("Academic Year")}</label>
                 <CustomSelect
                   value={year.toString()}
                   onChange={(val) => {
@@ -447,7 +452,7 @@ const AdminGrading: React.FC<GradingProps> = ({ user, onLogout }) => {
 
               {/* Semester Selection */}
               <div className="space-y-2.5">
-                <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] ml-1">Period</label>
+                <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] ml-1">{t("Period")}</label>
                 <CustomSelect
                   value={semester.toString()}
                   onChange={(val) => setSemester(val === '' ? '' : Number(val))}
@@ -462,7 +467,7 @@ const AdminGrading: React.FC<GradingProps> = ({ user, onLogout }) => {
               {/* Section Selection */}
               {showSection && (
                 <div className="space-y-2.5 animate-in fade-in slide-in-from-left-4">
-                  <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] ml-1">Cohort</label>
+                  <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] ml-1">{t("Cohort")}</label>
                   <CustomSelect
                     value={section}
                     onChange={setSection}
@@ -479,7 +484,7 @@ const AdminGrading: React.FC<GradingProps> = ({ user, onLogout }) => {
               {/* Major Selection */}
               {showMajor && (
                 <div className="space-y-2.5 animate-in fade-in slide-in-from-left-4">
-                  <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] ml-1">Specialization</label>
+                  <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] ml-1">{t("Specialization")}</label>
                   <CustomSelect
                     value={major}
                     onChange={setMajor}
@@ -493,12 +498,12 @@ const AdminGrading: React.FC<GradingProps> = ({ user, onLogout }) => {
 
               {/* Course Code Input */}
               <div className="space-y-2.5">
-                <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] ml-1">Inventory ID</label>
+                <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] ml-1">{t("Inventory ID")}</label>
                 <div className="relative group">
                   <span className="material-icons-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 text-base group-focus-within:text-teal-500 transition-colors">qr_code</span>
                   <input
                     type="text"
-                    placeholder="Search Code..."
+                    placeholder={t("Search Code...")}
                     value={courseCode}
                     onChange={(e) => setCourseCode(e.target.value)}
                     className="pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-2xl text-xs font-bold text-slate-900 dark:text-white outline-none focus:ring-4 focus:ring-teal-500/10 transition-all w-44 shadow-inner"
@@ -553,19 +558,19 @@ const AdminGrading: React.FC<GradingProps> = ({ user, onLogout }) => {
           )}
 
           <div className="bg-slate-50/30 dark:bg-slate-900/20 border border-slate-100 dark:border-slate-800 rounded-[32px] p-8 mb-10 flex flex-wrap items-center gap-10 shadow-sm transition-all hover:bg-white dark:hover:bg-slate-900">
-            <span className="text-[10px] font-black text-slate-300 dark:text-slate-600 uppercase tracking-[0.4em]">Evaluation Matrix</span>
+            <span className="text-[10px] font-black text-slate-300 dark:text-slate-600 uppercase tracking-[0.4em]">{t("Evaluation Matrix")}</span>
             <div className="flex items-center gap-10">
               <div className="flex items-center gap-3">
                 <div className="w-3 h-3 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.4)]"></div> 
-                <span className="text-xs font-black text-slate-600 dark:text-slate-300 uppercase tracking-widest">90-100 (Superior)</span>
+                <span className="text-xs font-black text-slate-600 dark:text-slate-300 uppercase tracking-widest">{t("90-100 (Superior)")}</span>
               </div>
               <div className="flex items-center gap-3">
                 <div className="w-3 h-3 rounded-full bg-teal-400 shadow-[0_0_10px_rgba(45,212,191,0.4)]"></div> 
-                <span className="text-xs font-black text-slate-600 dark:text-slate-300 uppercase tracking-widest">80-89 (Standard)</span>
+                <span className="text-xs font-black text-slate-600 dark:text-slate-300 uppercase tracking-widest">{t("80-89 (Standard)")}</span>
               </div>
               <div className="flex items-center gap-3">
                 <div className="w-3 h-3 rounded-full bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.4)]"></div> 
-                <span className="text-xs font-black text-slate-600 dark:text-slate-300 uppercase tracking-widest">Sub-40 (Deficient)</span>
+                <span className="text-xs font-black text-slate-600 dark:text-slate-300 uppercase tracking-widest">{t("Sub-40 (Deficient)")}</span>
               </div>
             </div>
           </div>
@@ -575,15 +580,15 @@ const AdminGrading: React.FC<GradingProps> = ({ user, onLogout }) => {
               <table className="w-full text-left">
                 <thead>
                   <tr className="bg-slate-50/50 dark:bg-slate-950/50 text-[9px] font-black uppercase tracking-[0.3em] text-slate-400 dark:text-slate-500 border-b border-slate-100 dark:border-slate-800">
-                    <th className="px-10 py-5">System UID</th>
-                    <th className="px-10 py-5 w-80">Institutional Identity</th>
-                    <th className="px-10 py-5">Catalog Course</th>
-                    <th className="px-10 py-5 text-center">Semester</th>
-                    <th className="px-10 py-5 text-center w-48">Scaled Evaluation</th>
-                    <th className="px-10 py-5 text-center w-32">Grade</th>
+                    <th className="px-10 py-5">{t("System UID")}</th>
+                    <th className="px-10 py-5 w-80">{t("Institutional Identity")}</th>
+                    <th className="px-10 py-5">{t("Catalog Course")}</th>
+                    <th className="px-10 py-5 text-center">{t("Semester")}</th>
+                    <th className="px-10 py-5 text-center w-48">{t("Scaled Evaluation")}</th>
+                    <th className="px-10 py-5 text-center w-32">{t("Grade")}</th>
                     <th className="px-10 py-5 text-center w-40">Integrity</th>
                     <th className="px-10 py-5 text-center w-32">Retake</th>
-                    <th className="px-10 py-5 text-right">Actions</th>
+                    <th className="px-10 py-5 text-right">{t("Actions")}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
@@ -591,10 +596,10 @@ const AdminGrading: React.FC<GradingProps> = ({ user, onLogout }) => {
                     <TableSkeletonRows rows={10} cols={9} />
                   ) : results.length === 0 ? (
                     <tr>
-                      <td colSpan={9} className="px-10 py-32 text-center text-slate-300 font-black uppercase tracking-[0.4em] italic">Zero Records Discovered</td>
+                      <td colSpan={9} className="px-10 py-32 text-center text-slate-300 font-black uppercase tracking-[0.4em] italic">{t("Zero Records Discovered")}</td>
                     </tr>
                   ) : (
-                    results.map((r, i) => (
+                    results.slice((currentPage - 1) * pageSize, currentPage * pageSize).map((r, i) => (
                       <tr key={`${r.student_id}-${r.course_code}-${i}`} className="group hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors">
                         <td className="px-10 py-6 font-black text-xs text-slate-400 dark:text-slate-500 uppercase tracking-tighter">{r.student_id}</td>
                         <td className="px-10 py-6">
@@ -606,10 +611,10 @@ const AdminGrading: React.FC<GradingProps> = ({ user, onLogout }) => {
                           </div>
                         </td>
                         <td className="px-10 py-6">
-                          <span className="px-3 py-1 rounded-xl bg-slate-50 dark:bg-slate-950 text-[10px] font-black text-slate-500 dark:text-slate-400 border border-slate-100 dark:border-slate-800 uppercase tracking-[0.2em]">{r.course_code}</span>
+                          <span className="whitespace-nowrap inline-block w-full text-center px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-950 text-[10px] font-black text-slate-500 dark:text-slate-400 border border-slate-100 dark:border-slate-800 uppercase tracking-[0.2em]">{r.course_code}</span>
                         </td>
                         <td className="px-10 py-6 text-center">
-                          <span className="px-3 py-1 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 text-[10px] font-black text-indigo-500 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-800/50 uppercase tracking-[0.2em]">
+                          <span className="whitespace-nowrap inline-block w-full text-center px-3 py-2 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 text-[10px] font-black text-indigo-500 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-800/50 uppercase tracking-[0.2em]">
                             {r.year} Yr / {r.semester} Sem
                           </span>
                         </td>
@@ -659,7 +664,7 @@ const AdminGrading: React.FC<GradingProps> = ({ user, onLogout }) => {
                             <button
                               onClick={() => handleDeleteResult(r)}
                               className="p-2.5 rounded-2xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-all shadow-sm border border-transparent hover:border-rose-500/20"
-                              title="Expunge Record"
+                              title={t("Expunge Record")}
                             >
                               <span className="material-icons-outlined text-xl">delete_outline</span>
                             </button>
@@ -669,8 +674,29 @@ const AdminGrading: React.FC<GradingProps> = ({ user, onLogout }) => {
                     ))
                   )}
                 </tbody>
-              </table>
-            </div>
+                </table>
+              </div>
+              <div className="flex items-center justify-between border-t border-slate-100 dark:border-slate-800 px-8 py-6 bg-slate-50/30 dark:bg-slate-950/30 rounded-b-3xl">
+                <div className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">
+                  {t("Page")} {currentPage} - {t("Showing")} {results.length} {t("results")}
+                </div>
+                <div className="flex gap-3">
+                  <button 
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    className="flex items-center gap-2 rounded-xl border border-slate-200 dark:border-slate-800 px-4 py-2 text-xs font-bold text-slate-600 dark:text-slate-300 disabled:opacity-30 hover:bg-white dark:hover:bg-slate-900 transition-all shadow-sm" 
+                    disabled={currentPage === 1}
+                  >
+                    <span className="material-icons-outlined text-sm">west</span> {t("Prev")}
+                  </button>
+                  <button 
+                    onClick={() => setCurrentPage(p => p + 1)}
+                    className="flex items-center gap-2 rounded-xl border border-slate-200 dark:border-slate-800 px-4 py-2 text-xs font-bold text-slate-600 dark:text-slate-300 disabled:opacity-30 hover:bg-white dark:hover:bg-slate-900 transition-all shadow-sm"
+                    disabled={results.length <= currentPage * pageSize}
+                  >
+                    {t("Next")} <span className="material-icons-outlined text-sm">east</span>
+                  </button>
+                </div>
+              </div>
           </div>
         </main>
       </div>
@@ -680,7 +706,7 @@ const AdminGrading: React.FC<GradingProps> = ({ user, onLogout }) => {
         <div className="fixed inset-0 bg-slate-950/40 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-in fade-in duration-300">
           <div className="bg-white dark:bg-slate-900 rounded-[32px] shadow-2xl p-10 w-full max-w-md border border-slate-200 dark:border-slate-800 animate-in zoom-in-95 duration-300">
             <div className="flex items-center justify-between mb-8">
-              <h3 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">Record Performance</h3>
+              <h3 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">{t("Record Performance")}</h3>
               <button onClick={() => setShowAddModal(false)} className="h-10 w-10 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
                 <span className="material-icons-outlined">close</span>
               </button>
@@ -688,7 +714,7 @@ const AdminGrading: React.FC<GradingProps> = ({ user, onLogout }) => {
             
             <div className="space-y-6">
               <div className="space-y-2">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Student Identifier *</label>
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t("Student Identifier *")}</label>
                 <input
                   type="text"
                   value={formData.student_id}
@@ -698,7 +724,7 @@ const AdminGrading: React.FC<GradingProps> = ({ user, onLogout }) => {
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Catalog Course Code *</label>
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t("Catalog Course Code *")}</label>
                 <input
                   type="text"
                   value={formData.course_code}
@@ -708,7 +734,7 @@ const AdminGrading: React.FC<GradingProps> = ({ user, onLogout }) => {
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Examination Score (0-100)</label>
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t("Examination Score (0-100)")}</label>
                 <input
                   type="number"
                   value={formData.exam_score}
@@ -720,7 +746,7 @@ const AdminGrading: React.FC<GradingProps> = ({ user, onLogout }) => {
               </div>
               <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800">
                 <div className="flex items-start gap-3">
-                  <span className="text-teal-600">Context:</span>
+                  <span className="text-teal-600">{t("Context:")}</span>
                   <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 leading-relaxed uppercase tracking-tighter">
                     Entry context: Year {year}, Sem {semester}
                     {showSection && `, Sec ${section || 'All'}`}
@@ -754,8 +780,8 @@ const AdminGrading: React.FC<GradingProps> = ({ user, onLogout }) => {
           <div className="bg-white dark:bg-slate-900 rounded-[32px] shadow-2xl p-10 w-full max-w-md border border-slate-200 dark:border-slate-800 animate-in zoom-in-95 duration-300">
             <div className="flex items-center justify-between mb-8">
               <div className="space-y-1">
-                <h3 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">Edit Metric</h3>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Modifying student record</p>
+                <h3 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">{t("Edit Metric")}</h3>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t("Modifying student record")}</p>
               </div>
               <button onClick={() => setEditingResult(null)} className="h-10 w-10 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
                 <span className="material-icons-outlined">close</span>
@@ -765,17 +791,17 @@ const AdminGrading: React.FC<GradingProps> = ({ user, onLogout }) => {
             <div className="space-y-6">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Student ID</label>
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t("Student ID")}</label>
                   <div className="px-5 py-3 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 text-xs font-bold text-slate-500">{formData.student_id}</div>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Course Code</label>
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t("Course Code")}</label>
                   <div className="px-5 py-3 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 text-xs font-bold text-slate-500">{formData.course_code}</div>
                 </div>
               </div>
               
               <div className="space-y-2">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Updated Exam Score</label>
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t("Updated Exam Score")}</label>
                 <input
                   type="number"
                   value={formData.exam_score}

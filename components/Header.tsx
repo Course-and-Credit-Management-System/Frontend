@@ -5,6 +5,7 @@ import { api } from '../lib/api';
 import { useNavigate } from 'react-router-dom';
 import { toggleTheme } from '../lib/theme';
 import { LanguageSwitcher } from './LanguageSwitcher';
+import { useTranslation } from 'react-i18next';
 
 interface HeaderProps {
   title: string;
@@ -13,6 +14,7 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ title, user }) => {
   const { toggleSidebar } = useUI();
+  const { t } = useTranslation();
 
   const navigate = useNavigate();
   const [unread, setUnread] = useState<number>(0);
@@ -62,8 +64,8 @@ const Header: React.FC<HeaderProps> = ({ title, user }) => {
       </div>
       
       <div className="hidden md:flex flex-col">
-        <h1 className="text-lg font-black text-slate-900 dark:text-white tracking-tight leading-tight uppercase tracking-widest text-[11px] opacity-40 mb-0.5">Navigation Context</h1>
-        <p className="text-sm font-bold text-slate-500 dark:text-slate-400">{title}</p>
+        <h1 className="text-lg font-black text-slate-900 dark:text-white tracking-tight leading-tight uppercase tracking-widest text-[11px] opacity-40 mb-0.5">{t("NAVIGATION CONTEXT")}</h1>
+        <p className="text-sm font-bold text-slate-500 dark:text-slate-400">{t(title)}</p>
       </div>
       
       <div className="flex items-center gap-4 md:gap-6">

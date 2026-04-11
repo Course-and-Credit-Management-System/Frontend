@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 
 interface ChatComposerProps {
   value: string;
@@ -13,6 +14,7 @@ const ChatComposer: React.FC<ChatComposerProps> = ({
   onSend,
   disabled = false,
 }) => {
+  const { t } = useTranslation();
   const canSend = !disabled && value.trim().length > 0;
 
   return (
@@ -33,14 +35,14 @@ const ChatComposer: React.FC<ChatComposerProps> = ({
           }}
           rows={1}
           className="w-full min-h-[60px] max-h-[300px] resize-none bg-transparent px-2 py-2 text-base font-medium text-slate-900 dark:text-white outline-none placeholder:text-slate-400 leading-relaxed scrollbar-hide"
-          placeholder="Inquire about curriculum metrics, administrative logs, or faculty updates..."
+          placeholder={t("Inquire about curriculum metrics, administrative logs, or faculty updates...")}
           aria-label="Chat message input"
           disabled={disabled}
         />
         <div className="flex items-center justify-between px-2 pb-1">
           <div className="flex items-center gap-4">
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest hidden md:block">
-              {value.length > 0 ? `${value.length} characters` : 'AI Synthesis Active'}
+              {value.length > 0 ? `${value.length} characters` : t("AI Synthesis Active")}
             </span>
           </div>
           <button
@@ -54,14 +56,12 @@ const ChatComposer: React.FC<ChatComposerProps> = ({
             }`}
             aria-label="Send message"
           >
-            <span className="hidden md:inline">Execute</span>
+            <span className="hidden md:inline">{t("Execute")}</span>
             <span className="material-icons-outlined text-lg">arrow_upward</span>
           </button>
         </div>
       </div>
-      <p className="absolute -bottom-8 left-6 hidden md:block text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] opacity-0 group-focus-within:opacity-100 transition-opacity">
-        CMD + Enter to dispatch • Shift + Enter for multiline
-      </p>
+      <p className="absolute -bottom-8 left-6 hidden md:block text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] opacity-0 group-focus-within:opacity-100 transition-opacity">{t("CMD + Enter to dispatch • Shift + Enter for multiline")}</p>
     </div>
   );
 };
