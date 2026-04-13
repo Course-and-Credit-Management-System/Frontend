@@ -10,52 +10,36 @@ This skill defines the visual language and component architecture for the applic
 ## Core Design Principles
 
 ### 1. Color System (Tailwind)
-The application relies on a specifc color palette defined by the brand guidelines.
-- **Primary Teal**: `#077d8a` (Navbar, primary buttons, highlights).
-- **Secondary Teal**: `#066a75` (Hover states, accents).
-- **Action Blue**: `#0d4a8f` (Secondary actions, special highlights).
-- **Accent Yellow**: `#ffc20e` (Notifications, alerts, highlights).
-- **Neutrals**:
-  - Backgrounds: `#f5f5f5` (Light Gray/Sections), `#ffffff` (White/Main).
-  - Text: `#333333` (Dark Gray/Primary), `#666666` (Medium Gray/Secondary).
-- **Status Indicators**:
-  - **Success**: `#27ae60` (Green).
-  - **Error**: `#e74c3c` (Red).
-
-#### Student AI Chatbot Exception
-- For Student AI Chatbot surfaces, use a neutral + green accent scheme:
-  - Primary Accent: `#1f6f5f`
-  - Hover Accent: `#185a4e`
-  - Avoid blue-heavy accents in chatbot message/composer/mode controls.
+The application has transitioned to a modern, clean, minimalist dashboard aesthetic based on Tailwind defaults (Slate/Teal/Emerald).
+- **Backgrounds**: `bg-slate-50` (or `bg-[#f9fafb]`) for main pages, `dark:bg-slate-950`.
+- **Surfaces/Cards**: `bg-white` with `border-slate-100` (`dark:bg-slate-900 dark:border-slate-800`).
+- **Primary Action (Teal/Emerald)**: `bg-teal-600` or `bg-emerald-600` for primary buttons/accents.
+- **Typography**:
+  - Primary text/Headings: `text-slate-900` (`dark:text-white`).
+  - Secondary/Overlines: `text-slate-400` or `text-slate-500`.
+- **Soft Accents (Icon Wrappers)**: Use tinted background with matching text (e.g., `bg-indigo-50 text-indigo-600 border-indigo-100/50`, `bg-amber-50 text-amber-600 border-amber-100/50`).
 
 ### 2. Layout & Typography
 - **Families**: 
-  - **Headings**: `Poppins`, sans-serif (Weights: 500, 600, 700).
-  - **Body**: `Roboto`, sans-serif (Size: 16px, Weight: 400).
-- **Grid**: Max-width `1200px` (centered), 12-column grid, 20px gutters.
-- **Spacing**:
-  - Sections: 40px vertical padding.
-  - Components: Small (8px), Medium (16px), Large (32px).
+  - **Headings & Main UI**: `Poppins`, sans-serif (Weights: 500, 600, 700, 800, 900 `font-black`).
+  - **Body / Supporting**: `Roboto` or `Inter`, sans-serif.
+- **Micro-labels (Overlines)**: `text-[10px] font-black uppercase tracking-[0.2em] (tracking-widest) text-slate-400`.
+- **Headers (Large)**: `text-4xl md:text-5xl font-black text-slate-900 tracking-tight leading-tight`.
 
-### 3. Component Patterns
-
-#### Buttons
-- **Primary**: `bg-[#0d4a8f] text-white rounded-[6px] hover:bg-[#1e73be] uppercase font-medium`.
-- **Secondary**: `bg-white text-[#0d4a8f] border border-[#0d4a8f] rounded-[6px] hover:bg-[#e0e0e0]`.
-- **Properties**: Padding `12px 24px`, subtle shadow `0 2px 4px rgba(0,0,0,0.1)`.
-
-#### Forms & Inputs
-- **Input Field**:
-  - `bg-white border border-[#cccccc] rounded-[6px] p-[10px_12px]`.
-  - Focus: Border `#0d4a8f`, Shadow `0 0 0 2px rgba(13,74,143,0.2)`.
-- **Labels**: `text-[14px] text-[#333333] font-medium`.
-- **Dropdowns**: `bg-white border border-[#cccccc] rounded-[6px] hover:bg-[#f5f5f5]`.
+### 3. Component Patterns (Dashboard Standard)
 
 #### Cards & Containers
-- **Style**: `bg-white rounded-[8px] p-[20px] shadow-[0_2px_6px_rgba(0,0,0,0.1)]`.
-- **Content**: Title H3 (`#333333`), Body text (`#666666`).
-- **Dashboard Widgets**: 
-  - Module tiles (Enrollment, Results, Status, Timetable) should use white backgrounds with centralized icons and bold Poppins titles.
+- **Dashboard Card Base**: `bg-white dark:bg-slate-900 p-7 rounded-[32px] border border-slate-100 dark:border-slate-800 shadow-sm transition-all hover:shadow-xl hover:-translate-y-1 group relative overflow-hidden`.
+- **Card Accent Concept**: Cards should include a top-right corner background decorative shape:
+  `<div className="absolute top-0 right-0 h-24 w-24 bg-{color}-500/5 rounded-bl-full transform translate-x-4 -translate-y-4 transition-transform group-hover:scale-110" />`
+- **Icon Boxes**: Icons inside cards should be wrapped in squarish boxes: `shrink-0 p-3 bg-{color}-50 rounded-2xl text-{color}-600 border border-{color}-100/50`.
+
+#### Buttons & Inputs
+- **Primary Button**: `inline-flex items-center justify-center gap-2 rounded-2xl bg-teal-600 px-6 py-3 text-sm font-bold text-white transition-all hover:bg-teal-500 hover:shadow-md hover:-translate-y-0.5`.
+- **Secondary Button**: `bg-slate-50 border border-slate-200 text-slate-700 hover:bg-slate-100`.
+
+#### Alerts & Info Banners
+- **Style**: `inline-flex items-center gap-4 p-4 pr-6 rounded-2xl bg-amber-50 border border-amber-100/50 shadow-sm`.
 
 #### Data Tables (e.g., AdminCourses)
 - **Header**: `bg-[#0d4a8f] text-white font-[600]`.

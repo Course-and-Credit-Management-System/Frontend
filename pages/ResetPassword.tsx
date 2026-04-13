@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from 'react-i18next';
 import { api } from "../lib/api";
 import { User } from "../types";
 
@@ -10,6 +11,7 @@ type Props = {
 
 const ResetPassword: React.FC<Props> = ({ user, onPasswordReset }) => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirm, setConfirm] = useState("");

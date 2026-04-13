@@ -3,8 +3,10 @@ import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
 import { User } from "../types";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useTranslation } from 'react-i18next';
 
 const StudentMajorLocked: React.FC<{ user: User; onLogout: () => void }> = ({ user, onLogout }) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const custom = (location.state as any)?.message as string | undefined;

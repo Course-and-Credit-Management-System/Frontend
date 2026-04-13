@@ -1,0 +1,163 @@
+﻿.login-container {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 28px 16px;
+  background:
+    radial-gradient(900px 380px at 0% 0%, rgba(232, 169, 58, 0.2), transparent 62%),
+    radial-gradient(1100px 460px at 100% 10%, rgba(15, 127, 134, 0.22), transparent 60%),
+    linear-gradient(135deg, #0b4f9f 0%, #0f6b94 44%, #0e7f86 100%);
+}
+
+.login-card {
+  width: 100%;
+  max-width: 520px;
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid rgba(215, 227, 242, 0.95);
+  border-radius: 22px;
+  padding: 30px;
+  box-shadow: var(--uit-shadow-lg);
+}
+
+.login-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.logo-circle-small {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  margin: 0 auto 14px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-size: 1.45rem;
+  font-weight: 800;
+  background: linear-gradient(145deg, #0b4f9f, #0f7f86);
+  border: 3px solid rgba(255, 255, 255, 0.88);
+  box-shadow: 0 12px 24px rgba(11, 79, 159, 0.25);
+}
+
+.login-header h2 {
+  margin: 0;
+  color: #153452;
+  font-size: 1.85rem;
+}
+
+.login-subtitle {
+  margin: 8px 0 0;
+  color: #4e6984;
+}
+
+.login-form {
+  display: grid;
+  gap: 16px;
+}
+
+.login-card .form-group {
+  display: grid;
+  gap: 8px;
+}
+
+.login-card .form-group label {
+  font-weight: 700;
+  color: #1b3f63;
+}
+
+.login-card .form-group input {
+  width: 100%;
+  border: 1px solid var(--uit-border);
+  border-radius: 12px;
+  padding: 12px 14px;
+  background: #f9fcff;
+  color: #173353;
+}
+
+.login-card .form-group input:focus {
+  outline: none;
+  border-color: #0f7f86;
+  box-shadow: 0 0 0 4px rgba(15, 127, 134, 0.14);
+  background: #fff;
+}
+
+.login-card .hint {
+  margin: 0;
+  color: #5f7a94;
+  font-size: 0.76rem;
+  line-height: 1.5;
+}
+
+.login-form .form-actions {
+  margin-top: 4px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.login-form .btn {
+  border: 0;
+  border-radius: 12px;
+  min-height: 46px;
+  cursor: pointer;
+  font-weight: 700;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+}
+
+.login-form .btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.login-form .btn-back {
+  background: #eaf1f8;
+  color: #224262;
+}
+
+.login-form .btn-submit {
+  color: #fff;
+  background: linear-gradient(140deg, #0f7f86, #0b4f9f);
+  box-shadow: 0 10px 20px rgba(11, 79, 159, 0.22);
+}
+
+.login-form .btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.login-footer {
+  margin-top: 20px;
+  border-top: 1px solid #deebf7;
+  padding-top: 14px;
+  text-align: center;
+}
+
+.login-footer p {
+  margin: 0;
+  color: #607d97;
+}
+
+.link-button {
+  margin-top: 8px;
+  border: 0;
+  background: none;
+  color: #0b5d90;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.link-button:hover {
+  color: #083f63;
+}
+
+@media (max-width: 640px) {
+  .login-card {
+    padding: 22px 16px;
+    border-radius: 16px;
+  }
+
+  .login-form .form-actions {
+    grid-template-columns: 1fr;
+  }
+}

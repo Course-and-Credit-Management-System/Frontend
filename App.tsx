@@ -2,11 +2,17 @@ import React, { useEffect, useState } from "react";
 import { HashRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import Login from "./pages/Login";
+import StudentLoginPage from "./src/pages/LoginPage";
 import SimpleLogin from "./pages/SimpleLogin";
 import ResetPassword from "./pages/ResetPassword";
+import AdminLogin from "./src/pages/AdminLogin";
 
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPasswordToken from "./pages/ResetPasswordToken";
+
+// NEW: HomePage migrated
+import HomePage from "./pages/HomePage";
+import NewStudentRegister from "./pages/NewStudentRegister";
 
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminEnrollment from "./pages/AdminEnrollment";
@@ -151,7 +157,9 @@ const App: React.FC = () => {
         />
 
         {/* Public routes - accessible without login */}
-        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/" element={<HomePage />} />
+          <Route path="/register" element={<NewStudentRegister />} />          <Route path="/admin-login" element={<AdminLogin />} />
+<Route path="/student-login" element={<StudentLoginPage onLogin={handleLogin as any} />} />        <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password-token" element={<ResetPasswordToken />} />
         <Route path="/simple-login" element={<SimpleLogin />} />
 

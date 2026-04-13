@@ -17,14 +17,14 @@ import {
 
 import { AdminChatRequest, AdminChatResponse } from '../types/adminChat';
 import type { CurrentCoursesResponse } from "../types";
-import { API_BASE_URL } from "./apiBase";
+import { API_BASE_URL, SPRING_API_BASE_URL } from "./apiBase";
 
 // Use relative path so requests go through Vite proxy (same-origin = cookies work)
-const API_BASE = API_BASE_URL;
 
 type RequestOptions = {
   method?: string;
   body?: any;
+  backend?: "fastapi" | "spring";
 };
 
 type BlobResponse = {
@@ -73,11 +73,22 @@ function shouldAutoLogout(path: string) {
   if (path.includes("/api/v1/admin/messages/") && path.endsWith("/read")) return false;
   // Allow enrollment errors to be handled by UI instead of auto-redirecting to login
   if (path.includes("/courses/enrollment")) return false;
+  // Spring Boot public endpoints (match raw path — prefix is added inside request())
+  if (path === "/api/v1/students/register") return false;
+  if (path === "/api/v1/settings/registration-window") return false;
   return true;
 }
 // -----------------------------------------------
 
 async function request<T = any>(path: string, options: RequestOptions = {}): Promise<T> {
+  const backend = options.backend ?? "fastapi";
+  const base = backend === "spring" ? SPRING_API_BASE_URL : API_BASE_URL;
+
+  // In dev: base="" so we proxy through Vite. Prepend /spring-api so Vite catches it.
+  // In prod: base has the full URL (e.g. https://spring.university.edu). No prefix needed.
+  const proxyPrefix = backend === "spring" && !base ? "/spring-api" : "";
+  const fullPath = `${proxyPrefix}${path}`;
+
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
   };
@@ -88,7 +99,7 @@ async function request<T = any>(path: string, options: RequestOptions = {}): Pro
     headers["Authorization"] = `Bearer ${token}`;
   }
 
-  const res = await fetch(`${API_BASE}${path}`, {
+  const res = await fetch(`${base}${fullPath}`, {
     method: options.method ?? "GET",
     headers,
     credentials: "include",
@@ -120,11 +131,16 @@ async function request<T = any>(path: string, options: RequestOptions = {}): Pro
 }
 
 async function requestBlob(path: string, options: RequestOptions = {}): Promise<BlobResponse> {
+  const backend = options.backend ?? "fastapi";
+  const base = backend === "spring" ? SPRING_API_BASE_URL : API_BASE_URL;
+  const proxyPrefix = backend === "spring" && !base ? "/spring-api" : "";
+  const fullPath = `${proxyPrefix}${path}`;
+
   const headers: Record<string, string> = options.body
     ? { "Content-Type": "application/json" }
     : {};
 
-  const res = await fetch(`${API_BASE}${path}`, {
+  const res = await fetch(`${base}${fullPath}`, {
     method: options.method ?? "GET",
     headers,
     credentials: "include",
@@ -192,6 +208,10 @@ export type AdminAnnouncementBulkPayload = {
 // API
 // ---------------------------
 export const api = {
+  // Public student registration
+  registerStudent: (payload: any) => request("/api/v1/students/register", { method: "POST", body: payload, backend: "spring" }),
+  getRegistrationWindowSettings: () => request("/api/v1/settings/registration-window", { backend: "spring" }),
+
   login: (payload: { username: string; password: string; role: "admin" | "student" }) =>
     request("/api/v1/auth/login", { method: "POST", body: payload }),
 
@@ -471,7 +491,7 @@ export const api = {
       headers.Authorization = `Bearer ${token}`;
     }
 
-    const response = await fetch(`${API_BASE}/api/v1/ai/ai/student/chat`, {
+    const response = await fetch(`${API_BASE_URL}/api/v1/ai/ai/student/chat`, {
       method: "POST",
       headers,
       credentials: "include",
@@ -513,7 +533,7 @@ export const api = {
       headers.Authorization = `Bearer ${token}`;
     }
 
-    const response = await fetch(`${API_BASE}/api/v1/ai/ai/student/course-chat`, {
+    const response = await fetch(`${API_BASE_URL}/api/v1/ai/ai/student/course-chat`, {
       method: "POST",
       headers,
       credentials: "include",
@@ -546,7 +566,7 @@ export const api = {
       headers.Authorization = `Bearer ${token}`;
     }
 
-    const response = await fetch(`${API_BASE}/api/v1/ai/ai/admin/chat`, {
+    const response = await fetch(`${API_BASE_URL}/api/v1/ai/ai/admin/chat`, {
       method: "POST",
       headers,
       credentials: "include",

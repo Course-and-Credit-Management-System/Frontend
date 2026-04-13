@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { useTranslation } from 'react-i18next';
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
 import { User } from "../types";

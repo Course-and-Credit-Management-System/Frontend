@@ -14,6 +14,11 @@ export default defineConfig(({ mode }) => {
             target: 'http://127.0.0.1:8000',
             changeOrigin: true,
           },
+          '/spring-api': {
+            target: 'http://localhost:8090',
+            changeOrigin: true,
+            rewrite: (path) => path.replace(/^\/spring-api/, ''),
+          },
         },
       },
       plugins: [react()],

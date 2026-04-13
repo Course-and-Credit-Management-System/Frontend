@@ -1,0 +1,40 @@
+{
+  "active_plan": "C:\\Student Registeration + Course Enrollment and Credit Management\\Frontend\\.sisyphus\\plans\\localization-eng-myanmar.md",
+  "started_at": "2026-04-12T19:42:15.510Z",
+  "session_ids": [
+    "ses_27cddd3d1ffeJFxo6DaoW8rth3"
+  ],
+  "plan_name": "localization-eng-myanmar",
+  "session_origins": {
+    "ses_27cddd3d1ffeJFxo6DaoW8rth3": "direct"
+  },
+  "task_sessions": {
+    "todo:1": {
+      "task_key": "todo:1",
+      "task_label": "1",
+      "task_title": "Analyze all pages and extract hardcoded strings (harvest existing Myanmar texts)",
+      "session_id": "ses_27cc72586ffexr9a44FUapHBXT",
+      "agent": "Sisyphus-Junior",
+      "category": "deep",
+      "updated_at": "2026-04-12T19:50:04.497Z"
+    },
+    "todo:2": {
+      "task_key": "todo:2",
+      "task_label": "2",
+      "task_title": "Create locales/en.json structure with all English keys",
+      "session_id": "ses_27c8a22a3ffeFSdQrFATEZDRvl",
+      "agent": "Sisyphus-Junior",
+      "category": "unspecified-high",
+      "updated_at": "2026-04-12T22:06:55.893Z"
+    },
+    "final-wave:f1": {
+      "task_key": "final-wave:f1",
+      "task_label": "F1",
+      "task_title": "**Plan Compliance Audit** — `oracle`",
+      "session_id": "ses_27a4a4753ffeYng3Fc7Ma6fcT1",
+      "agent": "Sisyphus-Junior",
+      "category": "quick",
+      "updated_at": "2026-04-13T07:21:00.983Z"
+    }
+  }
+}

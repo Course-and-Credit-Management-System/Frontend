@@ -42,21 +42,21 @@ The current UI is functional, responsive, and has a consistent theme (Teal-based
 - **Benefit:** Improved accessibility and professional feel across all devices.
 
 ### E. Styling & Design System (The "Visual" Need)
-**Need:** 
+**Need:**
 1. Use of Tailwind via CDN and manual `dark:` class toggling.
-2. Inconsistent Icon Libraries: The `Login.tsx` page uses `material-symbols-outlined`, while the Dashboards use `material-icons-outlined`.
-3. The `Login.tsx` page has a much higher degree of "polish" (gradients, subtle shadows, better spacing) compared to some internal administrative tables.
-4. Some dashboard cards can accumulate excessive white space when simple metric cards are visually forced to match the height of denser action cards.
+2. Inconsistent Icon Libraries: Legacy pages use mixed vectors, while Dashboards use `material-icons-outlined`.
+3. Disconnect between the internal Dashboard (`StudentDashboard.tsx`) aesthetics-which features modern rounded cards (`rounded-[32px]`), hover animations (`hover:-translate-y-1`), and soft slate/emerald tracking typography-and legacy or migrated pages.
 **Fix:**
-- Move Tailwind to a PostCSS build step (already partially started in `package.json` but `index.html` still uses CDN).
-- Standardize on ONE icon library (preferably `material-symbols` as it is more modern).
-- Use the `Login.tsx` styling as the "Baseline of Quality" for internal pages to ensure a premium feel throughout the app.
-- Define a `tailwind.config.ts` that strictly follows the design system's color palette (Primary: `#077d8a`).
-- Standardize typography scale (e.g., using Tailwind's `text-sm`, `text-base`, `text-lg` consistently for specific roles like body, headers, and captions).
+- Standardize on ONE icon library (`material-icons-outlined` or `material-icons-round` as seen in StudentDashboard).
+- Design system paradigm shift:
+  - **Page Header Icons**: Eradicate the use of raw text emojis (e.g., `📝 System Registration`) in page titles. Instead, use a standardized icon badge centered above the title. The badge should use a structural container (e.g., `w-16 h-16 rounded-full flex items-center justify-center bg-teal-100 dark:bg-teal-900/30`) housing a `text-4xl material-icons-outlined` vector icon matching the theme color (e.g., `text-teal-600 dark:text-teal-400`).
+  - **Cards & Layout**: Every distinct piece of UI/widget should implement the `bg-white p-7 rounded-[32px] border border-slate-100 shadow-sm transition-all hover:shadow-xl hover:-translate-y-1 group relative overflow-hidden` wrapper. Corner aesthetic gradients (`rounded-bl-full` shapes nested in the top-right corner) should be applied consistently for brand pop.
+  - **Typography (Overlines & Headlines)**: Eradicate generic uppercase headings. Standardize section labels to `text-[10px] font-black uppercase tracking-[0.2em] text-slate-400`. Massive headline usage should anchor around `text-4xl font-black text-slate-900 tracking-tight leading-tight`.
+  - **Button Standard**: Primary actions must mimic `StudentDashboard` buttons (`rounded-2xl`, `inline-flex gap-2`, `bg-teal-600 px-8 py-4 font-bold`, vector arrows `material-icons-outlined text-sm ml-1` instead of unicode arrows).
 - Prefer compact horizontal compositions for simple summary cards (`metric + support info`) instead of tall vertical stacks.
 - Avoid forcing equal-height rows when neighboring cards have very different information density.
 - When one complex card must stay taller, consider stacking simpler cards in a companion column so the total column height aligns without leaving dead zones.
-- **Benefit:** Better performance, strict adherence to brand guidelines, and a cohesive user experience from login to logout.
+- **Benefit:** Better performance, strict adherence to brand guidelines, and a cohesive premium user experience from login to logout entirely mirroring the `StudentDashboard` aesthetic out-of-the-box.
 
 ### F. Dashboard Density & White Space Control
 **Need:**

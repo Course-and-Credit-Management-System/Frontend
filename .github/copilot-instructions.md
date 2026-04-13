@@ -8,7 +8,9 @@ Follow these standards for all code generation and project assistance.
 - **Authentication**: Ensure `must_reset_password` checks are handled at the route level.
 
 ## Styling & UI
-- **Primary Brand**: `#0d4a8f` (BG/Buttons), `#ffc20e` (Alerts).
+- **Foreign Language Preservation**: When refactoring or enhancing UI, NEVER delete, translate, or overwrite existing foreign language strings (e.g., Myanmar/Burmese). Always preserve the original text perfectly while updating the surrounding layout and styling.
+- **Aesthetic Definition**: The UI must strictly follow the minimalist dashboard aesthetic established in `UI_UX_Analysis_Improvement_Plan.md` and the workspace planning documents. Instead of applying legacy heavy blue/teal gradients, default to modern, clean Tailwind layouts (e.g., `bg-slate-50` or `bg-[#f9fafb]` backgrounds, `bg-white` cards with `shadow-sm` and `border-slate-100`, `text-slate-900` typography, and modern button palettes like `emerald-600`).
+- **Primary Brand**: `#0d4a8f` (BG/Buttons), `#ffc20e` (Alerts) should be used ONLY when the legacy design is explicitly requested.
 - **Table Design**: `bg-[#0d4a8f]` headers with white text. Alternating row colors (`#ffffff` and `#f5f5f5`).
 - **Icons**: Use Google Material icons via standard `material-icons-outlined` classes.
 
