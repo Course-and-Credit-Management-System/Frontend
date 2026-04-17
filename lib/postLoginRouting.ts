@@ -1,4 +1,4 @@
-﻿// Extracted from postLoginRouting.js
+// Extracted from postLoginRouting.js
 const DETAILS_CONFIRMED_STATUSES = new Set([
   'DETAILS_SUBMITTED',
   'PAYMENT_REQUIRED',
@@ -29,10 +29,18 @@ const toSortableTimestamp = (value: any) => {
 const sortRegistrationsByRecent = (items: any[]) =>
   [...(Array.isArray(items) ? items : [])].sort((a, b) => {
     const aTime = Math.max(
-      toSortableTimestamp(a?.submittedAt || a?.submitted_at || a?.createdAt || a?.created_at)
+      toSortableTimestamp(a?.submittedAt),
+      toSortableTimestamp(a?.submitted_at),
+      toSortableTimestamp(a?.createdAt),
+      toSortableTimestamp(a?.created_at),
+      -Infinity
     );
     const bTime = Math.max(
-      toSortableTimestamp(b?.submittedAt || b?.submitted_at || b?.createdAt || b?.created_at)
+      toSortableTimestamp(b?.submittedAt),
+      toSortableTimestamp(b?.submitted_at),
+      toSortableTimestamp(b?.createdAt),
+      toSortableTimestamp(b?.created_at),
+      -Infinity
     );
     return bTime - aTime;
   });

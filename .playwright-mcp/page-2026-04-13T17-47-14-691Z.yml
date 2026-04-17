@@ -1,0 +1,164 @@
+- generic [ref=e2]:
+  - generic [ref=e100]:
+    - generic [ref=e102]:
+      - button "EN" [ref=e103] [cursor=pointer]
+      - button "မြန်မာ" [ref=e104] [cursor=pointer]
+    - generic [ref=e105]:
+      - generic [ref=e106]:
+        - generic [ref=e109]: app_registration
+        - heading "System Registration" [level=2] [ref=e110]
+        - paragraph [ref=e111]: Please fill in the following information using Myanmar font.
+      - generic [ref=e112]:
+        - generic [ref=e113]:
+          - generic [ref=e114]: "Student Name: *"
+          - textbox "ကျောင်းသားအမည် ထည့်ပါ" [ref=e115]
+        - generic [ref=e116]:
+          - generic [ref=e117]:
+            - generic [ref=e118]: "Father Name: *"
+            - textbox "အဖအမည် ထည့်ပါ" [ref=e119]
+          - generic [ref=e120]:
+            - generic [ref=e121]: "Mother Name: *"
+            - textbox "အမေအမည် ထည့်ပါ" [ref=e122]
+        - generic [ref=e123]:
+          - generic [ref=e124]: "Gender: *"
+          - generic [ref=e125]:
+            - generic [ref=e126] [cursor=pointer]:
+              - radio "Male" [ref=e127]
+              - generic [ref=e128]: Male
+            - generic [ref=e129] [cursor=pointer]:
+              - radio "Female" [ref=e130]
+              - generic [ref=e131]: Female
+        - generic [ref=e132]:
+          - generic [ref=e133]: "မွေးသက္ကရာဇ်: *"
+          - generic [ref=e134]:
+            - combobox [ref=e135] [cursor=pointer]:
+              - option "Day" [selected]
+              - option "1"
+              - option "2"
+              - option "3"
+              - option "4"
+              - option "5"
+              - option "6"
+              - option "7"
+              - option "8"
+              - option "9"
+              - option "10"
+              - option "11"
+              - option "12"
+              - option "13"
+              - option "14"
+              - option "15"
+              - option "16"
+              - option "17"
+              - option "18"
+              - option "19"
+              - option "20"
+              - option "21"
+              - option "22"
+              - option "23"
+              - option "24"
+              - option "25"
+              - option "26"
+              - option "27"
+              - option "28"
+              - option "29"
+              - option "30"
+              - option "31"
+            - combobox [ref=e136] [cursor=pointer]:
+              - option "Month" [selected]
+              - option "ဇန်နဝါရီ"
+              - option "ဖေဖော်ဝါရီ"
+              - option "မတ်"
+              - option "ဧပြီ"
+              - option "မေ"
+              - option "ဇွန်"
+              - option "ဇူလိုင်"
+              - option "သြဂုတ်"
+              - option "စက်တင်ဘာ"
+              - option "အောက်တိုဘာ"
+              - option "နိုဝင်ဘာ"
+              - option "ဒီဇင်ဘာ"
+            - combobox [ref=e137] [cursor=pointer]:
+              - option "Year" [selected]
+              - option "2010"
+              - option "2009"
+              - option "2008"
+              - option "2007"
+              - option "2006"
+              - option "2005"
+              - option "2004"
+              - option "2003"
+              - option "2002"
+              - option "2001"
+              - option "2000"
+              - option "1999"
+              - option "1998"
+              - option "1997"
+              - option "1996"
+              - option "1995"
+              - option "1994"
+              - option "1993"
+              - option "1992"
+              - option "1991"
+              - option "1990"
+              - option "1989"
+              - option "1988"
+              - option "1987"
+              - option "1986"
+              - option "1985"
+              - option "1984"
+              - option "1983"
+              - option "1982"
+              - option "1981"
+        - generic [ref=e138]:
+          - generic [ref=e139]: "မှတ်ပုံတင်အမှတ်: *"
+          - generic [ref=e140]:
+            - combobox [ref=e141] [cursor=pointer]:
+              - option "State/Region" [selected]
+              - option "၁"
+              - option "၁၂"
+            - combobox [ref=e142] [cursor=pointer]:
+              - option "Township" [selected]
+            - combobox [ref=e143] [cursor=pointer]:
+              - option "Type" [selected]
+              - option "နိုင်"
+              - option "ဧည့်"
+              - option "ပြု"
+            - textbox "၆ လုံး" [ref=e144]
+          - generic [ref=e146] [cursor=pointer]:
+            - checkbox "Pending" [ref=e147]
+            - generic [ref=e148]: Pending
+        - generic [ref=e149]:
+          - generic [ref=e150]:
+            - generic [ref=e151]: "Place of Birth: *"
+            - textbox "Enter birthplace" [ref=e152]
+          - generic [ref=e153]:
+            - generic [ref=e154]: "Address: *"
+            - textbox "Enter address" [ref=e155]
+          - generic [ref=e156]:
+            - generic [ref=e157]: "Phone: *"
+            - textbox "09xxxxxxxxx" [ref=e158]
+          - generic [ref=e159]:
+            - generic [ref=e160]: "Email: *"
+            - textbox "example@gmail.com" [ref=e161]
+        - generic [ref=e162]:
+          - generic [ref=e163]:
+            - generic [ref=e164]: "Entrance Roll No: *"
+            - textbox "ဝင်ခွင့်အမှတ်စဉ် ထည့်ပါ" [ref=e165]
+          - generic [ref=e166]:
+            - generic [ref=e167]: "Matric Roll No: *"
+            - textbox "ခုံအမှတ် ထည့်ပါ" [ref=e168]
+          - generic [ref=e169]:
+            - generic [ref=e170]: "Matric Pass Year: *"
+            - textbox "ဥပမာ - 2024" [ref=e171]
+          - generic [ref=e172]:
+            - generic [ref=e173]: "Total Marks: *"
+            - spinbutton [ref=e174]
+        - generic [ref=e175]:
+          - button "Back" [ref=e176] [cursor=pointer]
+          - button "Submit Registration arrow_forward" [ref=e177] [cursor=pointer]:
+            - text: Submit Registration
+            - generic [ref=e178]: arrow_forward
+  - link "Open Student AI Chatbot" [ref=e98] [cursor=pointer]:
+    - /url: "#/student/chatbot"
+    - generic [ref=e99]: smart_toy

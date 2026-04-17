@@ -204,7 +204,22 @@ export default function NewStudentRegister() {
         ? '\u101C\u103B\u103E\u1031\u102C\u1000\u103A\u1011\u102C\u1038\u1006\u1032'
         : `${toMyanmarDigits(formData.nrcRegion)}/${formData.nrcTownship}/${formData.nrcType}/${formData.nrcNumber}`;
 
-      // Build date of birth
+      // Build and validate date of birth
+      const dobYear = parseInt(formData.dobYear, 10);
+      const dobMonth = parseInt(formData.dobMonth, 10);
+      const dobDay = parseInt(formData.dobDay, 10);
+      
+      const testDate = new Date(Date.UTC(dobYear, dobMonth - 1, dobDay));
+      if (
+        testDate.getFullYear() !== dobYear ||
+        testDate.getMonth() !== dobMonth - 1 ||
+        testDate.getDate() !== dobDay
+      ) {
+        alert('Invalid date of birth. Please check the day, month, and year combination.');
+        setLoading(false);
+        return;
+      }
+      
       const dateOfBirth = `${formData.dobYear}-${formData.dobMonth}-${formData.dobDay}`;
 
       const matricYear = parseLocalizedInteger(formData.matricPassYear);

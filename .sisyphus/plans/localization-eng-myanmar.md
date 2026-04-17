@@ -77,7 +77,7 @@ Enable English <> Myanmar language switching on ALL frontend pages with the foll
 - Accurate translation files for common terms.
 - All UI text localized.
 - LanguageSwitcher functional.
-- No hardcoded visible stringsremaining.
+- No hardcoded visible strings remaining.
 
 ### Must NOT Have (Guardrails)
 - **No AI-slop translations**: Do NOT machine-translate complex academic terms incorrectly.

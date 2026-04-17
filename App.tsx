@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { HashRouter, Routes, Route, Navigate } from "react-router-dom";
+import { HashRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 
 import Login from "./pages/Login";
 import StudentLoginPage from "./src/pages/LoginPage";
@@ -37,6 +37,7 @@ import StudentStatus from "./pages/StudentStatus";
 import StudentCourses from "./pages/StudentCourses";
 import StudentChatPage from "./pages/StudentChatPage";
 import StudentChatTrigger from "./components/StudentChatTrigger";
+import PublicChatTrigger from "./components/PublicChatTrigger";
 import StudentProgressCurrent from "./pages/StudentProgressCurrent";
 import StudentTrackSelection from "./pages/StudentTrackSelection";
 import StudentMajorSelection from "./pages/StudentMajorSelection";
@@ -158,7 +159,8 @@ const App: React.FC = () => {
 
         {/* Public routes - accessible without login */}
         <Route path="/" element={<HomePage />} />
-          <Route path="/register" element={<NewStudentRegister />} />          <Route path="/admin-login" element={<AdminLogin />} />
+          <Route path="/register" element={<NewStudentRegister />} />
+        <Route path="/admin-login" element={<AdminLogin onLogin={handleLogin as any} />} />
 <Route path="/student-login" element={<StudentLoginPage onLogin={handleLogin as any} />} />        <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password-token" element={<ResetPasswordToken />} />
         <Route path="/simple-login" element={<SimpleLogin />} />
@@ -332,8 +334,9 @@ const App: React.FC = () => {
           </>
         )}
       </Routes>
-      <StudentChatTrigger visible={!!user && user.role === "student" && !user.must_reset_password} />
-      </HashRouter>
+<StudentChatTrigger visible={!!user && user.role === "student" && !user.must_reset_password} />
+        <PublicChatTrigger />
+        </HashRouter>
     </UIProvider>
   );
 };

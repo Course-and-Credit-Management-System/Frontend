@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { api } from '../api/client';
+import { api } from '../../lib/api';
 import { supabase } from '../supabase/supabaseClient';
 import { persistStudentSession } from '../utils/studentStorage';
 import { LanguageSwitcher } from '../../components/LanguageSwitcher';

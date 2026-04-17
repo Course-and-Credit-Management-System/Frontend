@@ -36,7 +36,7 @@ function HomePage() {
               </button>
               <button 
                 className="inline-flex items-center justify-center rounded-2xl bg-teal-600 px-6 py-3 text-sm font-bold text-white transition hover:bg-teal-500 shadow-sm hover:shadow-md"
-                onClick={() => navigate('/admin-login')}
+                onClick={() => navigate('/student-login')}
               >
                 {t('Sign In')}
               </button>
@@ -52,7 +52,7 @@ function HomePage() {
               {t('homepageTitle')}
             </h3>
             <p className="text-lg font-medium text-slate-400">
-              Student Registration System. Your academic trajectory starts here. Manage your enrollment, track your progress, and get ready for the upcoming semester.
+              {t('home.description')}
             </p>
           </div>
           
@@ -105,7 +105,7 @@ function HomePage() {
             <div className="relative z-10 mt-auto grid grid-cols-[auto_minmax(0,1fr)] items-end gap-6">
               <div className="min-w-0">
                 <p className="mt-1 text-4xl font-black text-slate-900">
-                  200<span className="ml-2 text-sm font-bold text-slate-400">students</span>
+                  200<span className="ml-2 text-sm font-bold text-slate-400">{t('homeStudents')}</span>
                 </p>
               </div>
             </div>
@@ -125,7 +125,7 @@ function HomePage() {
             <div className="relative z-10 mt-auto grid grid-cols-[auto_minmax(0,1fr)] items-end gap-6">
               <div className="min-w-0">
                 <p className="mt-1 text-4xl font-black text-slate-900">
-                  5<span className="ml-2 text-sm font-bold text-slate-400">years</span>
+                  5<span className="ml-2 text-sm font-bold text-slate-400">{t('homeYears')}</span>
                 </p>
               </div>
             </div>
@@ -145,7 +145,7 @@ function HomePage() {
             <div className="relative z-10 mt-auto">
               <div className="inline-flex w-full items-center gap-3 rounded-2xl bg-slate-50 px-4 py-3 border border-slate-100">
                 <p className="m-0 text-xs font-black text-slate-600 tracking-widest leading-relaxed">
-                  CS • CT • SE • KE • BIS • HPC • CSec
+                  {t('homeCourses')}
                 </p>
               </div>
             </div>
@@ -154,7 +154,7 @@ function HomePage() {
       </main>
 
       <footer className="mt-auto px-8 lg:px-12 py-8 border-t border-slate-100 bg-white text-center">
-        <p className="m-0 text-xs font-bold text-slate-400 tracking-wide">© 2026 University of Information Technology. All Rights Reserved.</p>
+        <p className="m-0 text-xs font-bold text-slate-400 tracking-wide">{t('home.copyright')}</p>
       </footer>
     </div>
   );

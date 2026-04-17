@@ -1,0 +1,59 @@
+- generic [ref=e2]:
+  - generic [ref=e179]:
+    - banner [ref=e180]:
+      - generic [ref=e181]:
+        - img [ref=e183]
+        - heading "UniPortal" [level=2] [ref=e185]
+      - generic [ref=e186]:
+        - button "EN" [ref=e187] [cursor=pointer]
+        - button "မြန်မာ" [ref=e188] [cursor=pointer]
+    - main [ref=e189]:
+      - generic [ref=e190]:
+        - generic [ref=e191]:
+          - generic [ref=e192]:
+            - generic [ref=e194]: security
+            - heading "Protocol Access" [level=1] [ref=e195]
+            - paragraph [ref=e196]: Secure entry to institutional resources
+          - generic [ref=e197]:
+            - button "Student Identity" [ref=e198] [cursor=pointer]
+            - button "Administrative" [ref=e199] [cursor=pointer]
+          - generic [ref=e200]:
+            - generic [ref=e201]:
+              - text: Institutional ID
+              - generic [ref=e202]:
+                - generic [ref=e203]: fingerprint
+                - textbox "TNT-xxxx" [ref=e204]
+            - generic [ref=e205]:
+              - text: Authorization Key
+              - generic [ref=e206]:
+                - generic [ref=e207]: key
+                - textbox "••••••••" [ref=e208]
+                - button "visibility" [ref=e209] [cursor=pointer]:
+                  - generic [ref=e210]: visibility
+            - generic [ref=e211]:
+              - generic [ref=e212] [cursor=pointer]:
+                - checkbox "Persist Session" [ref=e214]
+                - generic [ref=e217]: Persist Session
+              - button "Reset Credentials" [ref=e218] [cursor=pointer]
+            - button "Authorize Session east" [ref=e219] [cursor=pointer]:
+              - text: Authorize Session
+              - generic [ref=e220]: east
+          - generic [ref=e221]:
+            - generic [ref=e222]:
+              - generic [ref=e223]: verified_user
+              - text: 256-BIT ENCRYPTION ACTIVE
+            - paragraph [ref=e224]:
+              - text: Encountering access issues? Visit our
+              - link "Support Nexus" [ref=e225] [cursor=pointer]:
+                - /url: "#"
+        - generic [ref=e226]:
+          - link "Privacy" [ref=e227] [cursor=pointer]:
+            - /url: "#"
+          - link "Governance" [ref=e229] [cursor=pointer]:
+            - /url: "#"
+          - button "language ENG (US)" [ref=e231] [cursor=pointer]:
+            - generic [ref=e232]: language
+            - text: ENG (US)
+  - link "Open Student AI Chatbot" [ref=e98] [cursor=pointer]:
+    - /url: "#/student/chatbot"
+    - generic [ref=e99]: smart_toy

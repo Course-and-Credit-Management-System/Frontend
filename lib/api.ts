@@ -41,11 +41,122 @@ export class HttpStatusError extends Error {
   }
 }
 
+function normalizeStudent(student: any) {
+  if (!student || typeof student !== "object") return student;
+
+  const latestTermEnrollmentRaw = student.latestTermEnrollment || student.latest_term_enrollment;
+  const latestTermEnrollment =
+    latestTermEnrollmentRaw && typeof latestTermEnrollmentRaw === "object"
+      ? {
+          ...latestTermEnrollmentRaw,
+          academicYear:
+            latestTermEnrollmentRaw.academicYear ||
+            latestTermEnrollmentRaw.academic_year ||
+            "",
+          semester:
+            latestTermEnrollmentRaw.semester ?? latestTermEnrollmentRaw.termSemester ?? null,
+          termStatus:
+            latestTermEnrollmentRaw.termStatus ||
+            latestTermEnrollmentRaw.term_status ||
+            "",
+          section: latestTermEnrollmentRaw.section || "",
+          majorClassId:
+            latestTermEnrollmentRaw.majorClassId ||
+            latestTermEnrollmentRaw.major_class_id ||
+            null,
+          majorClassLabel:
+            latestTermEnrollmentRaw.majorClassLabel ||
+            latestTermEnrollmentRaw.major_class_label ||
+            "",
+          updatedAt:
+            latestTermEnrollmentRaw.updatedAt ||
+            latestTermEnrollmentRaw.updated_at ||
+            null,
+        }
+      : null;
+
+  return {
+    ...student,
+    id: student.id || student.studentid,
+    studentid: student.studentid || student.id,
+    registrationId:
+      student.registrationId || student.registrationid || student.registration_id || null,
+    namemm: student.namemm || student.nameMm || student.name_mm || student.fullName || "",
+    nameen: student.nameen || student.nameEn || student.name_en || "",
+    father_name: student.father_name || student.fatherName || "",
+    mother_name: student.mother_name || student.motherName || "",
+    gender: student.gender || "",
+    birthplace: student.birthplace || student.place_of_birth || student.placeOfBirth || "",
+    date_of_birth: student.date_of_birth || student.dateOfBirth || "",
+    nrc_number: student.nrc_number || student.nrcNumber || "",
+    exam_roll_no:
+      student.exam_roll_no ||
+      student.examRollNo ||
+      student.entrance_roll_no ||
+      student.entranceRollNo ||
+      "",
+    student_name:
+      student.student_name || student.studentName || student.full_name || student.fullName || "",
+    phone: student.phone || student.phone_number || student.phoneNumber || "",
+    user_name: student.user_name || student.username || "",
+    currentyear: student.currentyear ?? student.currentYear ?? null,
+    academic_semester:
+      student.academic_semester || student.academicSemester || student.semester || "",
+    major: student.major || student.major_code || student.specialization || "",
+    academicyearentered: student.academicyearentered || student.academicYearEntered || "",
+    matriculation_rollno:
+      student.matriculation_rollno ||
+      student.matriculation_roll_no ||
+      student.matriculationRollNo ||
+      "",
+    matriculation_passed_year:
+      student.matriculation_passed_year || student.matriculationPassedYear || "",
+    totalmarks_obtained:
+      student.totalmarks_obtained ??
+      student.total_marks_obtained ??
+      student.totalMarksObtained ??
+      student.total_marks ??
+      student.totalMarks ??
+      null,
+    division_or_state: student.division_or_state || student.divisionOrState || "",
+    township: student.township || "",
+    address: student.address || "",
+    assigned_class: student.assigned_class || student.assignedClass || "",
+    status: student.status || "",
+    globalStatus: student.globalStatus || student.global_status || student.status || "",
+    payment_status: student.payment_status || student.paymentStatus || "",
+    payment_academic_year:
+      student.payment_academic_year || student.paymentAcademicYear || "",
+    paymentStatus: student.paymentStatus || student.payment_status || "",
+    paymentAcademicYear:
+      student.paymentAcademicYear || student.payment_academic_year || "",
+    passportphoto: student.passportphoto || student.passportPhoto || student.passport_photo || "",
+    nrcfrontimage:
+      student.nrcfrontimage || student.nrcFrontImage || student.nrc_front_image || "",
+    nrcbackimage:
+      student.nrcbackimage || student.nrcBackImage || student.nrc_back_image || "",
+    father_id: student.father_id || student.fatherId || null,
+    mother_id: student.mother_id || student.motherId || null,
+    rejection_reason: student.rejection_reason || student.rejectionReason || "",
+    is_benefit_student: student.is_benefit_student ?? student.isBenefitStudent ?? false,
+    is_hostel_student: student.is_hostel_student ?? student.isHostelStudent ?? false,
+    is_on_break: student.is_on_break ?? student.isOnBreak ?? false,
+    latestTermEnrollment,
+    latest_term_enrollment: latestTermEnrollment,
+  };
+}
+
 // ---- Global auth-failure handling (401/403) ----
 function clearAuthSession() {
   sessionStorage.removeItem("user");
   sessionStorage.removeItem("role");
   sessionStorage.removeItem("must_reset_password");
+  sessionStorage.removeItem("adminAuthToken");
+  localStorage.removeItem("access_token");
+  localStorage.removeItem("authToken");
+  localStorage.removeItem("adminAuthToken");
+  localStorage.removeItem("studentData");
+  localStorage.removeItem("adminData");
 }
 
 function redirectToLogin() {
@@ -74,8 +185,8 @@ function shouldAutoLogout(path: string) {
   // Allow enrollment errors to be handled by UI instead of auto-redirecting to login
   if (path.includes("/courses/enrollment")) return false;
   // Spring Boot public endpoints (match raw path — prefix is added inside request())
-  if (path === "/api/v1/students/register") return false;
-  if (path === "/api/v1/settings/registration-window") return false;
+  if (path === "/api/auth/register") return false;
+  if (path === "/api/registration-window") return false;
   return true;
 }
 // -----------------------------------------------
@@ -84,17 +195,20 @@ async function request<T = any>(path: string, options: RequestOptions = {}): Pro
   const backend = options.backend ?? "fastapi";
   const base = backend === "spring" ? SPRING_API_BASE_URL : API_BASE_URL;
 
-  // In dev: base="" so we proxy through Vite. Prepend /spring-api so Vite catches it.
-  // In prod: base has the full URL (e.g. https://spring.university.edu). No prefix needed.
-  const proxyPrefix = backend === "spring" && !base ? "/spring-api" : "";
-  const fullPath = `${proxyPrefix}${path}`;
+  // With the new path-based routing (/api/v1 -> fastapi, /api -> spring)
+  // we do not need the /spring-api prefix.
+  const fullPath = path;
 
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
   };
 
-  // Add Authorization header if token exists in localStorage
-  const token = localStorage.getItem("access_token");
+  // Preserve compatibility with older login flows while standardizing on access_token.
+  const token =
+    localStorage.getItem("access_token") ||
+    localStorage.getItem("authToken") ||
+    sessionStorage.getItem("adminAuthToken") ||
+    localStorage.getItem("adminAuthToken");
   if (token) {
     headers["Authorization"] = `Bearer ${token}`;
   }
@@ -133,8 +247,7 @@ async function request<T = any>(path: string, options: RequestOptions = {}): Pro
 async function requestBlob(path: string, options: RequestOptions = {}): Promise<BlobResponse> {
   const backend = options.backend ?? "fastapi";
   const base = backend === "spring" ? SPRING_API_BASE_URL : API_BASE_URL;
-  const proxyPrefix = backend === "spring" && !base ? "/spring-api" : "";
-  const fullPath = `${proxyPrefix}${path}`;
+  const fullPath = path;
 
   const headers: Record<string, string> = options.body
     ? { "Content-Type": "application/json" }
@@ -209,8 +322,54 @@ export type AdminAnnouncementBulkPayload = {
 // ---------------------------
 export const api = {
   // Public student registration
-  registerStudent: (payload: any) => request("/api/v1/students/register", { method: "POST", body: payload, backend: "spring" }),
-  getRegistrationWindowSettings: () => request("/api/v1/settings/registration-window", { backend: "spring" }),
+  registerStudent: (payload: any) => request("/api/auth/register", { method: "POST", body: payload }),
+  getRegistrationWindowSettings: () => request("/api/registration-window", {}),
+
+  // Legacy Spring auth endpoints kept for compatibility with src/pages login flows.
+  loginStudent: (payload: { email: string; username: string; password: string }) =>
+    request("/api/auth/login", { method: "POST", body: payload, backend: "spring" }),
+  loginAdmin: (payload: { email: string; password: string }) =>
+    request("/api/auth/admin/login", { method: "POST", body: payload, backend: "spring" }),
+  getStudents: async (email: string) => {
+    const result = await request<any[]>(
+      `/api/students?email=${encodeURIComponent(email)}`,
+      { backend: "spring" }
+    );
+    return Array.isArray(result) ? result.map(normalizeStudent) : [];
+  },
+  getStudentById: async (studentId: string) => {
+    const result = await request<any>(
+      `/api/students/${encodeURIComponent(studentId)}`,
+      { backend: "spring" }
+    );
+    return normalizeStudent(result);
+  },
+  updateStudent: async (studentId: string, payload: any) => {
+    const result = await request<any>(
+      `/api/students/${encodeURIComponent(studentId)}`,
+      { method: "PUT", body: payload, backend: "spring" }
+    );
+    return normalizeStudent(result);
+  },
+  getStudentStartRoute: () =>
+    request("/api/student/start-route", { backend: "spring" }),
+  listRegistrations: async (studentId?: string) => {
+    const registrations = await request<any[]>("/api/admin/registrations", { backend: "spring" });
+    if (!studentId) return registrations;
+    const sid = String(studentId);
+    return (Array.isArray(registrations) ? registrations : []).filter((item) => {
+      const candidate =
+        item?.studentId ||
+        item?.student_id ||
+        item?.studentUserId ||
+        item?.student_user_id ||
+        item?.user_id ||
+        null;
+      return candidate != null && String(candidate) === sid;
+    });
+  },
+  getRegistrationSections: (registrationId: string) =>
+    request(`/v1/registration/${encodeURIComponent(registrationId)}/sections`, { backend: "spring" }),
 
   login: (payload: { username: string; password: string; role: "admin" | "student" }) =>
     request("/api/v1/auth/login", { method: "POST", body: payload }),

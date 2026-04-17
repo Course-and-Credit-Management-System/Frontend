@@ -1,0 +1,116 @@
+.options-editor-container {
+    padding: 10px 15px; 
+    border: 1px solid var(--light-grey); 
+    border-radius: 8px; 
+    margin-top: 10px;
+    background-color: var(--bg-light);
+}
+
+.options-editor-header {
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    cursor: pointer;
+    user-select: none;
+}
+
+.options-editor-title {
+    margin: 0; 
+    font-size: 14px; 
+    font-weight: 600;
+    color: var(--dark);
+    max-width: 200px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.options-editor-arrow {
+    transition: transform 0.2s;
+    font-size: 10px;
+    color: var(--grey);
+}
+
+.options-list-container {
+    margin-top: 15px;
+}
+
+.options-list {
+    margin-bottom: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.option-item {
+    display: flex; 
+    align-items: center; 
+    gap: 8px;
+}
+
+.option-input {
+    flex: 1; 
+    padding: 8px 12px; 
+    border: 1px solid var(--light-grey); 
+    border-radius: 6px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.option-input:focus {
+    border-color: var(--primary);
+}
+
+.btn-remove {
+    padding: 7px 12px; 
+    background-color: var(--danger); 
+    color: white; 
+    border: none; 
+    border-radius: 6px; 
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.btn-remove:hover {
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+}
+
+.btn-remove:active {
+    transform: translateY(0);
+}
+
+.empty-options-text {
+    color: var(--grey); 
+    font-style: italic; 
+    font-size: 13px;
+    text-align: center;
+    padding: 10px 0;
+}
+
+.add-option-container {
+    display: flex; 
+    gap: 8px; 
+    border-top: 1px solid var(--light-grey); 
+    padding-top: 12px;
+}
+
+.btn-add {
+    padding: 8px 16px; 
+    background-color: var(--success); 
+    color: white; 
+    border: none; 
+    border-radius: 6px; 
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.btn-add:hover {
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+}
